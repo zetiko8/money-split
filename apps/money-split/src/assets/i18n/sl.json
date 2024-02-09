@@ -1,0 +1,12 @@
+{
+    "AbiVeljavnostLinkaInvalidLinkException": "Neveljavni link",
+    "AbiGetPonudboNeustreznaPonudbaException": "Ponudba ni primerna za ABI. Prosimo preverite vnešene podatke.",
+    "abi-vstop-view": {
+        "LOADING": "Nalaganje ABI. Prosim počakajte"
+    },
+    "ServerError": "Prišlo je do neznane napake. Prosim kontaktirajte podporo.",
+    "FormValidation": "Obrazec vsebuje napake. Prosimo preverite.",
+    "invalidDelta": "Prosimo vnesite datum rojstva (format: DD.MM.LLLL). Starost od {{deltaMin}} do {{deltaMax}}",
+    "invalidDeltaMin": "Prosimo vnesite datum rojstva (format: DD.MM.LLLL). Starost od {{deltaMin}} let dalje",
+    "invalidZavarovalniskaStarostDelta": "Prosimo vnesite datum rojstva (format: DD.MM.LLLL). Starost zavarovanca je neustrezna. Zavarovanje lahko sklenejo osebe, stare od dopolnjenega {{deltaZavarovalniskaStarostMin}}. do {{deltaZavarovalniskaStarostMax}}. leta starosti."
+}

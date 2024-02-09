@@ -21,12 +21,7 @@
           "apps/money-split/src/assets"
         ],
         "styles": ["apps/money-split/src/styles.scss"],
-        "scripts": [],
-        "server": "apps/money-split/src/main.server.ts",
-        "prerender": true,
-        "ssr": {
-          "entry": "apps/money-split/server.ts"
-        }
+        "scripts": []
       },
       "configurations": {
         "production": {

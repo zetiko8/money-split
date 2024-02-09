@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NxWelcomeComponent } from './nx-welcome.component';
+import { NotificationUiComponent } from '../components/notifications/notification-ui/notification-ui.component';
 
 @Component({
   standalone: true,
-  imports: [NxWelcomeComponent, RouterModule],
+  imports: [
+    RouterModule,
+    NotificationUiComponent,
+  ],
   selector: 'angular-monorepo-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  title = 'money-split';
-}
+export class AppComponent {}

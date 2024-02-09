@@ -1,0 +1,39 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { PageComponent } from 'apps/money-split/src/components/page/page.component';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AppErrorCode } from '../../../../types';
+
+@Component({
+  standalone: true,
+  imports: [
+    RouterModule,
+    CommonModule,
+    TranslateModule,
+    PageComponent,
+    ReactiveFormsModule,
+  ],
+  selector: 'invite',
+  templateUrl: './invite.component.html',
+})
+export class InviteOwnerComponent {
+
+  @Input() isLoading: boolean = false;
+  @Output() invite = new EventEmitter<{ email: string }>();
+
+  public form = new FormGroup({
+    email: new FormControl<string | null>('', {
+      validators: [ Validators.required ]
+    })
+  });
+
+  inviteUser () {
+    if (!this.form.valid)
+      throw new Error(AppErrorCode.FormValidation);
+
+    this.invite.emit({ email: this.form.value.email as string });
+    this.form.reset();
+  }
+}

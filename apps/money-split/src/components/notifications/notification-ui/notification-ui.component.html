@@ -1,0 +1,43 @@
+<div 
+    class="toast-container position-fixed bottom-0 end-0 p-3"
+    *ngIf="notificationsService.notification$ | async as notification"
+>
+    <div 
+        class="toast show alert alert-danger"
+        [class.alert-danger]="notification.type === 'error'"
+        [class.alert-success]="notification.type === 'success'"
+        [class.alert-info]="notification.type === 'info'"
+        role="alert" 
+        aria-live="assertive" 
+        aria-atomic="true"
+    >
+      <div class="toast-header">
+        <strong class="me-auto" *ngIf="notification.type === 'error'">
+            Napaka
+        </strong>
+        <strong class="me-auto" *ngIf="notification.type === 'info'">
+          Obvestilo
+        </strong>
+        <strong class="me-auto" *ngIf="notification.type === 'success'">
+          OK
+        </strong>
+
+        <button 
+            type="button" 
+            class="btn-close" 
+            aria-label="Zapri"
+            (click)="notificationsService.clearNotifications()"
+        >
+          X
+        </button>
+      </div>
+      <div class="toast-body">
+        <p>
+          {{ notification.message | translate }}
+        </p>
+        <small>
+          {{ notification.details }}
+        </small>
+      </div>
+    </div>
+</div>

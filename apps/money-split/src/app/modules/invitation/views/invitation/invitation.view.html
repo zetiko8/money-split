@@ -1,0 +1,38 @@
+
+<page
+    [isLoading]="isLoading"
+    [notifications$]="notification$"
+>
+    <div
+        *ngIf="loadProcess.data$| async as invitation"
+    >
+        <h4>
+            {{ invitation.namespace.name }}
+        </h4>
+        <form
+            (submit)="$event.preventDefault()"
+        >
+            <div class="input-group">
+                <label>{{ 'name' | translate }}</label>
+                <input
+                    [formControl]="form.controls.name" 
+                    type="text"
+                    name="name"    
+                >
+            </div>
+        </form>
+        <div>
+            <button
+                (click)="accept()"
+                [disabled]="!form.valid"
+            >
+                {{ 'acceptInvitatiom' | translate }}
+            </button>
+            <button
+                (click)="rejectProcess.load('')"
+            >
+                {{ 'rejectInvitatiom' | translate }}
+            </button>
+        </div>
+    </div>
+</page>

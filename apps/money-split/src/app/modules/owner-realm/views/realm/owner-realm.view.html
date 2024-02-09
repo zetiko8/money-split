@@ -1,0 +1,21 @@
+
+<page
+    [isLoading]="loadProcess.inProgress$"
+    [notifications$]="notification$"
+>
+    <button
+        (click)="createNewRealm()"
+        data-test="newRealm"
+    >
+        {{ 'newRealm' | translate }}
+    </button>
+    <a 
+        class="box"
+        *ngFor="let mNamespace of namespaces$ | async"
+        [routerLink]="mNamespace.link"
+    >
+        <h4>
+            {{ mNamespace.name }}
+        </h4>
+    </a>
+</page>

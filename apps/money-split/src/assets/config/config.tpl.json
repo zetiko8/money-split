@@ -1,0 +1,17 @@
+{
+    "middlewareUrl": "${MIDDLEWARE_URL}",
+    "commonApiUrl": "${COMMON_API_URL}",
+    "legalApiUrl": "${LEGAL_API_URL}",
+    "webApplications": {
+        "BDCA_STANDARD_V_PRISOTNOSTI": "${BDCA_UI_URL}/v-prisotnosti/standard",
+        "BDCA_PREMIUM_V_PRISOTNOSTI": "${BDCA_UI_URL}/v-prisotnosti/premium",
+        "BDCA_BASIC_V_PRISOTNOSTI": "${BDCA_UI_URL}/v-prisotnosti/basic",
+        "BDCA_STANDARD_NA_DALJAVO": "${BDCA_UI_URL}/na-daljavo/standard",
+        "BDCA_PREMIUM_NA_DALJAVO": "${BDCA_UI_URL}/na-daljavo/premium",
+        "BDCA_BASIC_NA_DALJAVO": "${BDCA_UI_URL}/na-daljavo/basic",
+        "DR_BEST_HOME": "${DR_BEST_HOME_URL}"
+    },
+    "keycloakAuthUrl": "${KEYCLOAK_AUTH_URL}",
+    "keycloakRealm": "${KEYCLOAK_REALM}",
+    "keycloakClientId": "${KEYCLOAK_CLIENT_ID}"
+}

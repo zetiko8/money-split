@@ -1,0 +1,10 @@
+<full-screen-loader
+    *ngIf="isLoading | async"
+></full-screen-loader>
+<notifications-controller
+    [notification$]="notifications$"
+>
+</notifications-controller>
+<div>
+    <ng-content></ng-content>
+</div>

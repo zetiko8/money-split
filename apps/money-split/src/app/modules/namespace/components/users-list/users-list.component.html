@@ -1,0 +1,22 @@
+<h5>
+    {{ 'invitedList' | translate }}
+</h5>
+<div
+    *ngFor="let invitation of invitations"
+    class="list-item"
+>
+    <p>
+        {{ invitation.email }}
+    </p>
+</div>
+<h5>
+    {{ 'users' | translate }}
+</h5>
+<div
+    *ngFor="let user of users"
+    class="list-item"
+>
+    <h4>
+        {{ user.name }}
+    </h4>
+</div>

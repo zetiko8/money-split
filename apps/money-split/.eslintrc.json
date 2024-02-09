@@ -13,7 +13,6 @@
           "error",
           {
             "type": "attribute",
-            "prefix": "angularMonorepo",
             "style": "camelCase"
           }
         ],
@@ -21,7 +20,6 @@
           "error",
           {
             "type": "element",
-            "prefix": "angular-monorepo",
             "style": "kebab-case"
           }
         ]

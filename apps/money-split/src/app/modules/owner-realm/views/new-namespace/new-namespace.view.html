@@ -1,0 +1,25 @@
+
+<page
+    [isLoading]="createProcess.inProgress$"
+    [notifications$]="notification$"
+>
+    <form
+        (submit)="$event.preventDefault(); create()"
+    >
+        <div class="input-group">
+            <label>{{ 'namespaceName' | translate }}</label>
+            <input
+                [formControl]="form.controls.namespaceName" 
+                type="text"
+                name="namespaceName"    
+            >
+        </div>
+        <div class="input-group">
+            <button
+                type="submit"
+            >
+                {{ 'confirm' | translate }}
+            </button>
+        </div>
+    </form>
+</page>

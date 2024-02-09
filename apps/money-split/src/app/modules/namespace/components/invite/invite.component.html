@@ -1,0 +1,36 @@
+
+<div
+    *ngIf="isLoading"
+>
+
+</div>
+<div
+    *ngIf="!isLoading"
+>
+    <form
+    (submit)="$event.preventDefault(); inviteUser()"
+    >
+        <div 
+            class="input-group"
+        >
+            <h3>
+                {{ 'inviteExplanation' | translate }}
+            </h3>
+        </div>
+        <div class="input-group">
+            <label>{{ 'email' | translate }}</label>
+            <input
+                [formControl]="form.controls.email" 
+                type="email"
+                name="email"    
+            >
+        </div>
+        <div class="input-group">
+            <button
+                type="submit"
+            >
+                {{ 'invite' | translate }}
+            </button>
+        </div>
+    </form>
+</div>

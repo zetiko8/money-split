@@ -1,0 +1,33 @@
+
+<page
+    [isLoading]="loginProcess.inProgress$"
+    [notifications$]="notification$"
+>
+    <form
+        (submit)="$event.preventDefault(); login()"
+    >
+        <div class="input-group">
+            <label>{{ 'username' | translate }}</label>
+            <input
+                [formControl]="form.controls.username" 
+                type="text"
+                name="username"    
+            >
+        </div>
+        <div class="input-group">
+            <label>{{ 'password' | translate }}</label>
+            <input 
+                [formControl]="form.controls.password"
+                type="password"
+                name="password" 
+            >
+        </div>
+        <div class="input-group">
+            <button
+                type="submit"
+            >
+                {{ 'login' | translate }}
+            </button>
+        </div>
+    </form>
+</page>
