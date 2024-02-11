@@ -1,4 +1,11 @@
+import { ACTIONS } from "../support/actions"
+
 describe('Register Component', () => {
+
+    beforeEach(() => {
+      ACTIONS.deleteOwner('testuser');
+    });
+
     it('displays the register form', () => {
       cy.visit('/register') // visit the page where the register component is located
       cy.get('[data-testid="register-form"]') // check that the register form is displayed
@@ -26,13 +33,6 @@ describe('Register Component', () => {
     })
   
     it('registers a new user', () => {
-      cy.request(
-        'DELETE', 
-        'http://localhost:3333/cybackdoor/owner/testuser'
-        ).then((response) => {
-            expect(response.status).to.equal(200);
-        });
-
       cy.visit('/register') // visit the page where the register component is located
       cy.get('[data-testid="username-input"]') // enter a username
         .type('testuser')
@@ -53,13 +53,6 @@ describe('Register Component', () => {
     });
 
     it('does not register a user with an username', () => {
-      cy.request(
-        'DELETE', 
-        'http://localhost:3333/cybackdoor/owner/testuser'
-        ).then((response) => {
-            expect(response.status).to.equal(200);
-        });
-
       cy.visit('/register') // visit the page where the register component is located
       cy.get('[data-testid="username-input"]') // enter a username
         .type('testuser')
@@ -79,14 +72,6 @@ describe('Register Component', () => {
         cy
           .get('[data-cy="notification"]')
           .should('be.visible')
-          .and('contain', 'RESOURCE_ALREADY_EXISTS')
-
-          cy.request(
-            'DELETE', 
-            'http://localhost:3333/cybackdoor/owner/testuser'
-            ).then((response) => {
-                expect(response.status).to.equal(200);
-            });
-  
+          .and('contain', 'RESOURCE_ALREADY_EXISTS')  
       })  
   })

@@ -6,6 +6,7 @@ import { AppError, AppErrorCode } from '../../../types';
 import { jwtDecode } from 'jwt-decode';
 import { ConfigService } from '../../config.service';
 import { HttpClient } from '@angular/common/http';
+import { ERROR_CODE } from '@angular-monorepo/entities';
 
 export const KEYCLOAK_CONFIG = new InjectionToken<{ realm: string, clientId: string }>('KEYCLOAK_CONFIG');
 @Injectable()
@@ -42,6 +43,31 @@ export class AuthService {
         tap(response => {
           localStorage.setItem('token', response.token);
         }),
+        catchError(
+          err => {
+            if (
+              err.error 
+              && 
+              err.error.error 
+              === 
+              ERROR_CODE.UNAUTHORIZED
+            ) {
+              return throwError(() => Error(ERROR_CODE.UNAUTHORIZED));
+            } 
+            else if (
+              err.error 
+              && 
+              err.error.error 
+              === 
+              ERROR_CODE.RESOURCE_NOT_FOUND
+            ) {
+              return throwError(() => Error(ERROR_CODE.RESOURCE_NOT_FOUND));
+            } 
+            else {
+              return throwError(() => err);
+            }
+          }
+        )
       );
   }
 
