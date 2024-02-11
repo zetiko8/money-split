@@ -45,3 +45,5 @@ export interface InvitationViewData {
     invitationKey: string,
     namespace: MNamespace,
 };
+
+export * from './error';

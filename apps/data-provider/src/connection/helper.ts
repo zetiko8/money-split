@@ -1,4 +1,4 @@
-import { ERROR_CODE } from '../error';
+import { ERROR_CODE } from '@angular-monorepo/entities';
 import { Entity, EntityPropertyType } from '../types';
 import { query } from './connection';
 

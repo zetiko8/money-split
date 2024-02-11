@@ -45,6 +45,7 @@ export class RegisterView {
     .pipe(
       filter(err => err !== null),
       map(event => {
+        console.log(event);
         return { type: 'error', message: event?.message || 'Error' };
       }),  
     );

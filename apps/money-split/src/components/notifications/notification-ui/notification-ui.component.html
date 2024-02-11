@@ -1,6 +1,7 @@
 <div 
     class="toast-container position-fixed bottom-0 end-0 p-3"
     *ngIf="notificationsService.notification$ | async as notification"
+    data-cy="notification"
 >
     <div 
         class="toast show alert alert-danger"

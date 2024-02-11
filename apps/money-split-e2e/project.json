@@ -17,6 +17,10 @@
         },
         "ci": {
           "devServerTarget": "money-split:serve-static"
+        },
+        "development-watch": {
+          "devServerTarget": "money-split:serve:development",
+          "watch": true
         }
       }
     },

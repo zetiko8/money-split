@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, mergeMap } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { AuthService } from './auth.token.service';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../../config.service';
-import { Owner } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 
 export interface UserProfile {
   username: string,
@@ -59,6 +59,22 @@ export class UserService {
     return this.http.post<Owner>(
       this.config.getConfig().middlewareUrl + '/register',
       { username, password }
+    ).pipe(
+      catchError(
+        err => {
+          if (
+            err.error 
+            && 
+            err.error.error 
+            === 
+            ERROR_CODE.RESOURCE_ALREADY_EXISTS
+          ) {
+            return throwError(() => Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS));
+          } else {
+            return throwError(() => err);
+          }
+        }
+      )
     );
   }
 }

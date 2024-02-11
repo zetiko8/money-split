@@ -5,26 +5,44 @@
 >
     <form
         (submit)="$event.preventDefault(); register()"
+        data-testid="register-form"
     >
         <div class="input-group">
             <label>{{ 'username' | translate }}</label>
             <input
                 [formControl]="form.controls.username" 
                 type="text"
-                name="username"    
+                name="username"
+                data-testid="username-input" 
             >
+            <p
+                class="error"
+                *ngIf="form.controls.username.errors"
+                data-cy="error"
+            >
+                {{ 'register_username_error' | translate }}
+            </p>
         </div>
         <div class="input-group">
             <label>{{ 'password' | translate }}</label>
             <input 
                 [formControl]="form.controls.password"
                 type="password"
-                name="password" 
+                name="password"
+                data-testid="password-input"
             >
+            <p
+                class="error"
+                *ngIf="form.controls.username.errors"
+                data-cy="error"
+            >
+                {{ 'register_password_error' | translate }}
+            </p>
         </div>
         <div class="input-group">
             <button
                 type="submit"
+                data-testid="register-button"
             >
                 {{ 'register' | translate }}
             </button>
