@@ -57,3 +57,15 @@ export async function acceptInvitation (
 
     return invitation;
 }
+
+export const INVITATION_SERVICE = {
+  deleteInvitationByEmail: async (
+    email: string
+  ) => {
+    await query(
+      `DELETE FROM \`Invitation\`
+      WHERE email = "${email}"
+      `
+    )
+  }
+}

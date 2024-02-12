@@ -12,3 +12,24 @@ export async function addOwnerToNamespace (
         { ownerId, namespaceId }
       ));
 }
+
+export const NAMESPACE_SERVICE = {
+    deleteNamespace: async (
+        namespaceId: number
+    ) => {
+        await query(
+            `DELETE FROM \`Namespace\`
+            WHERE id = ${namespaceId}
+            `
+        )
+    },
+    deleteNamespaceByName: async (
+        namespaceName: string
+    ) => {
+        await query(
+            `DELETE FROM \`Namespace\`
+            WHERE name = "${namespaceName}"
+            `
+        )
+    }
+}

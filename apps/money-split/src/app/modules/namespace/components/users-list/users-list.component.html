@@ -4,6 +4,7 @@
 <div
     *ngFor="let invitation of invitations"
     class="list-item"
+    data-test="invited-owner"
 >
     <p>
         {{ invitation.email }}
@@ -15,6 +16,7 @@
 <div
     *ngFor="let user of users"
     class="list-item"
+    data-test="namespace-user"
 >
     <h4>
         {{ user.name }}

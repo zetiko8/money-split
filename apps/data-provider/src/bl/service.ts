@@ -81,13 +81,13 @@ export async function getNamespaceViewForOwner (
   if (!namespaces.length)
     throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
 
-  const invitations = await selectWhereSql<Invitation[]>(
+  const invitations = (await selectWhereSql<Invitation[]>(
     'Invitation', 
     'namespaceId', 
     EntityPropertyType.ID,
     namespaceId,
     InvitationEntity,
-  );
+  )).filter(invitation => !invitation.accepted);
 
   const users = await query<User[]>
   (

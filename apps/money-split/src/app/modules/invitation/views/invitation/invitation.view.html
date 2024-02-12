@@ -25,11 +25,13 @@
             <button
                 (click)="accept()"
                 [disabled]="!form.valid"
+                data-test="accept-invitation-btn"
             >
                 {{ 'acceptInvitatiom' | translate }}
             </button>
             <button
                 (click)="rejectProcess.load('')"
+                data-test="reject-invitation-btn"
             >
                 {{ 'rejectInvitatiom' | translate }}
             </button>
