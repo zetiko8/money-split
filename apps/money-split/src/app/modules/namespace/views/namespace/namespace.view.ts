@@ -3,15 +3,15 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from 'apps/money-split/src/components/page/page.component';
-import { Observable, Subject, filter, map, merge, mergeMap, of, shareReplay, tap } from 'rxjs';
-import { Notification } from 'apps/money-split/src/components/notifications/notifications.types';
-import { RoutingService } from 'apps/money-split/src/app/services/routing/routing.service';
-import { NamespaceService } from '../services/namespace.service';
+import { PageComponent } from '../../../../../components/page/page.component';
+import { Observable, Subject, filter, map, merge, mergeMap, of, tap } from 'rxjs';
+import { Notification } from '../../../../../components/notifications/notifications.types';
+import { RoutingService } from '../../../../services/routing/routing.service';
+import { NamespaceService } from '../../services/namespace.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InviteOwnerComponent } from '../components/invite/invite.component';
-import { combineLoaders } from 'apps/money-split/src/helpers';
-import { UsersListComponent } from '../components/users-list/users-list.component';
+import { InviteOwnerComponent } from '../../components/invite/invite.component';
+import { combineLoaders } from '../../../../../helpers';
+import { UsersListComponent } from '../../components/users-list/users-list.component';
 
 @Component({
   standalone: true,
