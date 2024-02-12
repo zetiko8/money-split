@@ -36,7 +36,7 @@ describe('Invitation', () => {
             cy.get('[data-test="invite-btn"]').click();
             cy.get('[data-test="invited-owner"]')
                 .should('have.length', 1);
-            cy.get('div.list-item')
+            cy.get('[data-test="invited-owner"]')
                 .contains(email);
         });
     });
