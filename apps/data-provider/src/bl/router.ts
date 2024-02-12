@@ -3,7 +3,7 @@ import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { createNamespace, createOwner, decodeJwt, getNamespaceViewForOwner, getNamespacesForOwner, inviteToNamespace, login } from './service';
 import { query } from '../connection/connection';
-import { Owner } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import { acceptInvitation, getInvitationViewData } from '../modules/invitation';
 import { createUser } from '../modules/user';
 
@@ -211,11 +211,15 @@ mainRouter.post('/invitation/:invitationKey/accept',
 async function getOwnerFromToken (
   req: Request,
 ) {
-  const token = req.headers.authorization.split('Bearer ')[1];
-  const decoded = decodeJwt(token);
-  const owner = (await query<Owner>(`
-  SELECT * FROM \`Owner\`
-  WHERE \`key\` = "${decoded.key}"
-  `))[0];
-  return owner;
+  try {
+    const token = req.headers.authorization.split('Bearer ')[1];
+    const decoded = decodeJwt(token);
+    const owner = (await query<Owner>(`
+    SELECT * FROM \`Owner\`
+    WHERE \`key\` = "${decoded.key}"
+    `))[0];
+    return owner;    
+  } catch (error) {
+    throw Error(ERROR_CODE.UNAUTHORIZED);
+  }
 }
