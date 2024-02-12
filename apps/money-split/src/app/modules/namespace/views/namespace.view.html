@@ -3,7 +3,7 @@
     [isLoading]="isLoading"
     [notifications$]="notification$"
 >
-    <div
+    <ng-container
         *ngIf="namespace$ | async as namespace"
     >
         <h4>
@@ -22,5 +22,5 @@
                 {{ 'addExpense' | translate }}
             </button>
         </div>
-    </div>
+    </ng-container>
 </page>

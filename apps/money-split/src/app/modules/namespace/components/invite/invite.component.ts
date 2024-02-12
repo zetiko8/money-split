@@ -17,6 +17,10 @@ import { AppErrorCode } from '../../../../types';
   ],
   selector: 'invite',
   templateUrl: './invite.component.html',
+  // eslint-disable-next-line @angular-eslint/no-host-metadata-property
+  host: {
+    class: 'app-section'
+  }
 })
 export class InviteOwnerComponent {
 

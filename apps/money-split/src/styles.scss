@@ -13,6 +13,13 @@ p {
 body {
     margin: 0;
 }
+label {
+    margin: 0;
+}
+ul {
+    margin: 0;
+    padding: 0;
+}
 
 :root {
     --background-color-primary: white;
@@ -55,7 +62,6 @@ body {
             font-weight: var(--font-weight-title);
             font-size: var(--font-size-title);
             line-height: var(--line-height-title);
-            margin-bottom: var(--gap-small);
             text-align: center;
         }
         input {
@@ -123,7 +129,7 @@ body {
         color: inherit;
         border: 1px solid;
         border-radius: 81px;
-        padding: var(--gap-large) var(--gap-normal);
+        padding: var(--gap-small) var(--gap-small);
         text-align: center;
     }
 
@@ -312,6 +318,25 @@ body {
 
     .text-center {
         text-align: center;
+    }
+
+    .input-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: var(--gap-normal);
+        margin-top: var(--gap-small);
+    }
+
+    .app-section {
+        display: block;
+    }
+
+    page {
+        main {
+            padding-left: var(--gap-normal);
+            padding-right: var(--gap-normal);
+        }
     }
 }
 

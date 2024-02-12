@@ -15,6 +15,10 @@ import { Invitation, User } from '@angular-monorepo/entities';
   ],
   selector: 'users-list',
   templateUrl: './users-list.component.html',
+  // eslint-disable-next-line @angular-eslint/no-host-metadata-property
+  host: {
+    class: 'app-section'
+  }
 })
 export class UsersListComponent {
   @Input() isLoadingUsers: boolean = false;

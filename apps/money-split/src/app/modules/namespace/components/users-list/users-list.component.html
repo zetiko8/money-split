@@ -1,24 +1,26 @@
 <h5>
     {{ 'invitedList' | translate }}
 </h5>
-<div
-    *ngFor="let invitation of invitations"
-    class="list-item"
-    data-test="invited-owner"
->
-    <p>
-        {{ invitation.email }}
-    </p>
-</div>
+<section>
+    <ul>
+        <li
+            *ngFor="let invitation of invitations"
+            data-test="invited-owner"
+        >
+            {{ invitation.email }}
+        </li>
+    </ul>
+</section>
 <h5>
     {{ 'users' | translate }}
 </h5>
-<div
-    *ngFor="let user of users"
-    class="list-item"
-    data-test="namespace-user"
->
-    <h4>
-        {{ user.name }}
-    </h4>
-</div>
+<section>
+    <ul>
+        <li
+            *ngFor="let user of users"
+            data-test="namespace-user"
+        >
+            {{ user.name }}
+        </li>
+    </ul>
+</section>
