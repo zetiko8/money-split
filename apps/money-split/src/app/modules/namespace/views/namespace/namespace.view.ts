@@ -8,7 +8,6 @@ import { Observable, Subject, filter, map, merge, mergeMap, of, tap } from 'rxjs
 import { Notification } from '../../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InviteOwnerComponent } from '../../components/invite/invite.component';
 import { combineLoaders } from '../../../../../helpers';
 import { UsersListComponent } from '../../components/users-list/users-list.component';
@@ -20,7 +19,6 @@ import { UsersListComponent } from '../../components/users-list/users-list.compo
     CommonModule,
     TranslateModule,
     PageComponent,
-    ReactiveFormsModule,
     InviteOwnerComponent,
     UsersListComponent,
   ],
@@ -72,10 +70,4 @@ export class NamespaceView {
         return { type: 'error', message: event?.message || 'Error' };
       }),  
     );
-
-  public form = new FormGroup({
-    email: new FormControl<string | null>('', {
-      validators: [ Validators.required ]
-    })
-  });
 }

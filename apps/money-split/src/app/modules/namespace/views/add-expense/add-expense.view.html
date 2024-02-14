@@ -1,0 +1,139 @@
+
+<page
+    [isLoading]="isLoading"
+    [notifications$]="notification$"
+>
+    <form
+        *ngIf="namespace$ | async as namespace"
+        (submit)="$event.preventDefault(); addExpense()"
+    >
+        <h4>
+            {{ namespace.name }}
+        </h4>
+        <div class="input-group">
+            <label>{{ 'currency' | translate }}</label>
+            <input
+                [formControl]="form.controls.currency" 
+                type="text"
+                name="currency"
+                data-testid="currency-input" 
+            >
+            <p
+                class="error"
+                *ngIf="form.controls.currency.errors"
+                data-cy="addExpenseCurrencyError"
+            >
+                {{ 'addExpenseCurrencyError' | translate }}
+            </p>
+        </div>
+        <div class="input-group">
+            <label>{{ 'cost' | translate }}</label>
+            <input
+                [formControl]="form.controls.cost" 
+                type="number"
+                name="cost"
+                data-testid="cost-input" 
+            >
+            <p
+                class="error"
+                *ngIf="form.controls.cost.errors"
+                data-cy="addExpenseCostError"
+            >
+                {{ 'addExpenseCostError' | translate }}
+            </p>
+        </div>
+        <div class="input-group">
+            <label>
+                {{ 'addExpenseBenefitors' | translate }}
+            </label>
+            <ul>
+                <li
+                    *ngFor="let user of namespace.users"
+                >
+                    <input
+                        type="checkbox"
+                        [name]="'add-benefitor-' + user.id"
+                        (change)="toogleBenefitor(user.id)"
+                    >
+                    <label
+                        [for]="'add-benefitor-' + user.id"
+                    >
+                        {{ user.name }}
+                    </label>
+                </li>
+            </ul>
+            <p
+                class="error"
+                *ngIf="form.controls.benefitors.errors"
+                data-cy="error"
+            >
+                {{ 'addExpenseBenefitorsError' | translate }}
+            </p>
+        </div>
+        <div class="input-group">
+            <label>
+                {{ 'addExpensePaidBy' | translate }}
+            </label>
+            <ul>
+                <li
+                    *ngFor="let user of namespace.users"
+                >
+                    <input
+                        type="checkbox"
+                        [name]="'add-paid-by-' + user.id"
+                        (change)="tooglePaidBy(user.id)"
+                    >
+                    <label 
+                        [for]="'add-paid-by-' + user.id"
+                    >
+                        {{ user.name }}
+                    </label>
+                </li>
+            </ul>
+            <p
+                class="error"
+                *ngIf="form.controls.paidBy.errors"
+                data-cy="error"
+            >
+                {{ 'addExpensePaidByError' | translate }}
+            </p>
+        </div>
+        <div class="input-group">
+            <label>
+                {{ 'addExpenseCreatedBy' | translate }}
+            </label>
+            <ul>
+                <li
+                    *ngFor="let user of namespace.ownerUsers"
+                >
+                    <input
+                        type="checkbox"
+                        [name]="'add-created-by-' + user.id"
+                        (change)="selectCreatedBy(user.id)"
+                    >
+                    <label 
+                        [for]="'add-created-by-' + user.id"
+                    >
+                        {{ user.name }}
+                    </label>
+                </li>
+            </ul>
+            <p
+                class="error"
+                *ngIf="form.controls.createdBy.errors"
+                data-cy="error"
+            >
+                {{ 'addExpenseCreatedByError' | translate }}
+            </p>
+        </div>
+        <div class="input-group">
+            <button
+                type="submit"
+                data-test="add-expense-confirm-btn"
+                [disabled]="!form.valid"
+            >
+            {{ 'addExpense' | translate }}
+            </button>
+        </div>
+    </form>
+</page>

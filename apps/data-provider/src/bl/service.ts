@@ -1,44 +1,10 @@
 import { randomUUID } from 'crypto';
 import { lastInsertId, query } from '../connection/connection';
 import { insertSql, selectWhereSql } from '../connection/helper';
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity, OwnerEntity } from '../types';
+import { EntityPropertyType, InvitationEntity, OwnerEntity } from '../types';
 import { ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, User } from '@angular-monorepo/entities';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { addOwnerToNamespace } from '../modules/namespace';
-
-export async function createNamespace (
-  name: string,
-  ownerId: number,
-): Promise<MNamespace> {
-
-  const namespaces = await query<MNamespace[]>
-  (`
-  SELECT * FROM NamespaceOwner no2 
-  INNER JOIN Namespace n 
-  ON n.id = no2.namespaceId
-  WHERE no2.ownerId = ${ownerId}
-  AND n.name = "${name}"
-  `);
-
-  if (namespaces.length)
-    throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
-
-  await query(insertSql(
-    'Namespace',
-    MNamespaceEntity,
-    { name }
-  ));
-
-  const namespaceId = await lastInsertId();
-
-  await addOwnerToNamespace(ownerId, namespaceId);
-
-  return {
-    id: namespaceId,
-    name,
-  };
-}
 
 export async function getNamespaceForOwner (
   namespaceId: number,
@@ -60,51 +26,6 @@ export async function getNamespaceForOwner (
     throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
 
   return namespaces[0];
-}
-
-export async function getNamespaceViewForOwner (
-  namespaceId: number,
-  ownerId: number,
-): Promise<NamespaceView> {
-
-  const namespaces = await query<MNamespace[]>
-    (
-      `
-      SELECT * FROM NamespaceOwner no2 
-      INNER JOIN Namespace n 
-      ON n.id = no2.namespaceId
-      WHERE no2.ownerId = ${ownerId}
-      AND n.id = ${namespaceId}
-      `
-    );
-
-  if (!namespaces.length)
-    throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
-
-  const invitations = (await selectWhereSql<Invitation[]>(
-    'Invitation', 
-    'namespaceId', 
-    EntityPropertyType.ID,
-    namespaceId,
-    InvitationEntity,
-  )).filter(invitation => !invitation.accepted);
-
-  const users = await query<User[]>
-  (
-    `
-    SELECT * FROM \`User\` 
-    WHERE namespaceId = ${namespaceId}
-    `
-  );
-
-  const namespaceView: NamespaceView = {
-    id: namespaces[0].id,
-    name: namespaces[0].name,
-    invitations,
-    users
-  };
-
-  return namespaceView;
 }
 
 export async function getNamespacesForOwner (

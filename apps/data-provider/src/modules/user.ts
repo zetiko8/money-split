@@ -23,3 +23,21 @@ export async function createUser (
   
     return user;
   }
+
+  export const USER_SERVICE = {
+    createUser,
+    getNamespaceOwnerUsers: async (
+      ownerId: number,
+      namespaceId: number,
+    ) => {
+      const ownerUsers = await query<User[]>(
+          `
+          SELECT * FROM \`User\` 
+          WHERE namespaceId = ${namespaceId}
+          AND ownerId = ${ownerId}
+          `
+      );
+
+      return ownerUsers;
+    }
+  }

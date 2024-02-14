@@ -5,6 +5,7 @@ import { OwnerRealmView } from './modules/owner-realm/views/realm/owner-realm.vi
 import { NewNamespaceView } from './modules/owner-realm/views/new-namespace/new-namespace.view';
 import { NamespaceView } from './modules/namespace/views/namespace/namespace.view';
 import { InvitationView } from './modules/invitation/views/invitation/invitation.view';
+import { AddExpenseView } from './modules/namespace/views/add-expense/add-expense.view';
 
 export const appRoutes: Route[] = [
     {
@@ -38,6 +39,10 @@ export const appRoutes: Route[] = [
             {
                 path: 'namespace/:namespaceId',
                 component: NamespaceView,
+            },
+            {
+                path: 'namespace/:namespaceId/add',
+                component: AddExpenseView,
             },
         ],
     },

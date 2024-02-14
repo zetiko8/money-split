@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { ConfigService } from "../../../services/config.service";
 import { Observable, combineLatest, mergeMap } from "rxjs";
-import { MNamespace, NamespaceView } from "@angular-monorepo/entities";
+import { CreateRecordData, MNamespace, NamespaceView } from "@angular-monorepo/entities";
 import { RoutingService } from "../../../services/routing/routing.service";
 
 @Injectable()
@@ -50,7 +50,24 @@ export class NamespaceService {
             )
     }
 
-    public addRecord () {
-
+    public addRecord (recordData: CreateRecordData) {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+            .pipe(
+                mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
+                        this.config.getConfig().middlewareUrl 
+                        + '/'
+                        + ownerKey
+                        + "/namespace/"
+                        + namespaceId
+                        + '/'
+                        + recordData.createdBy
+                        + "/add",
+                        recordData
+                    )
+                )
+            )
     }
 }

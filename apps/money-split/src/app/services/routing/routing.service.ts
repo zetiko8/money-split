@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { map, of, take } from "rxjs";
+import { combineLatest, map, of, take } from "rxjs";
 import { UserService } from "../auth/token/auth.token.user.service";
 
 @Injectable()
@@ -28,14 +28,7 @@ export class RoutingService {
     public getNamespaceId () {
         // i dont know why route params are not working - TODO
         return of(window.location.href.split('/')[5])
-        return this.route
-            .params.pipe(
-                map(params => {
-                    console.log(params);
-                    return params['namespaceId'] as string
-                }),
-                take(1),
-            );
+            .pipe(map(stringId => Number(stringId)))
     }
 
     public getInvitationId () {
@@ -72,17 +65,28 @@ export class RoutingService {
     }
 
     public goToNamespaceView (
-        namespaceId: number,
+        namespaceId?: number,
         ownerKey?: string,
     ) {
-        if (ownerKey) {
+        if (ownerKey && namespaceId) {
             this.router.navigate(
                 this.namespaceViewLink(ownerKey, namespaceId));
-        } else {
+        } 
+        else if (namespaceId) {
             this.getOwnerKey()
                 .subscribe(
                     ownerKeyG => this.router.navigate(
                         this.namespaceViewLink(ownerKeyG, namespaceId))
+                )
+        }
+        else {
+            combineLatest(
+                this.getOwnerKey(),
+                this.getNamespaceId(),
+            )
+                .subscribe(
+                    ([ownerKeyG, namespaceIdG]) => this.router.navigate(
+                        this.namespaceViewLink(ownerKeyG, namespaceIdG))
                 )
         }
     }

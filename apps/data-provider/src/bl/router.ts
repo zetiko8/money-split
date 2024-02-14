@@ -1,11 +1,13 @@
 import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
-import { createNamespace, createOwner, decodeJwt, getNamespaceViewForOwner, getNamespacesForOwner, inviteToNamespace, login } from './service';
+import { createOwner, decodeJwt, getNamespacesForOwner, inviteToNamespace, login } from './service';
 import { query } from '../connection/connection';
-import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner, RecordData } from '@angular-monorepo/entities';
 import { acceptInvitation, getInvitationViewData } from '../modules/invitation';
 import { createUser } from '../modules/user';
+import { RECORD_SERVICE } from '../modules/record';
+import { NAMESPACE_SERVICE } from '../modules/namespace';
 
 export const mainRouter = Router();
 
@@ -17,13 +19,10 @@ mainRouter.post('/:ownerKey/namespace',
     next,
   ) => {
     try {
-      const owner = (await query<Owner>(`
-      SELECT * FROM \`Owner\`
-      WHERE \`key\` = "${req.params['ownerKey'] as string}"
-      `))[0];
+      const owner = await getOwnerFromToken(req);
 
-      const mNamaespace = await createNamespace(
-        req.body.name, owner.id);
+      const mNamaespace = await NAMESPACE_SERVICE.createNamespace(
+        req.body.name, owner);
 
       res.json(mNamaespace);
     } catch (error) {
@@ -44,7 +43,7 @@ mainRouter.get('/:ownerKey/namespace/:namespaceId',
       WHERE \`key\` = "${req.params['ownerKey'] as string}"
       `))[0];
 
-      const mNamaespace = await getNamespaceViewForOwner(
+      const mNamaespace = await NAMESPACE_SERVICE.getNamespaceViewForOwner(
         Number(req.params['namespaceId'] as string),
         owner.id,
       );
@@ -121,6 +120,26 @@ async (
     );
 
     res.json(mNamaespace);
+  } catch (error) {
+    next(error);
+  }
+});
+
+mainRouter.post('/:ownerKey/namespace/:namespaceId/:userId/add',
+logRequestMiddleware(),
+async (
+  req: TypedRequestBody<RecordData>,
+  res,
+  next,
+) => {
+  try {
+    const owner = await getOwnerFromToken(req);
+    const record = await RECORD_SERVICE.addRecord(
+      Number(req.params['userId']),
+      req.body,
+    )
+
+    res.json(record);
   } catch (error) {
     next(error);
   }
