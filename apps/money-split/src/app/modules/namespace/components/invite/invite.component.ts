@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { PageComponent } from 'apps/money-split/src/components/page/page.component';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppErrorCode } from '../../../../types';
 
@@ -12,7 +11,6 @@ import { AppErrorCode } from '../../../../types';
     RouterModule,
     CommonModule,
     TranslateModule,
-    PageComponent,
     ReactiveFormsModule,
   ],
   selector: 'invite',
