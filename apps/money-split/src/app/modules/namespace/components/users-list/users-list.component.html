@@ -4,13 +4,17 @@
     >
         <i class="fa-solid fa-chevron-down"></i>
         {{ 'invitedList' | translate }}
-        ({{ invitations.length }})
+        <span
+            data-test="number-of-invited-users"
+        >
+            ({{ invitations.length }})
+        </span>
     </h5>
     <ul
         class="horizontal-list"
         *ngIf="
             (openInvitedList !== null && openInvitedList) 
-            || users.length === 0
+            || users.length < 2
         "
     >
         <li
@@ -48,6 +52,7 @@
 <section>
     <button
         (click)="invite.emit()"
+        data-test="add-user-button"
     >
         <i class="fa-solid fa-plus"></i>
         {{ 'addUser' | translate }}

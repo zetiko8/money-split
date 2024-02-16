@@ -31,9 +31,12 @@ describe('Invitation', () => {
         });
 
         it('can invite a person', () => {
-            cy.visit(`/${owner.key}/namespace/${namespace.id}`)
+            cy.visit(`/${owner.key}/namespace/${namespace.id}`);
+            cy.get('[data-test="add-user-button"]').click();
             cy.get('input[name="email"').type(email);
             cy.get('[data-test="invite-btn"]').click();
+            cy.get('[data-test="number-of-invited-users"]')
+                .should('contain.text', '(1)')
             cy.get('[data-test="invited-owner"]')
                 .should('have.length', 1);
             cy.get('[data-test="invited-owner"]')
@@ -84,6 +87,8 @@ describe('Invitation', () => {
             cy.get('[data-test="accept-invitation-btn"]').click();
     
             cy.url().should('contain', '/namespace/');
+            cy.get('[data-test="number-of-invited-users"]')
+                .should('contain.text', '(0)')
             cy.get('[data-test="invited-owner"]')
                 .should('have.length', 0);
         });

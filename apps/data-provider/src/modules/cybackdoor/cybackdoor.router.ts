@@ -80,3 +80,23 @@ cyBackdoorRouter.delete('/invitation/:email',
       next(error);
     }
   });
+
+cyBackdoorRouter.post('/:ownerKey/namespace',
+  logRequestMiddleware('POST namespace'),
+  async (
+    req: TypedRequestBody<{ name: string }>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = await OWNER_SERVICE
+        .getOwnerByKey(
+          req.params['ownerKey'] as string
+        );
+      const mNamaespace = await NAMESPACE_SERVICE.createNamespace(
+        req.body.name, owner);
+      res.json(mNamaespace);
+    } catch (error) {
+      next(error);
+    }
+  });

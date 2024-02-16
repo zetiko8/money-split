@@ -46,7 +46,7 @@ export const ACTIONS = {
         ownerKey: string,
     ) {
         return cy.request<MNamespace>({
-            url: `http://localhost:3333/app/${ownerKey}/namespace`,
+            url: `http://localhost:3333/cybackdoor/${ownerKey}/namespace`,
             body: {
                 name,
             },
