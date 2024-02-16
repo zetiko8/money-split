@@ -2,12 +2,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { Invitation, User } from '@angular-monorepo/entities';
+import { AvatarComponent } from '../../../../components/avatar.component';
 
 @Component({
   standalone: true,
   imports: [
     CommonModule,
     TranslateModule,
+    AvatarComponent,
   ],
   selector: 'users-list',
   templateUrl: './users-list.component.html',
@@ -24,4 +26,6 @@ export class UsersListComponent {
   @Output() selectUser = new EventEmitter<User>();
   @Output() selectInvitation = new EventEmitter<Invitation>();
   @Output() invite = new EventEmitter<void>();
+
+  public openInvitedList: boolean | null = null;
 }

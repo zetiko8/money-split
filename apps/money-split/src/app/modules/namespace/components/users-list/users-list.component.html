@@ -1,28 +1,51 @@
-<h5>
-    {{ 'invitedList' | translate }}
-</h5>
 <section>
-    <ul>
+    <h5
+        (click)="openInvitedList = !(openInvitedList)"
+    >
+        <i class="fa-solid fa-chevron-down"></i>
+        {{ 'invitedList' | translate }}
+        ({{ invitations.length }})
+    </h5>
+    <ul
+        class="horizontal-list"
+        *ngIf="
+            (openInvitedList !== null && openInvitedList) 
+            || users.length === 0
+        "
+    >
         <li
             *ngFor="let invitation of invitations"
             data-test="invited-owner"
+            class="box xsmall"
         >
             {{ invitation.email }}
         </li>
     </ul>
 </section>
-<h5>
-    {{ 'users' | translate }}
-</h5>
 <section>
-    <ul>
+    <h5>
+        <i class="fa-solid fa-user"></i>
+        {{ 'users' | translate }}
+    </h5>
+    <ul
+        class="horizontal-list"
+    >
         <li
             *ngFor="let user of users"
             data-test="namespace-user"
+            class="list-item"
         >
-            {{ user.name }}
+            <avatar
+                [name]="user.name"
+                [color]="'#271d3b'"
+                [backgroundColor]="'#2ebf91'"
+                style="display: inline-block;"
+            >
+            </avatar>
         </li>
     </ul>
+</section>
+<section>
     <button
         (click)="invite.emit()"
     >

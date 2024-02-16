@@ -26,6 +26,7 @@ label {
 ul {
     margin: 0;
     padding: 0;
+    list-style-type: none;
 }
 
 :root {
@@ -48,6 +49,7 @@ ul {
     --line-height-title: 19px;
     --line-height-h4: 26px;
     --line-height-h3: 28px;
+    --gap-xsmall: 2px;
     --gap-small: 5px;
     --gap-normal: 10px;
     --gap-large: 16px;
@@ -192,10 +194,18 @@ ul {
         color: var(--text-title-color);
         border: 1px solid;
         border-radius: 10px;
-        min-height: 120px;
+        padding: var(--gap-small);
+        margin: var(--gap-small);
+
+        &.xsmall {
+            padding: var(--gap-xsmall) var(--gap-small);
+            margin: var(--gap-xsmall);    
+        }
+    }
+
+    .horizontal-list {
         display: flex;
-        justify-content: center;
-        align-items: center;
+        flex-wrap: wrap;
     }
 
     .list-item {
@@ -331,6 +341,10 @@ ul {
 
     .app-section {
         display: block;
+    }
+    section,.app-section {
+        padding-top: var(--gap-small);
+        padding-bottom: var(--gap-small);
     }
 
     page {
