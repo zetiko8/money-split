@@ -9,7 +9,7 @@ import { getAuthTokenProviders } from './services/auth/token/auth.token.module';
 import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
 import { InternationalizationService } from './services/internationalization/internationalization.service';
 import { InternationalizationModule } from './services/internationalization/internationalization.module';
-import { AppNotificationsService, NotificationsService } from '../components/notifications/notifications.service';
+import { AppNotificationsService, NotificationsService } from './components/notifications/notifications.service';
 import { DisplayErrorService, GlobalErrorHandlerService } from './services/global-error-handler.service';
 import { RoutingService } from './services/routing/routing.service';
 

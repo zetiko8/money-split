@@ -3,16 +3,16 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../../../components/page/page.component';
+import { PageComponent } from '../../../../components/page/page.component';
 import { Observable, filter, map, merge, mergeMap, of, tap } from 'rxjs';
-import { Notification } from '../../../../../components/notifications/notifications.types';
+import { Notification } from '../../../../components/notifications/notifications.types';
 import { NamespaceService } from '../../services/namespace.service';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { InviteOwnerComponent } from '../../components/invite/invite.component';
 import { combineLoaders } from '../../../../../helpers';
 import { UsersListComponent } from '../../components/users-list/users-list.component';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { CreateRecordData, RecordData } from '@angular-monorepo/entities';
+import { CreateRecordData } from '@angular-monorepo/entities';
 
 @Component({
   standalone: true,

@@ -5,9 +5,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { AppErrorCode } from '../../../../types';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from 'apps/money-split/src/components/page/page.component';
+import { PageComponent } from 'apps/money-split/src/app/components/page/page.component';
 import { Observable, filter, map, merge } from 'rxjs';
-import { Notification } from 'apps/money-split/src/components/notifications/notifications.types';
+import { Notification } from '../../../../components/notifications/notifications.types';
 import { OwnerRealmService } from '../../services/owner-realm.service';
 import { RoutingService } from 'apps/money-split/src/app/services/routing/routing.service';
 

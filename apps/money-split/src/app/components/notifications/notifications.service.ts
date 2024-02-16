@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Notification } from './notifications.types';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { DisplayErrorService } from '../../app/services/global-error-handler.service';
+import { DisplayErrorService } from '../../services/global-error-handler.service';
 
 @Injectable()
 export abstract class AppNotificationsService
