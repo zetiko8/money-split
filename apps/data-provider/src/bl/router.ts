@@ -1,10 +1,10 @@
 import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
-import { createOwner, decodeJwt, getNamespacesForOwner, inviteToNamespace, login } from './service';
+import { createOwner, decodeJwt, getNamespacesForOwner, login } from './service';
 import { query } from '../connection/connection';
 import { ERROR_CODE, Owner, RecordData } from '@angular-monorepo/entities';
-import { acceptInvitation, getInvitationViewData } from '../modules/invitation';
+import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
 import { NAMESPACE_SERVICE } from '../modules/namespace';
@@ -113,7 +113,7 @@ async (
     WHERE \`key\` = "${req.params['ownerKey'] as string}"
     `))[0];
 
-    const mNamaespace = await inviteToNamespace(
+    const mNamaespace = await INVITATION_SERVICE.inviteToNamespace(
       req.body.email,
       Number(req.params['namespaceId'] as string),
       owner.id,
@@ -196,7 +196,7 @@ mainRouter.get('/invitation/:invitationKey',
     next,
   ) => {
     try {      
-      const invitation = await getInvitationViewData(
+      const invitation = await INVITATION_SERVICE.getInvitationViewData(
         req.params['invitationKey'] as string
       )
       res.json(invitation);
@@ -215,7 +215,7 @@ mainRouter.post('/invitation/:invitationKey/accept',
     try {
 
       const owner = await getOwnerFromToken(req);
-      const invitation = await acceptInvitation(
+      const invitation = await INVITATION_SERVICE.acceptInvitation(
         req.params['invitationKey'] as string,
         owner,
         req.body.name,
