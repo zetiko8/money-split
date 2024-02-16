@@ -7,15 +7,17 @@
         (click)="createNewRealm()"
         data-test="new-realm-button"
     >
-        {{ 'newRealm' | translate }}
+        {{ 'newNamespace' | translate }}
     </button>
-    <a 
-        class="box"
-        *ngFor="let mNamespace of namespaces$ | async"
-        [routerLink]="mNamespace.link"
-    >
-        <h4>
-            {{ mNamespace.name }}
-        </h4>
-    </a>
+    <ul>
+        <li
+            *ngFor="let mNamespace of namespaces$ | async"
+        >
+            <a 
+                [routerLink]="mNamespace.link"
+            >
+                {{ mNamespace.name }}
+            </a>
+        </li>
+    </ul>
 </page>
