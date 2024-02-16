@@ -1,0 +1,26 @@
+:host {
+    display: block;
+
+    nav {
+        display: flex;
+        max-width: 100%;
+        align-items: center;
+
+        padding-left: var(--gap-normal);
+        padding-right: var(--gap-normal);
+    
+        .logo {
+            display: flex;
+            align-items: center;
+            img {
+                height: 60px;
+            }
+        }
+
+        .spacer {
+            flex-grow: 1;
+        }
+
+        border-bottom: 1px solid var(--color-primary);
+    }
+}

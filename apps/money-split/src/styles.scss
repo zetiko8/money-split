@@ -24,9 +24,10 @@ ul {
 :root {
     --background-color-primary: white;
     --background-color-inverted: black;
-    --color-primary: black;
+    --color-primary: #2ebf91;
+    --color-secondary: #8360c3;
     --text-color-inverted: white;
-    --text-color: rgb(112, 110, 110);
+    --text-color: #271d3b;
     --text-title-color: black;
     --font-size-text: 14px;
     --font-size-title: 16px;
@@ -248,13 +249,11 @@ ul {
     }
 
     .avatar {
-        width: 100px;
-        height: 100px;
+        width: 30px;
+        height: 30px;
         display: flex;
         justify-content: center;
         align-items: center;
-
-        margin-bottom: var(--gap-large);
 
         img {
             width: 100%;
@@ -333,9 +332,9 @@ ul {
     }
 
     page {
+
         main {
-            padding-left: var(--gap-normal);
-            padding-right: var(--gap-normal);
+            padding: var(--gap-normal);
         }
     }
 }

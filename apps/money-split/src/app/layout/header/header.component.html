@@ -1,0 +1,20 @@
+<nav>
+    <div class="logo">
+        <img 
+            src="/assets/images/logo-with-caption.svg" 
+            alt="Logo"
+        />
+    </div>
+    <div class="spacer"></div>
+    <div 
+        class="profile"
+        *ngIf="userService.user$ | async as user"
+    >
+        <div class="avatar">
+            <img 
+                [src]="user.avatarLink" 
+                alt="Logo"
+            />
+        </div>
+    </div>
+</nav>

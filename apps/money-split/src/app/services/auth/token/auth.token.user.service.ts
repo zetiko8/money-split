@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, map, mergeMap } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { AuthService } from './auth.token.service';
@@ -11,6 +11,7 @@ export interface UserProfile {
   username: string,
   isGuest: boolean,
   key?: string,
+  avatarLink: string,
 }
 
 @Injectable()
@@ -19,6 +20,12 @@ export class UserService {
   private readonly authService = inject(AuthService);
   private readonly http = inject(HttpClient);
   private readonly config = inject(ConfigService);
+
+  public user$ = new BehaviorSubject<UserProfile>({
+    username: 'guest',
+    isGuest: true,
+    avatarLink: './assets/images/guest-avatar.svg'
+  });
 
   public loadUserProfile(): Observable<UserProfile> {
     return this.authService
@@ -35,15 +42,20 @@ export class UserService {
                     username: td.username,
                     isGuest: false,
                     key: td.key,
+                    avatarLink: './assets/images/guest-avatar.svg',
                   };
+                  this.user$.next(user);
                   return user;
                 }),
               );
           else {
-            return of({
+            const guest = {
               username: 'guest',
-              isGuest: true,        
-            });
+              isGuest: true,
+              avatarLink: './assets/images/guest-avatar.svg',   
+            };
+            this.user$.next(guest);
+            return of(guest);
           }
         }),
       );
