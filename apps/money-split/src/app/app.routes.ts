@@ -6,6 +6,7 @@ import { NewNamespaceView } from './modules/owner-realm/views/new-namespace/new-
 import { NamespaceView } from './modules/namespace/views/namespace/namespace.view';
 import { InvitationView } from './modules/invitation/views/invitation/invitation.view';
 import { AddExpenseView } from './modules/namespace/views/add-expense/add-expense.view';
+import { InviteView } from './modules/namespace/views/invite/invite.view';
 
 export const appRoutes: Route[] = [
     {
@@ -43,6 +44,10 @@ export const appRoutes: Route[] = [
             {
                 path: 'namespace/:namespaceId/add',
                 component: AddExpenseView,
+            },
+            {
+                path: 'namespace/:namespaceId/invite',
+                component: InviteView,
             },
         ],
     },

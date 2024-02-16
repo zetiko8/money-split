@@ -23,4 +23,9 @@
             {{ user.name }}
         </li>
     </ul>
+    <button
+        (click)="invite.emit()"
+    >
+        {{ 'addUser' | translate }}
+    </button>
 </section>

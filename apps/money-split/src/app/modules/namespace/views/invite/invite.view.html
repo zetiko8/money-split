@@ -1,0 +1,8 @@
+<page
+    [isLoading]="isLoading"
+    [notifications$]="notification$"
+>
+    <invite
+        (invite)="inviteProcess.execute($event.email).subscribe()"
+    ></invite>
+</page>

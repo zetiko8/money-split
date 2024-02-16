@@ -1,60 +1,49 @@
 import { Component, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
 import { PageComponent } from '../../../../../components/page/page.component';
-import { Observable, Subject, filter, map, merge, mergeMap, of } from 'rxjs';
+import { Observable, filter, map, merge, tap } from 'rxjs';
 import { Notification } from '../../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
+import { InviteOwnerComponent } from '../../components/invite/invite.component';
 import { combineLoaders } from '../../../../../helpers';
-import { UsersListComponent } from '../../components/users-list/users-list.component';
-import { RecordsListComponent } from '../../components/records-list/records-list.component';
 
 @Component({
   standalone: true,
   imports: [
-    RouterModule,
     CommonModule,
     TranslateModule,
     PageComponent,
-    UsersListComponent,
-    RecordsListComponent,
+    InviteOwnerComponent,
   ],
-  selector: 'namespace',
-  templateUrl: './namespace.view.html',
+  selector: 'invite-view',
+  templateUrl: './invite.view.html',
   providers: [
     NamespaceService,
   ],
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
-export class NamespaceView {
+export class InviteView {
 
   private readonly nameSpaceService = inject(NamespaceService);
-  public readonly routingService = inject(RoutingService);
+  private readonly routingService = inject(RoutingService);
 
-  public readonly loadProcess = new BoundProcess(
-    () => this.nameSpaceService.getNamespace() 
+  public readonly inviteProcess = new BoundProcess(
+    (email: string) => this.nameSpaceService.inviteOwner(email)
+      .pipe(
+        tap(() => this.routingService.goToNamespaceView()),
+      ) 
   );
 
-  public readonly reload$ = new Subject<void>();
-
-  public readonly namespace$
-    = merge(
-      of(''),
-      this.reload$
-    ).pipe(
-      mergeMap(() => this.loadProcess.execute('')),
-    );
-
   public readonly isLoading = combineLoaders([
-    this.loadProcess.inProgress$,
+    this.inviteProcess.inProgress$,
   ]);
 
   public readonly notification$: Observable<Notification> 
     = merge(
-      this.loadProcess.error$,
+      this.inviteProcess.error$,
     ) 
     .pipe(
       filter(err => err !== null),
@@ -62,8 +51,4 @@ export class NamespaceView {
         return { type: 'error', message: event?.message || 'Error' };
       }),  
     );
-
-  addRecord () {
-    this.routingService.goToAddExpenseView();
-  }
 }
