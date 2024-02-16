@@ -1,7 +1,7 @@
 import { User } from "@angular-monorepo/entities";
 import { lastInsertId, query } from "../connection/connection";
-import { insertSql } from "../connection/helper";
-import { UserEntity } from "../types";
+import { insertSql, selectOneWhereSql } from "../connection/helper";
+import { EntityPropertyType, UserEntity } from "../types";
 
 export async function createUser (
     name: string,
@@ -17,12 +17,22 @@ export async function createUser (
   
     const id = await lastInsertId();
   
-    const user = await query<User>(`
-      SELECT * FROM \`User\`
-      WHERE \`id\` = ${id}`)
+    const user = await getUserById(id);
   
     return user;
   }
+
+async function getUserById (
+  id: number
+) {
+  return await selectOneWhereSql<User>(
+    'User',
+    'id',
+    EntityPropertyType.ID,
+    id,
+    UserEntity,
+  );
+}
 
   export const USER_SERVICE = {
     createUser,
@@ -39,5 +49,6 @@ export async function createUser (
       );
 
       return ownerUsers;
-    }
+    },
+    getUserById,
   }

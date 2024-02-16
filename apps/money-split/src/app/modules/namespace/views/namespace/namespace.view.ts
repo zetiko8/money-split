@@ -11,6 +11,7 @@ import { NamespaceService } from '../../services/namespace.service';
 import { InviteOwnerComponent } from '../../components/invite/invite.component';
 import { combineLoaders } from '../../../../../helpers';
 import { UsersListComponent } from '../../components/users-list/users-list.component';
+import { RecordsListComponent } from '../../components/records-list/records-list.component';
 
 @Component({
   standalone: true,
@@ -21,6 +22,7 @@ import { UsersListComponent } from '../../components/users-list/users-list.compo
     PageComponent,
     InviteOwnerComponent,
     UsersListComponent,
+    RecordsListComponent,
   ],
   selector: 'namespace',
   templateUrl: './namespace.view.html',

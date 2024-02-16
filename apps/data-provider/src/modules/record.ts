@@ -1,5 +1,5 @@
-import { RecordData } from "@angular-monorepo/entities"
-import { insertSql, selectOneWhereSql } from "../connection/helper"
+import { Record, RecordData } from "@angular-monorepo/entities"
+import { insertSql, selectOneWhereSql, selectWhereSql } from "../connection/helper"
 import { EntityPropertyType, RecordEntity } from "../types"
 import { lastInsertId, query } from "../connection/connection";
 
@@ -29,7 +29,7 @@ export const RECORD_SERVICE = {
     getRecordById: async (
         recordId: number
     ) => {
-        return await selectOneWhereSql<RecordData>(
+        return await selectOneWhereSql<Record>(
             'Record',
             'id',
             EntityPropertyType.ID,
@@ -37,4 +37,15 @@ export const RECORD_SERVICE = {
             RecordEntity,
         );
     },
+    getNamespaceRecords: async (
+        namespaceId: number,
+    ) => {
+        return await selectWhereSql<Record[]>(
+            'Record',
+            'namespaceId',
+            EntityPropertyType.ID,
+            namespaceId,
+            RecordEntity,
+        );
+    }
 }

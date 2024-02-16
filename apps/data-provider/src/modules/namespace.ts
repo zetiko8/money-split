@@ -1,8 +1,22 @@
-import { ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, User } from "@angular-monorepo/entities";
+import { ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataView, RecordView, User } from "@angular-monorepo/entities";
 import { query } from "../connection/connection";
-import { insertSql, lastInsertId, selectWhereSql } from "../connection/helper";
+import { insertSql, lastInsertId, selectOneWhereSql, selectWhereSql } from "../connection/helper";
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity } from "../types";
 import { USER_SERVICE } from "./user";
+import { RECORD_SERVICE } from "./record";
+import { asyncMap } from "../helpers";
+
+async function getNamespaceById (
+    id: number
+): Promise<MNamespace> {
+    return await selectOneWhereSql<MNamespace>(
+        'Namespace',
+        'id',
+        EntityPropertyType.ID,
+        id,
+        MNamespaceEntity,
+    );
+}
 
 export async function addOwnerToNamespace (
     ownerId: number,
@@ -91,12 +105,48 @@ const users = await query<User[]>
 const ownerUsers = await USER_SERVICE
     .getNamespaceOwnerUsers(ownerId, namespaceId);
 
+const namespace = await getNamespaceById(namespaceId);
+const records 
+    = await RECORD_SERVICE.getNamespaceRecords(namespaceId);
+
+const recordViews: RecordView[]
+    = await asyncMap<Record, RecordView>(records, async (record) => {
+        const createdBy = await USER_SERVICE.getUserById(record.createdBy);
+        const editedBy = await USER_SERVICE.getUserById(record.editedBy);
+        const benefitors = await asyncMap(
+            record.data.benefitors,
+            async benefitorId => await USER_SERVICE.getUserById(benefitorId),
+        );
+        const paidBy = await asyncMap(
+            record.data.paidBy,
+            async paidById => await USER_SERVICE.getUserById(paidById),
+        );
+        const data: RecordDataView = {
+            cost: record.data.cost,
+            currency: record.data.currency,
+            benefitors,
+            paidBy, 
+        }
+        const recordView: RecordView = {
+            created: record.created,
+            edited: record.edited,
+            id: record.id,
+            createdBy,
+            editedBy,
+            namespace,
+            data,
+        }
+
+        return recordView;
+    })
+
 const namespaceView: NamespaceView = {
     id: namespaces[0].id,
     name: namespaces[0].name,
     invitations,
     users,
     ownerUsers,
+    records: recordViews,
 };
 
 return namespaceView;
@@ -124,4 +174,5 @@ export const NAMESPACE_SERVICE = {
     createNamespace,
     addOwnerToNamespace,
     getNamespaceViewForOwner,
+    getNamespaceById,
 }

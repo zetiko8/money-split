@@ -7,6 +7,7 @@ export interface NamespaceView extends MNamespace {
     invitations: Invitation[],
     users: User[],
     ownerUsers: User[],
+    records: RecordView[],
 }
 
 export interface Owner {
@@ -55,12 +56,39 @@ export interface RecordData {
     paidBy: number[],
 }
 
+export interface RecordDataView {
+    benefitors: User[],
+    cost: number,
+    currency: string,
+    paidBy: User[],
+}
+
 export interface CreateRecordData {
     benefitors: number[],
     cost: number,
     currency: string,
     paidBy: number[],
     createdBy: number,
+}
+
+export interface Record {
+    id: number,
+    created: Date,
+    edited: Date,
+    createdBy: number,
+    editedBy: number,
+    data: RecordData,
+    namespaceId: number,
+}
+
+export interface RecordView {
+    id: number,
+    created: Date,
+    edited: Date,
+    createdBy: User,
+    editedBy: User,
+    data: RecordDataView,
+    namespace: MNamespace,
 }
 
 export * from './error';
