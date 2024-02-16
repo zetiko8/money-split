@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { RecordView } from '@angular-monorepo/entities';
@@ -7,7 +6,6 @@ import { RecordView } from '@angular-monorepo/entities';
 @Component({
   standalone: true,
   imports: [
-    RouterModule,
     CommonModule,
     TranslateModule,
   ],
