@@ -1,5 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300..900&display=swap');
+
 // reset
 h5 {
     padding: 0;
@@ -50,7 +52,7 @@ ul {
 
 .app {
     * {
-        font-family: 'Rubik';
+        font-family: 'Rubik', sans-serif;
         font-style: normal;
         font-weight: var(--font-weight-text);
         font-size: var(--font-size-text);
@@ -288,7 +290,8 @@ ul {
         border-radius: var(--button-border-radius);
         color: var(--text-color-inverted);
         border: none;
-        padding: var(--gap-large) var(--gap-large);
+        padding: var(--gap-normal) var(--gap-large);
+        font-weight: 600;
     }
 
     .form-actions {
