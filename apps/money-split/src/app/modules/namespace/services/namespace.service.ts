@@ -1,8 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { ConfigService } from "../../../services/config.service";
-import { Observable, combineLatest, mergeMap } from "rxjs";
-import { CreateRecordData, MNamespace, NamespaceView } from "@angular-monorepo/entities";
+import { Observable, catchError, combineLatest, mergeMap, throwError } from "rxjs";
+import { CreateRecordData, ERROR_CODE, MNamespace, NamespaceView } from "@angular-monorepo/entities";
 import { RoutingService } from "../../../services/routing/routing.service";
 
 @Injectable()
@@ -46,7 +46,22 @@ export class NamespaceService {
                         + "/invite",
                         { email }
                     )
-                )
+                ),
+                catchError(
+                    err => {
+                      if (
+                        err.error 
+                        && 
+                        err.error.error 
+                        === 
+                        ERROR_CODE.RESOURCE_ALREADY_EXISTS
+                      ) {
+                        return throwError(() => Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS));
+                      } else {
+                        return throwError(() => err);
+                      }
+                    }
+                  )
             )
     }
 
