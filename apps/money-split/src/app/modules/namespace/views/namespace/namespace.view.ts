@@ -70,4 +70,8 @@ export class NamespaceView {
         return { type: 'error', message: event?.message || 'Error' };
       }),  
     );
+
+  addRecord () {
+    this.routingService.goToAddExpenseView();
+  }
 }

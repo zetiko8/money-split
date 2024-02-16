@@ -18,7 +18,9 @@
             [invitations]="namespace.invitations"
         ></users-list>
         <div>
-            <button>
+            <button
+                (click)="addRecord()"
+            >
                 {{ 'addExpense' | translate }}
             </button>
         </div>

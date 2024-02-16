@@ -91,10 +91,44 @@ export class RoutingService {
         }
     }
 
+    public goToAddExpenseView (
+        namespaceId?: number,
+        ownerKey?: string,
+    ) {
+        if (ownerKey && namespaceId) {
+            this.router.navigate(
+                this.addExpenseLink(ownerKey, namespaceId));
+        } 
+        else if (namespaceId) {
+            this.getOwnerKey()
+                .subscribe(
+                    ownerKeyG => this.router.navigate(
+                        this.addExpenseLink(ownerKeyG, namespaceId))
+                )
+        }
+        else {
+            combineLatest(
+                this.getOwnerKey(),
+                this.getNamespaceId(),
+            )
+                .subscribe(
+                    ([ownerKeyG, namespaceIdG]) => this.router.navigate(
+                        this.addExpenseLink(ownerKeyG, namespaceIdG))
+                )
+        }
+    }
+
     public namespaceViewLink (
         ownerKey: string,
         namespaceId: number,
     ) {
         return ['/', ownerKey, 'namespace', namespaceId];
+    }
+
+    public addExpenseLink (
+        ownerKey: string,
+        namespaceId: number,
+    ) {
+        return ['/', ownerKey, 'namespace', namespaceId, 'add'];
     }
 }
