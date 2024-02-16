@@ -6,12 +6,16 @@
         <li
             *ngFor="let record of records"
             data-test="namespace-record"
+            class="list-item"
         >
-            <span
+            <avatar
                 *ngFor="let payer of record.data.paidBy"
+                [name]="payer.name"
+                [color]="'#271d3b'"
+                [backgroundColor]="'#2ebf91'"
+                style="display: inline-block;"
             >
-                {{ payer.name }}
-            </span>
+            </avatar>
             <span>
                 {{ 'paidWord' | translate }}
             </span>
@@ -24,11 +28,14 @@
             <span>
                 {{ 'toWord' | translate }}
             </span>
-            <span
+            <avatar
                 *ngFor="let benefitor of record.data.benefitors"
+                [name]="benefitor.name"
+                [color]="'#271d3b'"
+                [backgroundColor]="'#2ebf91'"
+                style="display: inline-block;"
             >
-                {{ benefitor.name }}
-            </span>
+            </avatar>
         </li>
     </ul>
 </section>

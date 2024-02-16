@@ -199,14 +199,7 @@ ul {
     }
 
     .list-item {
-        background-color: inherit;
-        color: var(--text-title-color);
-        border: 1px solid;
-        border-radius: 10px;
-        min-height: 40px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        padding: var(--gap-small) 0;
     }
 
     .chip {
@@ -261,8 +254,9 @@ ul {
         display: flex;
         justify-content: center;
         align-items: center;
+        margin: 0 5px;
 
-        img {
+        img,.avatar-image {
             width: 100%;
             height: inherit;
             border-radius: 50%;

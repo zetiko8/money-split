@@ -2,12 +2,14 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { RecordView } from '@angular-monorepo/entities';
+import { AvatarComponent } from '../../../../components/avatar.component';
 
 @Component({
   standalone: true,
   imports: [
     CommonModule,
     TranslateModule,
+    AvatarComponent,
   ],
   selector: 'records-list',
   templateUrl: './records-list.component.html',
