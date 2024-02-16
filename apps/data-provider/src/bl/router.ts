@@ -135,6 +135,7 @@ async (
   try {
     const owner = await getOwnerFromToken(req);
     const record = await RECORD_SERVICE.addRecord(
+      Number(req.params['namespaceId'] as string),
       Number(req.params['userId']),
       req.body,
     )

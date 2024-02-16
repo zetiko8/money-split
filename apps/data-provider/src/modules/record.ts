@@ -5,6 +5,7 @@ import { lastInsertId, query } from "../connection/connection";
 
 export const RECORD_SERVICE = {
     addRecord: async (
+        namespaceId: number,
         userId: number,
         data: RecordData,
     ) => {
@@ -17,6 +18,7 @@ export const RECORD_SERVICE = {
                 createdBy: userId,
                 editedBy: userId,
                 data,
+                namespaceId,
             }
         ));
 

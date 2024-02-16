@@ -53,6 +53,7 @@ export const RecordEntity: Entity = {
   createdBy: EntityPropertyType.ID,
   editedBy: EntityPropertyType.ID,
   data: EntityPropertyType.JSON,
+  namespaceId: EntityPropertyType.ID,
 };
 
 export const InvitationEntity: Entity = {
