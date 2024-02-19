@@ -38,12 +38,12 @@ implements ControlValueAccessor {
   _disabled = false;
   _value = '';
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   propagateChange = (_: any) => {};
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   propagateTouched = () => {};
 
-  writeValue(obj: any): void {
+  writeValue(obj: unknown): void {
     if (
       typeof obj !== 'string'
     ) 
