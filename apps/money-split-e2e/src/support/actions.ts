@@ -77,6 +77,14 @@ export const ACTIONS = {
             method: 'DELETE'
         }).then(res => res.body);
     },
+    createInvitation (
+        email: string,
+    ) {
+        return cy.request<Invitation>({
+            url: `http://localhost:3333/cybackdoor/invitation/${email}`,
+            method: 'DELETE'
+        }).then(res => res.body);
+    },
     invite (
         ownerKey: string,
         namespaceId: number,
@@ -86,6 +94,17 @@ export const ACTIONS = {
             url: `http://localhost:3333/app/${ownerKey}/namespace/${namespaceId}/invite`,
             method: 'POST',
             body: { email }
+        }).then(res => res.body);
+    },
+    acceptInvitation (
+        ownerUsername: string,
+        name: string,
+        email: string
+    ) {
+        return cy.request<Invitation>({
+            url: `http://localhost:3333/cybackdoor/invitation/accept`,
+            method: 'POST',
+            body: { email, name, ownerUsername }
         }).then(res => res.body);
     }
 }

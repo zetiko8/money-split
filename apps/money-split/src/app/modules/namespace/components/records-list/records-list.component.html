@@ -15,15 +15,21 @@
                 [color]="'#271d3b'"
                 [backgroundColor]="'#2ebf91'"
                 style="display: inline-block;"
+                data-test="payer-avatar"
+                [id]="'payer-avatar-' + payer.name"
             >
             </avatar>
             <span>
                 {{ 'paidWord' | translate }}
             </span>
-            <span>
+            <span
+                data-test="record-cost"
+            >
                 {{ record.data.cost }}
             </span>
-            <span>
+            <span
+                data-test="record-currency"
+            >
                 {{ record.data.currency }}
             </span>
             <span>
@@ -35,6 +41,8 @@
                 [color]="'#271d3b'"
                 [backgroundColor]="'#2ebf91'"
                 style="display: inline-block;"
+                data-test="benefitor-avatar"
+                [id]="'benefitor-avatar-' + benefitor.name"
             >
             </avatar>
         </li>

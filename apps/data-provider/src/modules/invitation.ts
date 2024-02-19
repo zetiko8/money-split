@@ -108,6 +108,17 @@ export const INVITATION_SERVICE = {
       `
     )
   },
+  getInvitationByEmail: async (
+    email: string
+  ) => {
+    return await selectOneWhereSql<Invitation>(
+      'Invitation',
+      'email',
+      EntityPropertyType.STRING,
+      email,
+      InvitationEntity,
+    )
+  },
   acceptInvitation,
   getInvitationViewData,
   getInvitationByKey,

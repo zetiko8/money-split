@@ -100,3 +100,32 @@ cyBackdoorRouter.post('/:ownerKey/namespace',
       next(error);
     }
   });
+
+cyBackdoorRouter.post('/invitation/accept',
+  logRequestMiddleware('CYBACKDOOR - acceptInvitation'),
+  async (
+    req: TypedRequestBody<{ 
+      name: string,
+      email: string,
+      ownerUsername: string, 
+    }>,
+    res,
+    next,
+  ) => {
+    try {
+
+      const owner 
+        = await OWNER_SERVICE.getOwnerByUsername(req.body.ownerUsername);
+      const invitation
+        = await INVITATION_SERVICE.getInvitationByEmail(req.body.email);
+      await INVITATION_SERVICE.acceptInvitation(
+        invitation.invitationKey,
+        owner,
+        req.body.name,
+      );
+
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  });

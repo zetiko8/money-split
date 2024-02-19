@@ -52,6 +52,11 @@ export class AddExpenseView {
       of(''),
     ).pipe(
       mergeMap(() => this.loadProcess.execute('')),
+      tap(namespace => {
+        if (namespace.ownerUsers.length === 1) {
+          this.form.controls.createdBy.setValue(namespace.ownerUsers[0].id);
+        }
+      })
     );
 
   public readonly isLoading = combineLoaders([

@@ -49,11 +49,12 @@
             <ul>
                 <li
                     *ngFor="let user of namespace.users"
+                    data-testid="add-benefitor"
                 >
                     <input
                         type="checkbox"
                         [name]="'add-benefitor-' + user.id"
-                        (change)="toogleBenefitor(user.id)"
+                        (change)="toogleBenefitor(user.id)" 
                     >
                     <label
                         [for]="'add-benefitor-' + user.id"
@@ -77,6 +78,7 @@
             <ul>
                 <li
                     *ngFor="let user of namespace.users"
+                    data-testid="add-paid-by"
                 >
                     <input
                         type="checkbox"
@@ -98,7 +100,10 @@
                 {{ 'addExpensePaidByError' | translate }}
             </p>
         </div>
-        <div class="input-group">
+        <div 
+            class="input-group"
+            *ngIf="namespace.ownerUsers.length > 1"
+        >
             <label>
                 {{ 'addExpenseCreatedBy' | translate }}
             </label>

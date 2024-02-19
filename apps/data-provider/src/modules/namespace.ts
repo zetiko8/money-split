@@ -171,6 +171,15 @@ export const NAMESPACE_SERVICE = {
             `
         )
     },
+    getNamespaceByName: async (
+        namespaceName: string
+    ) => {
+        return await query<MNamespace>(
+            `SELECT * FROM \`Namespace\`
+            WHERE name = "${namespaceName}"
+            `
+        )
+    },
     createNamespace,
     addOwnerToNamespace,
     getNamespaceViewForOwner,

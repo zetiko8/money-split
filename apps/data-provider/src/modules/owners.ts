@@ -25,6 +25,22 @@ async function getOwnerById (
   return owner[0];
 }
 
+async function getOwnerByUsername (
+  username: string
+) {
+  const owner = await query<Owner[]>(`
+  SELECT * FROM \`Owner\`
+  WHERE \`username\` = "${username}"`);
+
+  if (!owner.length)
+    throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  delete (owner[0] as any).hash;
+
+  return owner[0];
+}
+
 async function getOwnerByKey (
   key: string
 ) {
@@ -45,4 +61,5 @@ export const OWNER_SERVICE = {
     deleteOwner,
     getOwnerById,
     getOwnerByKey,
+    getOwnerByUsername,
 }
