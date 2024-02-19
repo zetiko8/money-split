@@ -53,10 +53,12 @@ implements ControlValueAccessor {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerOnChange(fn: any): void {
     this.propagateChange = fn;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registerOnTouched(fn: any): void {
     this.propagateTouched = fn;
   }
@@ -65,6 +67,7 @@ implements ControlValueAccessor {
     this._disabled = isDisabled;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async handleChange ($event: any) {
     if ($event.target?.files?.length) {
         console.log($event.target?.files[0]);
