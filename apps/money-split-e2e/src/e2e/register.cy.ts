@@ -14,8 +14,6 @@ describe('Register Component', () => {
   
     it('requires a username', () => {
       cy.visit('/register') // visit the page where the register component is located
-      cy.get('[data-testid="register-button"]') // click the register button
-        .click()
       cy.get('[data-testid="username-input"]') // check that the username input has an error message
         .parent()
         .find('[data-cy="error"]')
@@ -24,8 +22,6 @@ describe('Register Component', () => {
   
     it('requires a password', () => {
       cy.visit('/register') // visit the page where the register component is located
-      cy.get('[data-testid="register-button"]') // click the register button
-        .click()
       cy.get('[data-testid="password-input"]') // check that the password input has an error message
         .parent()
         .find('[data-cy="error"]')
@@ -73,5 +69,7 @@ describe('Register Component', () => {
           .get('[data-cy="notification"]')
           .should('be.visible')
           .and('contain', 'RESOURCE_ALREADY_EXISTS')  
-      })  
+      });
+
+      // TODO - add test for selecting an avatar
   })
