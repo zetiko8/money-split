@@ -1,5 +1,9 @@
 import { Invitation, MNamespace, Owner } from "@angular-monorepo/entities";
 
+function getRandomColor () {
+    return "#000000".replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
+}
+
 export const ACTIONS = {
     registerOwner: (
         username: string,
@@ -9,7 +13,9 @@ export const ACTIONS = {
             url: 'http://localhost:3333/app/register',
             body: {
                 username,
-                password
+                password,
+                avatarColor: getRandomColor(),
+                avatarImage: null,
             },
             method: 'POST'
         }).then(res => res.body);
