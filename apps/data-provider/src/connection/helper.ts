@@ -222,7 +222,11 @@ function mapSelectRows (
         accumulator[column] = JSON.parse(row[column] as string);
       }
       else if (type === EntityPropertyType.BLOB) {
-        accumulator[column] = (row[column] as Buffer).toString();
+        if (row[column]) {
+          accumulator[column] = (row[column] as Buffer).toString();
+        } else {
+          accumulator[column] = null;
+        }
       }
       else accumulator[column] = row[column];
     });
