@@ -1,7 +1,4 @@
-import { randomUUID } from 'crypto';
-import { lastInsertId, query } from '../connection/connection';
-import { insertSql } from '../connection/helper';
-import { OwnerEntity } from '../types';
+import { query } from '../connection/connection';
 import { ERROR_CODE, MNamespace, Owner } from '@angular-monorepo/entities';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -43,40 +40,6 @@ export async function getNamespacesForOwner (
   return namespaces;
 }
 
-export async function createOwner (
-  username: string,
-  password: string,
-): Promise<Owner> {
-  const sameName = await query<Owner[]>(`
-  SELECT * FROM \`Owner\`
-  WHERE \`username\` = "${username}"`);
-
-  if (sameName.length)
-    throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
-
-  const hash = await bcrypt.hash(password, 10);
-
-  await query(insertSql(
-    'Owner',
-    OwnerEntity,
-    { 
-      key: randomUUID(),
-      hash,
-      username,
-    }
-  ));
-
-  const id = await lastInsertId();
-
-  const owner = await query<Owner[]>(`
-    SELECT * FROM \`Owner\`
-    WHERE \`id\` = ${id}`);
-
-  delete (owner[0] as any).hash;
-
-  return owner[0];
-}
-
 export async function login (
   username: string,
   password: string,
@@ -96,6 +59,7 @@ export async function login (
     throw Error(ERROR_CODE.UNAUTHORIZED);
 
   delete (owners[0] as any).hash;
+  delete (owners[0] as any).avatarUrl;
   const token = await jwtSign(owners[0]);
 
   return token;

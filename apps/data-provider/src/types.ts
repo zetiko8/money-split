@@ -18,6 +18,7 @@ export enum EntityPropertyType {
   JSON = 'JSON',
   DOUBLE = 'DOUBLE',
   DATETIME = 'DATETIME',
+  BLOB = 'BLOB',
 }
 
 export type Entity = Record<string, EntityPropertyType>;
@@ -27,6 +28,7 @@ export const OwnerEntity: Entity = {
   key: EntityPropertyType.NON_EMPTY_STRING,
   username: EntityPropertyType.NON_EMPTY_STRING,
   hash: EntityPropertyType.NON_EMPTY_STRING,
+  avatarId: EntityPropertyType.ID,
 };
 
 export const NamespaceOwnerEntity: Entity = {
@@ -44,6 +46,7 @@ export const UserEntity: Entity = {
   namespaceId: EntityPropertyType.ID,
   name: EntityPropertyType.NON_EMPTY_STRING,
   ownerId: EntityPropertyType.ID,
+  avatarId: EntityPropertyType.ID,
 };
 
 export const RecordEntity: Entity = {
@@ -67,4 +70,10 @@ export const InvitationEntity: Entity = {
   accepted: EntityPropertyType.BOOL,
   rejected: EntityPropertyType.BOOL,
   invitationKey: EntityPropertyType.NON_EMPTY_STRING,
+};
+
+export const AvatarEntity: Entity = {
+  id: EntityPropertyType.AUTO_ID,
+  color: EntityPropertyType.STRING,
+  dataUrl: EntityPropertyType.BLOB,
 };

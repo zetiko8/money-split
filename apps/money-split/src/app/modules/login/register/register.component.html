@@ -39,10 +39,40 @@
                 {{ 'register_password_error' | translate }}
             </p>
         </div>
+        <section>
+            <h5>
+                {{ 'customizeAvatarDescription' | translate }}
+            </h5>
+            <avatar
+                [color]="'#271d3b'"
+                [backgroundColor]="form.controls.avatarColor.value || '#2ebf91'"
+                [name]="form.controls.username.value || 'N'"
+                [avatarDataUrl]="form.controls.avatarImage.value"
+            >
+            </avatar>
+            <div class="input-group">
+                <file-input
+                    [label]="'avatarImageInputLabel' | translate"
+                    name="image"
+                    data-testid="image-input"
+                    [formControl]="form.controls.avatarImage"
+                ></file-input>
+            </div>
+            <div class="input-group">
+                <label>{{ 'avatarColorInputLabel' | translate }}</label>
+                <input 
+                    [formControl]="form.controls.avatarColor"
+                    type="color"
+                    name="color"
+                    data-testid="color-input"
+                >
+            </div>
+        </section>
         <div class="input-group">
             <button
                 type="submit"
                 data-testid="register-button"
+                [disabled]="!form.valid"
             >
                 {{ 'register' | translate }}
             </button>

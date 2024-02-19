@@ -1,5 +1,10 @@
-import { ERROR_CODE, Owner } from "@angular-monorepo/entities";
-import { query } from "../connection/connection"
+import { ERROR_CODE, Owner, RegisterOwnerPayload } from "@angular-monorepo/entities";
+import { lastInsertId, query } from "../connection/connection";
+import bcrypt from 'bcrypt';
+import { insertSql } from "../connection/helper";
+import { OwnerEntity } from "../types";
+import { randomUUID } from "crypto";
+import { AVATAR_SERVICE } from "./avatar";
 
 async function deleteOwner(
     username: string
@@ -57,9 +62,48 @@ async function getOwnerByKey (
   return owner[0];
 }
 
+async function createOwner (
+  data: RegisterOwnerPayload,
+): Promise<Owner> {
+  const sameName = await query<Owner[]>(`
+  SELECT * FROM \`Owner\`
+  WHERE \`username\` = "${data.username}"`);
+
+  if (sameName.length)
+    throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
+
+  const avatar = await AVATAR_SERVICE.createAvatar(
+    data.avatarColor, data.avatarImage,
+  );
+
+  const hash = await bcrypt.hash(data.password, 10);
+
+  await query(insertSql(
+    'Owner',
+    OwnerEntity,
+    { 
+      key: randomUUID(),
+      hash,
+      username: data.username,
+      avatarId: avatar.id,
+    }
+  ));
+
+  const id = await lastInsertId();
+
+  const owner = await query<Owner[]>(`
+    SELECT * FROM \`Owner\`
+    WHERE \`id\` = ${id}`);
+
+  delete (owner[0] as any).hash;
+
+  return owner[0];
+}
+
 export const OWNER_SERVICE = {
     deleteOwner,
     getOwnerById,
     getOwnerByKey,
     getOwnerByUsername,
+    createOwner,
 }

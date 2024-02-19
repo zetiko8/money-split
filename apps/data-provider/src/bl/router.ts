@@ -1,13 +1,15 @@
 import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
-import { createOwner, decodeJwt, getNamespacesForOwner, login } from './service';
+import { decodeJwt, getNamespacesForOwner, login } from './service';
 import { query } from '../connection/connection';
-import { ERROR_CODE, Owner, RecordData } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner, RecordData, RegisterOwnerPayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
 import { NAMESPACE_SERVICE } from '../modules/namespace';
+import { OWNER_SERVICE } from '../modules/owners';
+import { AVATAR_SERVICE } from '../modules/avatar';
 
 export const mainRouter = Router();
 
@@ -25,6 +27,24 @@ mainRouter.post('/:ownerKey/namespace',
         req.body.name, owner);
 
       res.json(mNamaespace);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.get('/avatar/:avatarId',
+  logRequestMiddleware('GET avatar'),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      const avatar = await AVATAR_SERVICE.getById(
+        Number(req.params['avatarId'] as string)
+      );
+
+      res.json(avatar);
     } catch (error) {
       next(error);
     }
@@ -170,17 +190,13 @@ mainRouter.post('/login',
 mainRouter.post('/register',
   logRequestMiddleware(),
   async (
-    req: TypedRequestBody<{
-      username: string,
-      password: string,
-    }>,
+    req: TypedRequestBody<RegisterOwnerPayload>,
     res,
     next,
   ) => {
     try {
-      const owner = await createOwner(
-        req.body.username,
-        req.body.password,
+      const owner = await OWNER_SERVICE.createOwner(
+        req.body
       );
 
       res.json(owner);

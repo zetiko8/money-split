@@ -14,6 +14,14 @@ export interface Owner {
     id: number,
     key: string,
     username: string,
+    avatarId: number,
+}
+
+export interface RegisterOwnerPayload {
+    password: string,
+    username: string,
+    avatarColor: string | null,
+    avatarImage: string | null,
 }
 
 export interface User {
@@ -21,7 +29,8 @@ export interface User {
     key: string,
     ownerId: number,
     name: string,
-}
+    avatarId: number,
+}   
 
 export interface Invitation {
     id: number,
@@ -89,6 +98,12 @@ export interface RecordView {
     editedBy: User,
     data: RecordDataView,
     namespace: MNamespace,
+}
+
+export interface AvatarData {
+    id: number,
+    color: string,
+    dataUrl: string,
 }
 
 export * from './error';

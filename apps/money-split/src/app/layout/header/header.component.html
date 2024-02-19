@@ -10,11 +10,10 @@
         class="profile"
         *ngIf="userService.user$ | async as user"
     >
-        <div class="avatar">
-            <img 
-                [src]="user.avatarLink" 
-                alt="Logo"
-            />
-        </div>
+        <avatar
+            *ngIf="!user.isGuest"
+            [name]="user.username"
+            [avatarId]="user.avatarId"
+        ></avatar>
     </div>
 </nav>

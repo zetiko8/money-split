@@ -5,13 +5,13 @@ import { jwtDecode } from 'jwt-decode';
 import { AuthService } from './auth.token.service';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../../config.service';
-import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner, RegisterOwnerPayload } from '@angular-monorepo/entities';
 
 export interface UserProfile {
   username: string,
   isGuest: boolean,
   key?: string,
-  avatarLink: string,
+  avatarId: number | null,
 }
 
 @Injectable()
@@ -24,7 +24,7 @@ export class UserService {
   public user$ = new BehaviorSubject<UserProfile>({
     username: 'guest',
     isGuest: true,
-    avatarLink: './assets/images/guest-avatar.svg'
+    avatarId: null,
   });
 
   public loadUserProfile(): Observable<UserProfile> {
@@ -36,13 +36,13 @@ export class UserService {
             return this.authService.getToken()
               .pipe(
                 map(token => {
-                  const td = jwtDecode<{ username: string, key: string }>(
+                  const td = jwtDecode<Owner>(
                     token as string);
                   const user: UserProfile = {
                     username: td.username,
                     isGuest: false,
                     key: td.key,
-                    avatarLink: './assets/images/guest-avatar.svg',
+                    avatarId: td.avatarId,
                   };
                   this.user$.next(user);
                   return user;
@@ -52,7 +52,7 @@ export class UserService {
             const guest = {
               username: 'guest',
               isGuest: true,
-              avatarLink: './assets/images/guest-avatar.svg',   
+              avatarId: null,
             };
             this.user$.next(guest);
             return of(guest);
@@ -65,12 +65,10 @@ export class UserService {
     return of(this.authService.logout());
   }
 
-  public register (
-    username: string, password: string
-  ) {
+  public register (data: RegisterOwnerPayload) {
     return this.http.post<Owner>(
       this.config.getConfig().middlewareUrl + '/register',
-      { username, password }
+      data,
     ).pipe(
       catchError(
         err => {

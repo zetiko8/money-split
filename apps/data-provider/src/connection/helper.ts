@@ -24,7 +24,10 @@ export function insertSql(
 
   let index = 0;
   for (const [column, type] of Object.entries(entity)) {
-    if (type !== EntityPropertyType.AUTO_ID) {
+    if (type === EntityPropertyType.AUTO_ID) {
+      //
+    }
+    else {
       if (index !== 0) {
         columns += ', ';
         values += ', ';
@@ -107,6 +110,9 @@ function addValue (
   else if (type === EntityPropertyType.NULLABLE_ID) {
     values += data[column] === null ? 'NULL' : (String(data[column]));
   }
+  else if (type === EntityPropertyType.BLOB) {
+    values += data[column] === null ? 'NULL' : '\'' + (String(data[column])) + '\'';
+  }
   else if (type === EntityPropertyType.ID) {
     values += String(data[column]);
   }
@@ -114,7 +120,6 @@ function addValue (
     values += '\'' + JSON.stringify(data[column]) + '\'';
   }
   else if (type === EntityPropertyType.DATETIME) {
-    console.log(data);
     values += '\'' + data[column].toISOString().slice(0, 19).replace('T', ' ') + '\'';
   }
   else values += '\'' + String(data[column]) + '\'';
@@ -156,19 +161,7 @@ export async function selectOneWhereSql<T>(
     = createSelectWhereClause(tableName, property, propertyType, value);
   const res = await query<Record<string, unknown>[]>(sql);
 
-  const mapped = res.map(row => {
-    const accumulator: Record<string, unknown> = {};
-    Object.entries(entity).forEach(([ column, type ]) => {
-      if (type === EntityPropertyType.BOOL) {
-        accumulator[column] = row[column] === 1 ? true : false;
-      }
-      else if (type === EntityPropertyType.JSON) {
-        accumulator[column] = JSON.parse(row[column] as string);
-      }
-      else accumulator[column] = row[column];
-    });
-    return accumulator;
-  });
+  const mapped = mapSelectRows(res, entity);
 
   if (mapped.length === 0)
     throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
@@ -189,19 +182,7 @@ export async function selectMaybeOneWhereSql<T>(
     = createSelectWhereClause(tableName, property, propertyType, value);
   const res = await query<Record<string, unknown>[]>(sql);
 
-  const mapped = res.map(row => {
-    const accumulator: Record<string, unknown> = {};
-    Object.entries(entity).forEach(([ column, type ]) => {
-      if (type === EntityPropertyType.BOOL) {
-        accumulator[column] = row[column] === 1 ? true : false;
-      }
-      else if (type === EntityPropertyType.JSON) {
-        accumulator[column] = JSON.parse(row[column] as string);
-      }
-      else accumulator[column] = row[column];
-    });
-    return accumulator;
-  });
+  const mapped = mapSelectRows(res, entity);
 
   if (mapped.length > 1)
     throw Error(ERROR_CODE.REQUESTED_ONE_FOUND_MULTIPLE);
@@ -222,7 +203,16 @@ export async function selectWhereSql<T>(
     = createSelectWhereClause(tableName, property, propertyType, value);
   const res = await query<Record<string, unknown>[]>(sql);
 
-  const mapped = res.map(row => {
+  const mapped = mapSelectRows(res, entity);
+
+  return mapped as T;
+}
+
+function mapSelectRows (
+  selectResult: Record<string, unknown>[],
+  entity: Entity,
+) {
+  const mapped = selectResult.map(row => {
     const accumulator: Record<string, unknown> = {};
     Object.entries(entity).forEach(([ column, type ]) => {
       if (type === EntityPropertyType.BOOL) {
@@ -231,12 +221,15 @@ export async function selectWhereSql<T>(
       else if (type === EntityPropertyType.JSON) {
         accumulator[column] = JSON.parse(row[column] as string);
       }
+      else if (type === EntityPropertyType.BLOB) {
+        accumulator[column] = (row[column] as Buffer).toString();
+      }
       else accumulator[column] = row[column];
     });
     return accumulator;
   });
 
-  return mapped as T;
+  return mapped;
 }
 
 function createSelectWhereClause (

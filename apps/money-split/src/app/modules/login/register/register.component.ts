@@ -9,6 +9,10 @@ import { BoundProcess } from 'rombok';
 import { PageComponent } from '../../../components/page/page.component';
 import { Observable, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../components/notifications/notifications.types';
+import { RegisterOwnerPayload } from '@angular-monorepo/entities';
+import { getRandomColor } from '../../../../helpers';
+import { AvatarComponent } from '../../../components/avatar.component';
+import { FileInputComponent } from '@angular-monorepo/components';
 
 @Component({
   standalone: true,
@@ -18,6 +22,8 @@ import { Notification } from '../../../components/notifications/notifications.ty
     ReactiveFormsModule,
     TranslateModule,
     PageComponent,
+    AvatarComponent,
+    FileInputComponent,
   ],
   selector: 'register-view',
   templateUrl: './register.component.html',
@@ -33,11 +39,15 @@ export class RegisterView {
       '', { validators: [ Validators.required ] }),
     username: new FormControl<string>(
       '', { validators: [ Validators.required ] }),
+    avatarColor: new FormControl<string>(
+      getRandomColor()),
+    avatarImage: new FormControl<string | null>(
+      null)
   });
 
   public readonly registerProcess = new BoundProcess(
-    (data: { username: string, password: string }) => this
-      .userService.register(data.username, data.password) 
+    (data: RegisterOwnerPayload) => this
+      .userService.register(data) 
   )
 
   public readonly notification$: Observable<Notification> 
@@ -57,6 +67,8 @@ export class RegisterView {
     this.registerProcess.execute({
       username: this.form.value.username as string,
       password: this.form.value.password as string,
+      avatarColor: this.form.value.avatarColor as string,
+      avatarImage: this.form.value.avatarImage as string,
     }
     )
       .subscribe(() => {
