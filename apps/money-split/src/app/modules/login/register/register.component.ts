@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { UserService } from '../../../services/auth/token/auth.token.user.service';
 import { AppErrorCode } from '../../../types';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from 'apps/money-split/src/app/components/page/page.component';
+import { PageComponent } from '../../../components/page/page.component';
 import { Observable, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../components/notifications/notifications.types';
 
