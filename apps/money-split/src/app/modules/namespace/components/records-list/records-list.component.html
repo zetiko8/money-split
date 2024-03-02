@@ -12,8 +12,7 @@
             <avatar
                 *ngFor="let payer of record.data.paidBy"
                 [name]="payer.name"
-                [color]="'#271d3b'"
-                [backgroundColor]="'#2ebf91'"
+                [avatarId]="payer.avatarId"
                 style="display: inline-block;"
                 data-test="payer-avatar"
                 [id]="'payer-avatar-' + payer.name"
@@ -38,8 +37,7 @@
             <avatar
                 *ngFor="let benefitor of record.data.benefitors"
                 [name]="benefitor.name"
-                [color]="'#271d3b'"
-                [backgroundColor]="'#2ebf91'"
+                [avatarId]="benefitor.avatarId"
                 style="display: inline-block;"
                 data-test="benefitor-avatar"
                 [id]="'benefitor-avatar-' + benefitor.name"
