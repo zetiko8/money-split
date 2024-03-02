@@ -100,10 +100,23 @@ async function createOwner (
   return owner[0];
 }
 
+async function updateOwnerAvatar(
+  ownerId: number,
+  avatarId: number,
+) {
+  const updateSql = `
+    UPDATE \`Owner\`
+    SET avatarId = ${avatarId}
+    WHERE id = ${ownerId}
+  `;
+  await query(updateSql);
+}
+
 export const OWNER_SERVICE = {
     deleteOwner,
     getOwnerById,
     getOwnerByKey,
     getOwnerByUsername,
     createOwner,
+    updateOwnerAvatar,
 }

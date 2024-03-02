@@ -1,44 +1,7 @@
 import { query } from '../connection/connection';
-import { ERROR_CODE, MNamespace, Owner } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
-export async function getNamespaceForOwner (
-  namespaceId: number,
-  ownerId: number,
-): Promise<MNamespace> {
-
-  const namespaces = await query<MNamespace[]>
-    (
-      `
-      SELECT * FROM NamespaceOwner no2 
-      INNER JOIN Namespace n 
-      ON n.id = no2.namespaceId
-      WHERE no2.ownerId = ${ownerId}
-      AND n.id = ${namespaceId}
-      `
-    );
-
-  if (!namespaces.length)
-    throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
-
-  return namespaces[0];
-}
-
-export async function getNamespacesForOwner (
-  ownerId: number,
-): Promise<MNamespace[]> {
-
-  const namespaces = await query<MNamespace[]>
-    (`
-    SELECT * FROM NamespaceOwner no2 
-    INNER JOIN Namespace n 
-    ON n.id = no2.namespaceId
-    WHERE no2.ownerId = ${ownerId}
-    `);
-
-  return namespaces;
-}
 
 export async function login (
   username: string,

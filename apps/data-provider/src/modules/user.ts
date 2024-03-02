@@ -37,6 +37,18 @@ async function getUserById (
   );
 }
 
+async function updateUserAvatar(
+  userId: number,
+  avatarId: number,
+) {
+  const updateSql = `
+    UPDATE \`User\`
+    SET avatarId = ${avatarId}
+    WHERE id = ${userId}
+  `;
+  await query(updateSql);
+}
+
   export const USER_SERVICE = {
     createUser,
     getNamespaceOwnerUsers: async (
@@ -53,5 +65,18 @@ async function getUserById (
 
       return ownerUsers;
     },
+    getOwnerUsers: async (
+      ownerId: number,
+    ) => {
+      const ownerUsers = await query<User[]>(
+          `
+          SELECT * FROM \`User\` 
+          WHERE ownerId = ${ownerId}
+          `
+      );
+
+      return ownerUsers;
+    },
     getUserById,
+    updateUserAvatar,
   }

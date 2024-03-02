@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { UserService } from '../../services/auth/token/auth.token.user.service';
 import { AvatarComponent } from '../../components/avatar.component';
+import { RoutingService } from '../../services/routing/routing.service';
 
 @Component({
   standalone: true,
@@ -17,4 +18,5 @@ import { AvatarComponent } from '../../components/avatar.component';
 })
 export class MoneySplitHeaderComponent {
     public readonly userService = inject(UserService);
+    public readonly routingService = inject(RoutingService);
 }

@@ -145,6 +145,24 @@ export class RoutingService {
         }
     }
 
+    public goToEditProfileView (
+        ownerKey?: string,
+    ) {
+        if (ownerKey) {
+            this.router.navigate(
+                this.editProfileLink(ownerKey));
+        } 
+        else {
+            combineLatest(
+                this.getOwnerKey(),
+            )
+                .subscribe(
+                    ([ownerKeyG]) => this.router.navigate(
+                        this.editProfileLink(ownerKeyG))
+                )
+        }
+    }
+
     public namespaceViewLink (
         ownerKey: string,
         namespaceId: number,
@@ -164,5 +182,11 @@ export class RoutingService {
         namespaceId: number,
     ) {
         return ['/', ownerKey, 'namespace', namespaceId, 'invite'];
+    }
+
+    public editProfileLink (
+        ownerKey: string,
+    ) {
+        return ['/', ownerKey, 'profile'];
     }
 }

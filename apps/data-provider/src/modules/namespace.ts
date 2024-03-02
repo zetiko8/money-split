@@ -6,6 +6,21 @@ import { USER_SERVICE } from "./user";
 import { RECORD_SERVICE } from "./record";
 import { asyncMap } from "../helpers";
 
+export async function getNamespacesForOwner (
+    ownerId: number,
+  ): Promise<MNamespace[]> {
+  
+    const namespaces = await query<MNamespace[]>
+      (`
+      SELECT * FROM NamespaceOwner no2 
+      INNER JOIN Namespace n 
+      ON n.id = no2.namespaceId
+      WHERE no2.ownerId = ${ownerId}
+      `);
+  
+    return namespaces;
+}
+
 async function getNamespaceById (
     id: number
 ): Promise<MNamespace> {
@@ -184,4 +199,5 @@ export const NAMESPACE_SERVICE = {
     addOwnerToNamespace,
     getNamespaceViewForOwner,
     getNamespaceById,
+    getNamespacesForOwner,
 }

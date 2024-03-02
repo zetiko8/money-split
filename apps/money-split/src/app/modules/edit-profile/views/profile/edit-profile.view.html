@@ -1,0 +1,35 @@
+
+<page
+    [isLoading]="loadProcess.inProgress$"
+    [notifications$]="notification$"
+>
+    <section
+        *ngIf="profile$ | async as profile"
+    >
+        <h5>
+            {{ 'profileViewTitle' | translate }}
+        </h5>
+        <div>
+            <span
+                style="font-weight: bold;"
+            >
+                {{ 'username' | translate }}:
+            </span>
+            <span>
+                {{ profile.owner.username }}
+            </span>
+            <customize-avatar
+                [avatarColor]="profile.form.controls.avatarColor"
+                [avatarImage]="profile.form.controls.avatarImage"
+                [avatarName]="profile.owner.username"
+            ></customize-avatar>
+            <div class="input-group">
+                <button
+                    (click)="edit()"
+                >
+                    {{ 'submit' | translate }}
+                </button>
+            </div>
+        </div>
+    </section>
+</page>

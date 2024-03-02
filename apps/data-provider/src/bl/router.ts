@@ -1,15 +1,16 @@
 import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
-import { decodeJwt, getNamespacesForOwner, login } from './service';
+import { decodeJwt, login } from './service';
 import { query } from '../connection/connection';
-import { ERROR_CODE, Owner, RecordData, RegisterOwnerPayload } from '@angular-monorepo/entities';
+import { ERROR_CODE, EditProfileData, Owner, RecordData, RegisterOwnerPayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
 import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
+import { PROFILE_SERVICE } from '../modules/profile';
 
 export const mainRouter = Router();
 
@@ -27,6 +28,47 @@ mainRouter.post('/:ownerKey/namespace',
         req.body.name, owner);
 
       res.json(mNamaespace);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.get('/:ownerKey/profile',
+  logRequestMiddleware('GET profile'),
+  async (
+    req: TypedRequestBody<{ name: string }>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = await getOwnerFromToken(req);
+
+      const profile = await PROFILE_SERVICE.getProfile(
+        owner.id
+      );
+
+      res.json(profile);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.post('/:ownerKey/profile',
+  logRequestMiddleware('POST profile'),
+  async (
+    req: TypedRequestBody<EditProfileData>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = await getOwnerFromToken(req);
+
+      const profile = await PROFILE_SERVICE.editProfile(
+        owner.id,
+        req.body,
+      );
+
+      res.json(profile);
     } catch (error) {
       next(error);
     }
@@ -87,7 +129,7 @@ mainRouter.get('/:ownerKey/namespace',
       WHERE \`key\` = "${req.params['ownerKey'] as string}"
       `))[0];
 
-      const mNamaespaces = await getNamespacesForOwner(
+      const mNamaespaces = await NAMESPACE_SERVICE.getNamespacesForOwner(
         owner.id,
       );
 
@@ -246,7 +288,7 @@ mainRouter.post('/invitation/:invitationKey/accept',
 
 async function getOwnerFromToken (
   req: Request,
-) {
+): Promise<Owner> {
   try {
     const token = req.headers.authorization.split('Bearer ')[1];
     const decoded = decodeJwt(token);

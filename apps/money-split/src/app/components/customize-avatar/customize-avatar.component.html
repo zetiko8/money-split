@@ -1,0 +1,29 @@
+<section>
+    <h5>
+        {{ 'customizeAvatarDescription' | translate }}
+    </h5>
+    <avatar
+        [color]="'#271d3b'"
+        [backgroundColor]="avatarColor.value || '#2ebf91'"
+        [name]="avatarName"
+        [avatarDataUrl]="avatarImage.value"
+    >
+    </avatar>
+    <div class="input-group">
+        <file-input
+            [label]="'avatarImageInputLabel' | translate"
+            name="image"
+            data-testid="image-input"
+            [formControl]="avatarImage"
+        ></file-input>
+    </div>
+    <div class="input-group">
+        <label>{{ 'avatarColorInputLabel' | translate }}</label>
+        <input 
+            [formControl]="avatarColor"
+            type="color"
+            name="color"
+            data-testid="color-input"
+        >
+    </div>
+</section>

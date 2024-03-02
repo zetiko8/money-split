@@ -106,4 +106,22 @@ export interface AvatarData {
     dataUrl: string,
 }
 
+export interface OwnerProfileView {
+    users: {
+        user: User,
+        avatar: AvatarData,
+    }[],
+    owner: Owner,
+    avatar: AvatarData,
+}
+
+export interface EditAvatarData {
+    avatarColor: string | null,
+    avatarImage: string | null,
+}
+
+export interface EditProfileData {
+    ownerAvatar: EditAvatarData,
+}
+
 export * from './error';
