@@ -294,6 +294,17 @@ ul {
         &[disabled] {
             background-color: var(--color-disabled);
         }
+
+        &.icon-btn {
+            background-color: inherit;
+            color: var(--color-primary);
+            font-size: 16px;
+            padding: var(--gap-small);
+
+            i {
+                font-size: 20px;
+            }
+        }
     }
 
     .text-center {

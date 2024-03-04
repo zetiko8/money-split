@@ -7,6 +7,12 @@
         *ngIf="namespace$ | async as namespace"
     >
         <h4>
+            <button
+                class="icon-btn"
+                (click)="routingService.goToOwnerRealmView()"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
             {{ namespace.name }}
         </h4>
         <users-list
