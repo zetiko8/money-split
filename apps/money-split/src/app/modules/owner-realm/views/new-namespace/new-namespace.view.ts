@@ -30,7 +30,7 @@ import { RoutingService } from 'apps/money-split/src/app/services/routing/routin
 export class NewNamespaceView {
 
   private readonly ownerRealmService = inject(OwnerRealmService);
-  private readonly routingService = inject(RoutingService);
+  public readonly routingService = inject(RoutingService);
 
   public readonly form = new FormGroup({
     namespaceName: new FormControl<string>(

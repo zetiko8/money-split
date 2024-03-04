@@ -3,6 +3,15 @@
     [isLoading]="createProcess.inProgress$"
     [notifications$]="notification$"
 >
+    <h4>
+        <button
+            class="icon-btn"
+            (click)="routingService.goToOwnerRealmView()"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        {{ 'newNamespace' | translate }}
+    </h4>
     <form
         (submit)="$event.preventDefault(); create()"
     >

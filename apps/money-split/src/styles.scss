@@ -225,11 +225,19 @@ ul {
         border: 1px solid;
         border-radius: var(--border-radius-normal);
         padding: var(--gap-small);
-        margin: var(--gap-small);
+        margin: var(--gap-small) 0;
 
         &.xsmall {
             padding: var(--gap-xsmall) var(--gap-small);
-            margin: var(--gap-xsmall);    
+            margin: var(--gap-xsmall) 0;    
+        }
+
+        &.margined {
+            margin: var(--gap-small);
+
+            &.xsmall {
+                margin: var(--gap-xsmall);    
+            }
         }
     }
 

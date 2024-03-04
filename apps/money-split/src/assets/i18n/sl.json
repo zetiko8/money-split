@@ -9,5 +9,8 @@
   "paidWord": "je plačal",
   "toWord": "osebam",
   "addUser": "Dodaj člane",
-  "recordsList": "Plačila"
+  "recordsList": "Plačila",
+  "myNamespaces": "Moje skupine",
+  "namespaceName": "Ime skupine",
+  "confirm": "Potrdi"
 }

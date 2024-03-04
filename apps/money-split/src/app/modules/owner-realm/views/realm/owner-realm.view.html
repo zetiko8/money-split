@@ -3,21 +3,29 @@
     [isLoading]="loadProcess.inProgress$"
     [notifications$]="notification$"
 >
-    <button
-        (click)="createNewRealm()"
-        data-test="new-realm-button"
-    >
-        {{ 'newNamespace' | translate }}
-    </button>
-    <ul>
-        <li
-            *ngFor="let mNamespace of namespaces$ | async"
-        >
-            <a 
+    <h4>
+        {{ 'myNamespaces' | translate }}
+    </h4>
+    <section>
+        <ul>
+            <li
+                *ngFor="let mNamespace of namespaces$ | async"
+                class="box"
+                role="link"
                 [routerLink]="mNamespace.link"
             >
                 {{ mNamespace.name }}
-            </a>
-        </li>
-    </ul>
+            </li>
+        </ul>
+    </section>
+    <section>
+        <div class="input-group">
+            <button
+                (click)="createNewRealm()"
+                data-test="new-realm-button"
+            >
+                {{ 'newNamespace' | translate }}
+            </button>
+        </div>
+    </section>
 </page>
