@@ -124,4 +124,10 @@ export interface EditProfileData {
     ownerAvatar: EditAvatarData,
 }
 
+export interface Debt {
+    debtor: number,
+    creditor: number,
+    value: number,
+}
+
 export * from './error';
