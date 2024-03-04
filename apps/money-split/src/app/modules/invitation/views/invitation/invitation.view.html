@@ -9,11 +9,16 @@
         <h4>
             {{ invitation.namespace.name }}
         </h4>
+        <section>
+            <p>
+                {{ 'invitationExplanation' | translate }}
+            </p>
+        </section>
         <form
             (submit)="$event.preventDefault()"
         >
             <div class="input-group">
-                <label>{{ 'name' | translate }}</label>
+                <label>{{ 'Ime s katerim se boste priključili' | translate }}</label>
                 <input
                     [formControl]="form.controls.name" 
                     type="text"
@@ -21,7 +26,7 @@
                 >
             </div>
         </form>
-        <div>
+        <div class="input-group">
             <button
                 (click)="accept()"
                 [disabled]="!form.valid"
@@ -29,6 +34,8 @@
             >
                 {{ 'acceptInvitatiom' | translate }}
             </button>
+        </div>
+        <div class="input-group">
             <button
                 (click)="rejectProcess.load('')"
                 data-test="reject-invitation-btn"

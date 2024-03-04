@@ -12,5 +12,7 @@
   "recordsList": "Plačila",
   "myNamespaces": "Moje skupine",
   "namespaceName": "Ime skupine",
-  "confirm": "Potrdi"
+  "confirm": "Potrdi",
+  "invitationExplanation": "Povabljeni ste bili v skupino za deljenje stroškov. Se želite priključiti?",
+  "invitationNameFormLabel": "Ime s katerim se boste priključili"
 }
