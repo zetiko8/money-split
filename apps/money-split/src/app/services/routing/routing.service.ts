@@ -145,6 +145,60 @@ export class RoutingService {
         }
     }
 
+    public goToInvitationView (
+        invitationId?: string,
+    ) {
+        if (invitationId) {
+            this.router.navigate(
+                [ ...this.invitationLink(invitationId), 'join']);
+        } 
+        else {
+            combineLatest(
+                this.getInvitationId(),
+            )
+                .subscribe(
+                    ([invitationIdRef]) => this.router.navigate(
+                        [ ...this.invitationLink(invitationIdRef), 'join'])
+                )
+        }
+    }
+
+    public goToInvitationLoginView (
+        invitationId?: string,
+    ) {
+        if (invitationId) {
+            this.router.navigate(
+                [ ...this.invitationLink(invitationId), 'login']);
+        } 
+        else {
+            combineLatest(
+                this.getInvitationId(),
+            )
+                .subscribe(
+                    ([invitationIdRef]) => this.router.navigate(
+                        [ ...this.invitationLink(invitationIdRef), 'login'])
+                )
+        }
+    }
+
+    public goToInvitationRegisterView (
+        invitationId?: string,
+    ) {
+        if (invitationId) {
+            this.router.navigate(
+                [ ...this.invitationLink(invitationId), 'login']);
+        } 
+        else {
+            combineLatest(
+                this.getInvitationId(),
+            )
+                .subscribe(
+                    ([invitationIdRef]) => this.router.navigate(
+                        [ ...this.invitationLink(invitationIdRef), 'login'])
+                )
+        }
+    }
+
     public goToEditProfileView (
         ownerKey?: string,
     ) {
@@ -182,6 +236,18 @@ export class RoutingService {
         namespaceId: number,
     ) {
         return ['/', ownerKey, 'namespace', namespaceId, 'invite'];
+    }
+
+    public invitationLink (
+        invitationId: string,
+    ) {
+        return ['/invitation', invitationId ];
+    }
+
+    public invitationRegisterLink (
+        invitationId: string,
+    ) {
+        return ['/invitation', invitationId, 'register' ];
     }
 
     public editProfileLink (

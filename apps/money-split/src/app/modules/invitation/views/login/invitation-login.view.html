@@ -1,0 +1,19 @@
+
+<page
+    *ngIf="loadProcess.inProgress$ | async"
+    [isLoading]="loadProcess.inProgress$"
+>
+</page>
+<page
+    *ngIf="loadProcess.error$ | async as error"
+>
+</page>
+<login-component
+    *ngIf="loadProcess.data$ | async"
+>
+    <p
+        login-header
+    >
+        {{ 'loginToJoin' | translate }}
+    </p>
+</login-component>

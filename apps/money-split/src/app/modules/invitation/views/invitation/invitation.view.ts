@@ -9,6 +9,7 @@ import { RoutingService } from '../../../../services/routing/routing.service';
 import { InvitationService } from '../../services/invitation.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ImprovedProcess, combineLoaders } from '../../../../../helpers';
+import { UserService } from 'apps/money-split/src/app/services/auth/token/auth.token.user.service';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ export class InvitationView {
 
   private readonly invitationService = inject(InvitationService);
   private readonly routingService = inject(RoutingService);
+  public readonly userService = inject(UserService);
 
   public readonly loadProcess = new ImprovedProcess(
     () => this.invitationService.getInvitationView() 
@@ -66,6 +68,10 @@ export class InvitationView {
 
   public accept () {
     this.acceptProcess.load(this.form.value.name as string);
+  }
+
+  public login () {
+    this.routingService.goToInvitationLoginView();
   }
 
   constructor () {

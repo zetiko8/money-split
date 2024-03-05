@@ -1,4 +1,5 @@
 import { ACTIONS } from "../support/actions";
+import { LOGIN_FORM } from "../support/app.po";
 
 describe('Login', () => {
     beforeEach(() => {
@@ -8,18 +9,12 @@ describe('Login', () => {
     });
   
     it('should login with valid credentials', () => {
-      cy.get('input[name="username"]').type('testuser');
-      cy.get('input[name="password"]').type('testpassword');
-      cy.get('button[type="submit"]').click();
-  
-      cy.url().should('include', '/realm'); // replace with the actual path to your dashboard page
+      LOGIN_FORM.login('testuser', 'testpassword');
+      cy.url().should('include', '/realm');
     });
   
     it('should not login with invalid password', () => {
-      cy.get('input[name="username"]').type('testuser');
-      cy.get('input[name="password"]').type('invalidpassword');
-      cy.get('button[type="submit"]').click();
-  
+      LOGIN_FORM.login('testuser', 'invalidpassword');
       cy
       .get('[data-cy="notification"]')
       .should('be.visible')
@@ -27,10 +22,7 @@ describe('Login', () => {
     });
 
     it('should not login with invalid username', () => {
-      cy.get('input[name="username"]').type('invaliduser');
-      cy.get('input[name="password"]').type('invalidpassword');
-      cy.get('button[type="submit"]').click();
-  
+      LOGIN_FORM.login('invaliduser', 'invalidpassword')  
       cy
       .get('[data-cy="notification"]')
       .should('be.visible')

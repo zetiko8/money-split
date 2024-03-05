@@ -7,6 +7,7 @@ import { AppConfig } from '../types';
 import { InternationalizationService } from './internationalization/internationalization.service';
 import { APP_BASE_HREF } from '@angular/common';
 import { AuthService } from './auth/token/auth.token.service';
+import { UserService } from './auth/token/auth.token.user.service';
 
 @Injectable()
 export class InitializeService {
@@ -15,6 +16,7 @@ export class InitializeService {
     private readonly http: HttpClient,
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
     private readonly internationalizationService: InternationalizationService,
     @Inject(APP_BASE_HREF) private baseHref: string,
   ) {}
@@ -32,6 +34,9 @@ export class InitializeService {
       ),
       mergeMap(() => this.authService
         .silentAuth(),
+      ),
+      mergeMap(() => this.userService
+        .loadUserProfile(),
       ),
       map(() => true),
     );

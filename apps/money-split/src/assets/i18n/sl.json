@@ -16,5 +16,16 @@
   "invitationExplanation": "Povabljeni ste bili v skupino za deljenje stroškov. Se želite priključiti?",
   "invitationNameFormLabel": "Ime s katerim se boste priključili",
   "acceptInvitation": "Sprejmi povabilo",
-  "rejectInvitation": "Zavrni povabilo"
+  "rejectInvitation": "Zavrni povabilo",
+  "loginToJoin": "Prijavite se, da se boste lahko pridružili skupini",
+  "username": "Uporabniško ime",
+  "password": "Geslo",
+  "login": "Prijava",
+  "registerInstead": "Nimate računa? Registrirajte se.",
+  "registerLink": "Registracija",
+  "register_username_error": "Napačni vnos",
+  "register_password_error": "Napačni vnos",
+  "customizeAvatarDescription": "Ustvarite avatar",
+  "avatarImageInputLabel": "Naložite sliko",
+  "avatarColorInputLabel": "Izberite barvo avatarja"
 }

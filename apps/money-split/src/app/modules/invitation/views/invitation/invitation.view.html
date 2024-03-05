@@ -3,8 +3,8 @@
     [isLoading]="isLoading"
     [notifications$]="notification$"
 >
-    <div
-        *ngIf="loadProcess.data$| async as invitation"
+    <ng-container
+        *ngIf="loadProcess.data$ | async as invitation"
     >
         <h4>
             {{ invitation.namespace.name }}
@@ -16,6 +16,7 @@
         </section>
         <form
             (submit)="$event.preventDefault()"
+            *ngIf="!(userService.user$ | async)?.isGuest"
         >
             <div class="input-group">
                 <label>{{ 'Ime s katerim se boste priključili' | translate }}</label>
@@ -26,22 +27,38 @@
                 >
             </div>
         </form>
-        <div class="input-group">
-            <button
-                (click)="accept()"
-                [disabled]="!form.valid"
-                data-test="accept-invitation-btn"
+        <section>
+            <div 
+                class="input-group"
+                *ngIf="!(userService.user$ | async)?.isGuest"    
             >
-                {{ 'acceptInvitation' | translate }}
-            </button>
-        </div>
-        <div class="input-group">
-            <button
-                (click)="rejectProcess.load('')"
-                data-test="reject-invitation-btn"
+                <button
+                    (click)="accept()"
+                    [disabled]="!form.valid"
+                    data-test="accept-invitation-btn"
+                >
+                    {{ 'acceptInvitation' | translate }}
+                </button>
+            </div>
+            <div 
+                class="input-group"
+                *ngIf="(userService.user$ | async)?.isGuest"    
             >
-                {{ 'rejectInvitation' | translate }}
-            </button>
-        </div>
-    </div>
+                <button
+                    (click)="login()"
+                    data-test="accept-invitation-btn"
+                >
+                    {{ 'acceptInvitation' | translate }}
+                </button>
+            </div>
+            <div class="input-group">
+                <button
+                    (click)="rejectProcess.load('')"
+                    data-test="reject-invitation-btn"
+                >
+                    {{ 'rejectInvitation' | translate }}
+                </button>
+            </div>
+        </section>
+    </ng-container>
 </page>

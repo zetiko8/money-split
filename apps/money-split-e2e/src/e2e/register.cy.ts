@@ -1,4 +1,5 @@
 import { ACTIONS } from "../support/actions"
+import { REGISTER_FORM } from "../support/app.po";
 
 describe('Register Component', () => {
 
@@ -30,12 +31,7 @@ describe('Register Component', () => {
   
     it('registers a new user', () => {
       cy.visit('/register') // visit the page where the register component is located
-      cy.get('[data-testid="username-input"]') // enter a username
-        .type('testuser')
-      cy.get('[data-testid="password-input"]') // enter a password
-        .type('testpassword')
-      cy.get('[data-testid="register-button"]') // click the register button
-        .click()
+      REGISTER_FORM.register('testuser', 'testpassword');
       cy.url()
         .should('contain', 'login');
 
@@ -48,23 +44,13 @@ describe('Register Component', () => {
 
     });
 
-    it('does not register a user with an username', () => {
+    it('does not register a user with an username that already exists', () => {
       cy.visit('/register') // visit the page where the register component is located
-      cy.get('[data-testid="username-input"]') // enter a username
-        .type('testuser')
-      cy.get('[data-testid="password-input"]') // enter a password
-        .type('testpassword')
-      cy.get('[data-testid="register-button"]') // click the register button
-        .click()
+      REGISTER_FORM.register('testuser', 'testpassword');
       cy.url()
         .should('contain', 'login')    
-        cy.visit('/register') // visit the page where the register component is located
-        cy.get('[data-testid="username-input"]') // enter an existing username
-          .type('testuser')
-        cy.get('[data-testid="password-input"]') // enter a password
-          .type('testpassword')
-        cy.get('[data-testid="register-button"]') // click the register button
-          .click()
+      cy.visit('/register') // visit the page where the register component is located
+      REGISTER_FORM.register('testuser', 'testpassword');        cy.get('[data-testid="register-button"]') // click the register button
         cy
           .get('[data-cy="notification"]')
           .should('be.visible')

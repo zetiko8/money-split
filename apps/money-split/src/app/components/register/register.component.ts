@@ -1,18 +1,18 @@
-import { Component, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { UserService } from '../../../services/auth/token/auth.token.user.service';
-import { AppErrorCode } from '../../../types';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../components/page/page.component';
 import { Observable, filter, map, merge } from 'rxjs';
-import { Notification } from '../../../components/notifications/notifications.types';
 import { RegisterOwnerPayload } from '@angular-monorepo/entities';
-import { getRandomColor } from '../../../../helpers';
-import { AvatarComponent } from '../../../components/avatar.component';
 import { FileInputComponent } from '@angular-monorepo/components';
+import { PageComponent } from '../page/page.component';
+import { AvatarComponent } from '../avatar.component';
+import { UserService } from '../../services/auth/token/auth.token.user.service';
+import { getRandomColor } from 'apps/money-split/src/helpers';
+import { Notification } from '../notifications/notifications.types';
+import { AppErrorCode } from '../../types';
 
 @Component({
   standalone: true,
@@ -25,11 +25,13 @@ import { FileInputComponent } from '@angular-monorepo/components';
     AvatarComponent,
     FileInputComponent,
   ],
-  selector: 'register-view',
+  selector: 'register',
   templateUrl: './register.component.html',
 })
-// eslint-disable-next-line @angular-eslint/component-class-suffix
-export class RegisterView {
+export class RegisterComponent {
+
+  @Input() onSuccess: () => void
+    = () => this.router.navigate(['login']);
 
   private readonly userService = inject(UserService);
   private readonly router = inject(Router);
@@ -72,7 +74,7 @@ export class RegisterView {
     }
     )
       .subscribe(() => {
-        this.router.navigate(['login']);
+        this.onSuccess();
       })
   }
 }
