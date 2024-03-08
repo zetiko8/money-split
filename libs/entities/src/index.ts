@@ -80,6 +80,15 @@ export interface CreateRecordData {
     createdBy: number,
 }
 
+export interface EditRecordData {
+    benefitors: number[],
+    cost: number,
+    currency: string,
+    paidBy: number[],
+    createdBy: number,
+    recordId: number,
+}
+
 export interface Record {
     id: number,
     created: Date,

@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { ConfigService } from "../../../services/config.service";
 import { Observable, catchError, combineLatest, mergeMap, throwError } from "rxjs";
-import { CreateRecordData, ERROR_CODE, MNamespace, NamespaceView } from "@angular-monorepo/entities";
+import { CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, NamespaceView, Record, RecordView } from "@angular-monorepo/entities";
 import { RoutingService } from "../../../services/routing/routing.service";
 
 @Injectable()
@@ -24,6 +24,33 @@ export class NamespaceService {
                     + ownerKey
                     + "/namespace/"
                     + namespaceId,
+                )
+            )
+        )
+    }
+
+    public getEditRecordView (
+        recordId: number,
+    ): Observable<{
+        namespace: NamespaceView,
+        record: RecordView,
+    }> {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+        .pipe(
+            mergeMap(([ownerKey, namespaceId]) => this.http.get<{
+                namespace: NamespaceView,
+                record: RecordView,
+            }>(
+                    this.config.getConfig().middlewareUrl 
+                    + '/'
+                    + ownerKey
+                    + "/namespace/"
+                    + namespaceId
+                    + '/edit/record/'
+                    + recordId
                 )
             )
         )
@@ -84,5 +111,27 @@ export class NamespaceService {
                     )
                 )
             )
+    }
+
+    public editRecord (recordData: EditRecordData) {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+            .pipe(
+                mergeMap(([ownerKey, namespaceId]) => this.http.post<Record>(
+                        this.config.getConfig().middlewareUrl 
+                        + '/'
+                        + ownerKey
+                        + "/namespace/"
+                        + namespaceId
+                        + '/'
+                        + recordData.createdBy
+                        + '/edit/record/'
+                        + recordData.recordId,
+                        recordData,
+                    ),
+                )
+            );
     }
 }

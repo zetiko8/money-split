@@ -1,0 +1,70 @@
+<form
+    (submit)="$event.preventDefault(); submit()"
+    *ngIf="form"
+>
+    <ng-content select="[record-form-header]"></ng-content>
+    <div class="input-group">
+        <label>{{ 'currency' | translate }}</label>
+        <input
+            [formControl]="form.controls.currency" 
+            type="text"
+            name="currency"
+            data-testid="currency-input" 
+        >
+        <p
+            class="error"
+            *ngIf="form.controls.currency.errors"
+            data-cy="addExpenseCurrencyError"
+        >
+            {{ 'addExpenseCurrencyError' | translate }}
+        </p>
+    </div>
+    <div class="input-group">
+        <label>{{ 'cost' | translate }}</label>
+        <input
+            [formControl]="form.controls.cost" 
+            type="number"
+            name="cost"
+            data-testid="cost-input" 
+        >
+        <p
+            class="error"
+            *ngIf="form.controls.cost.errors"
+            data-cy="addExpenseCostError"
+        >
+            {{ 'addExpenseCostError' | translate }}
+        </p>
+    </div>
+    <checkbox-group
+        [formControl]="form.controls.benefitors"
+        [options]="usersOptions"
+        [label]="'addExpenseBenefitors' | translate"
+        [error]="form.controls.benefitors.errors 
+            ? 'addExpenseBenefitorsError' : '' | translate"
+    ></checkbox-group>
+    <checkbox-group
+        [formControl]="form.controls.paidBy"
+        [options]="usersOptions"
+        [label]="'addExpensePaidBy' | translate "
+        [error]="form.controls.paidBy.errors 
+            ? 'addExpensePaidByError' : '' | translate"
+    ></checkbox-group>
+    <checkbox-radio-group
+        *ngIf="ownerUsersOptions.length > 1"
+        [formControl]="form.controls.createdBy"
+        [options]="ownerUsersOptions"
+        [label]="'addExpenseCreatedBy' | translate "
+        [error]="form.controls.createdBy.errors 
+            ? 'addExpenseCreatedByError' : '' | translate"
+    ></checkbox-radio-group>
+    <div class="input-group">
+        <button
+            type="submit"
+            data-test="add-expense-confirm-btn"
+            [disabled]="!form.valid"
+            (click)="submit()"
+        >
+        {{ submitButtonText}}
+        </button>
+    </div>
+</form>

@@ -1,29 +1,25 @@
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
 import { PageComponent } from '../../../../components/page/page.component';
 import { Observable, filter, map, merge, mergeMap, of, tap } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { NamespaceService } from '../../services/namespace.service';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { InviteOwnerComponent } from '../../components/invite/invite.component';
 import { combineLoaders } from '../../../../../helpers';
-import { UsersListComponent } from '../../components/users-list/users-list.component';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { CreateRecordData } from '@angular-monorepo/entities';
+import { RecordFormComponent, getRecordForm } from '../../components/record-form/record-form.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   standalone: true,
   imports: [
     RouterModule,
     CommonModule,
-    TranslateModule,
     PageComponent,
-    ReactiveFormsModule,
-    InviteOwnerComponent,
-    UsersListComponent,
+    RecordFormComponent,
+    TranslateModule,
   ],
   selector: 'add-expense',
   templateUrl: './add-expense.view.html',
@@ -35,7 +31,7 @@ import { CreateRecordData } from '@angular-monorepo/entities';
 export class AddExpenseView {
 
   private readonly nameSpaceService = inject(NamespaceService);
-  private readonly routingService = inject(RoutingService);
+  public readonly routingService = inject(RoutingService);
 
   public readonly loadProcess = new BoundProcess(
     () => this.nameSpaceService.getNamespace() 
@@ -47,16 +43,19 @@ export class AddExpenseView {
       ) 
   );
 
-  public readonly namespace$
+  public readonly formData$
     = merge(
       of(''),
     ).pipe(
       mergeMap(() => this.loadProcess.execute('')),
-      tap(namespace => {
-        if (namespace.ownerUsers.length === 1) {
-          this.form.controls.createdBy.setValue(namespace.ownerUsers[0].id);
-        }
-      })
+      map(namespace => {
+        const form = getRecordForm({
+          createdBy: namespace.ownerUsers.length === 1 
+            ? namespace.ownerUsers[0].id
+            : undefined,
+        });
+        return { namespace, form }; 
+      }),
     );
 
   public readonly isLoading = combineLoaders([
@@ -76,118 +75,9 @@ export class AddExpenseView {
       }),  
     );
 
-  public form = new FormGroup({
-    currency: new FormControl<string>('EUR', {
-      validators: [
-        (control) => {
-            if (control.value === '') {
-                return { required: true };
-            } 
-            else if (control.value === null) {
-                return { required: true };
-            } 
-            else {
-                return null;
-            }
-        }
-      ],
-      nonNullable: true,
-    }),
-    cost: new FormControl<number>(0, {
-      validators: [
-        (control) => {
-            if (control.value <= 0) {
-                return { required: true };
-            } 
-            else if (control.value === null) {
-                return { required: true };
-            } 
-            else if ((Number.isNaN(control.value))) {
-                return { required: true };
-            } 
-            else {
-                return null;
-            }
-        }
-      ],
-      nonNullable: true,
-    }),
-    benefitors: new FormControl<number[]>([], {
-      validators: [
-        (control) => {
-            if (control.value  && control.value.length === 0) {
-                return { required: true };
-            } else {
-                return null;
-            }
-        }
-      ],
-      nonNullable: true,
-    }),
-    paidBy: new FormControl<number[]>([], {
-      validators: [
-        (control) => {
-            if (control.value  && control.value.length === 0) {
-                return { required: true };
-            } else {
-                return null;
-            }
-        }
-      ],
-      nonNullable: true,
-    }),
-    createdBy: new FormControl<number | null>(null, {
-      validators: [
-        (control) => {
-            if (!control.value) {
-                return { required: true };
-            } else {
-                return null;
-            }
-        }
-      ],
-    }),
-  });
-
-  public addExpense () {
+  public addExpense (data: CreateRecordData) {
     this.addExpenseProcess
-      .execute(this.form.value as CreateRecordData)
+      .execute(data)
       .subscribe();
-  }
-
-  public toogleBenefitor (
-    userId: number
-  ) {
-    const benefitors = this.form.controls.benefitors.value;
-    if (benefitors.includes(userId)) {
-        this.form.controls.benefitors.setValue(
-            benefitors.filter(id =>  id !== userId)
-        );
-    } else {
-        this.form.controls.benefitors.setValue(
-            [ ...benefitors, userId ]
-        );
-    }
-  }
-
-  public tooglePaidBy (
-    userId: number
-  ) {
-    const paidBy = this.form.controls.paidBy.value;
-    if (paidBy.includes(userId)) {
-        this.form.controls.paidBy.setValue(
-            paidBy.filter(id =>  id !== userId)
-        );
-    } else {
-        this.form.controls.paidBy.setValue(
-            [ ...paidBy, userId ]
-        );
-    }
-  }
-
-  public selectCreatedBy (
-    userId: number
-  ) {
-    this.form.controls.createdBy.setValue(userId);
   }
 }

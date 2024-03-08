@@ -167,6 +167,39 @@ const namespaceView: NamespaceView = {
 return namespaceView;
 }
 
+async function mapToRecordView (
+    record: Record,
+    namespace: MNamespace,
+): Promise<RecordView> {
+    const createdBy = await USER_SERVICE.getUserById(record.createdBy);
+    const editedBy = await USER_SERVICE.getUserById(record.editedBy);
+    const benefitors = await asyncMap(
+        record.data.benefitors,
+        async benefitorId => await USER_SERVICE.getUserById(benefitorId),
+    );
+    const paidBy = await asyncMap(
+        record.data.paidBy,
+        async paidById => await USER_SERVICE.getUserById(paidById),
+    );
+    const data: RecordDataView = {
+        cost: record.data.cost,
+        currency: record.data.currency,
+        benefitors,
+        paidBy, 
+    }
+    const recordView: RecordView = {
+        created: record.created,
+        edited: record.edited,
+        id: record.id,
+        createdBy,
+        editedBy,
+        namespace,
+        data,
+    }
+
+    return recordView;
+}
+
 export const NAMESPACE_SERVICE = {
     deleteNamespace: async (
         namespaceId: number
@@ -200,4 +233,5 @@ export const NAMESPACE_SERVICE = {
     getNamespaceViewForOwner,
     getNamespaceById,
     getNamespacesForOwner,
+    mapToRecordView,
 }

@@ -3,7 +3,7 @@ import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { decodeJwt, login } from './service';
 import { query } from '../connection/connection';
-import { ERROR_CODE, EditProfileData, Owner, RecordData, RegisterOwnerPayload } from '@angular-monorepo/entities';
+import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
@@ -116,6 +116,68 @@ mainRouter.get('/:ownerKey/namespace/:namespaceId',
     }
   });
 
+mainRouter.get(
+  '/:ownerKey/namespace/:namespaceId/edit/record/:recordId',
+  logRequestMiddleware('GET edit record'),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = await getOwnerFromToken(req);
+
+      const recordId = Number(req.params['recordId'] as string);
+
+      const mNamaespace = await NAMESPACE_SERVICE.getNamespaceViewForOwner(
+        Number(req.params['namespaceId'] as string),
+        owner.id,
+      );
+
+      const record = await RECORD_SERVICE
+        .getRecordById(recordId);
+
+      const editRecordView: {
+        namespace: MNamespace,
+        record: RecordView,
+      } = {
+        namespace: mNamaespace,
+        record: (await NAMESPACE_SERVICE.mapToRecordView(
+          record,
+          mNamaespace,
+        )),
+      }
+
+      res.json(editRecordView);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.post(
+  '/:ownerKey/namespace/:namespaceId/:userId/edit/record/:recordId',
+  logRequestMiddleware('POST edit record'),
+  async (
+    req: TypedRequestBody<RecordData>,
+    res,
+    next,
+  ) => {
+    try {
+      await getOwnerFromToken(req);
+
+      const recordId = Number(req.params['recordId'] as string);
+      const record = await RECORD_SERVICE.editRecord(
+        Number(req.params['userId']),
+        recordId,
+        req.body,
+      )
+  
+      res.json(record);
+    } catch (error) {
+      next(error);
+    }
+  });
+
 mainRouter.get('/:ownerKey/namespace',
   logRequestMiddleware('GET namespaces'),
   async (
@@ -195,7 +257,7 @@ async (
   next,
 ) => {
   try {
-    const owner = await getOwnerFromToken(req);
+    await getOwnerFromToken(req);
     const record = await RECORD_SERVICE.addRecord(
       Number(req.params['namespaceId'] as string),
       Number(req.params['userId']),

@@ -22,6 +22,8 @@
         ></users-list>
         <records-list
             [records]="namespace.records"
+            (selectRecord)="routingService
+                .goToEditRecordView($event.id)"
         ></records-list>
         <div>
             <button

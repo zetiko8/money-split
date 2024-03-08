@@ -1,0 +1,18 @@
+<label>
+    {{ label }}
+</label>
+<input
+    type="date"
+    [name]="name"
+    [required]="required"
+    [readonly]="readonly"
+    [(ngModel)]="_stringValue"
+    (ngModelChange)="handleChange($event)"
+    (focusout)="onBlur()"
+>
+<div 
+    class="error"
+    *ngIf="error"
+>
+    {{ error }}
+</div>

@@ -1,0 +1,20 @@
+
+<label>{{ label }}</label>
+<ul>
+    <li
+        *ngFor="let option of _options"
+    >
+        <checkbox-input
+            [label]="option.label"
+            [(ngModel)]="option.bool"
+            (ngModelChange)="handleChange()"
+            [class.box]="boxes"
+        ></checkbox-input>
+    </li>
+</ul>
+<div 
+    class="error"
+    *ngIf="error"
+>
+    {{ error }}
+</div>

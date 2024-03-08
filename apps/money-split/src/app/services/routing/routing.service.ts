@@ -118,6 +118,37 @@ export class RoutingService {
         }
     }
 
+    public goToEditRecordView (
+        recordId: number,
+        namespaceId?: number,
+        ownerKey?: string,
+    ) {
+        if (ownerKey && namespaceId) {
+            this.router.navigate(
+                this.editRecordLink(
+                    recordId, ownerKey, namespaceId));
+        } 
+        else if (namespaceId) {
+            this.getOwnerKey()
+                .subscribe(
+                    ownerKeyG => this.router.navigate(
+                        this.editRecordLink(
+                            recordId, ownerKeyG, namespaceId))
+                )
+        }
+        else {
+            combineLatest(
+                this.getOwnerKey(),
+                this.getNamespaceId(),
+            )
+                .subscribe(
+                    ([ownerKeyG, namespaceIdG]) => this.router.navigate(
+                        this.editRecordLink(
+                            recordId, ownerKeyG, namespaceIdG))
+                )
+        }
+    }
+
     public goToInviteView (
         namespaceId?: number,
         ownerKey?: string,
@@ -229,6 +260,15 @@ export class RoutingService {
         namespaceId: number,
     ) {
         return ['/', ownerKey, 'namespace', namespaceId, 'add'];
+    }
+
+    public editRecordLink (
+        recordId: number,
+        ownerKey: string,
+        namespaceId: number,
+    ) {
+        return ['/', ownerKey, 'namespace', 
+            namespaceId, 'edit', recordId];
     }
 
     public inviteLink (

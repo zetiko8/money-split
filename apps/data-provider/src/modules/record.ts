@@ -1,5 +1,5 @@
 import { Record, RecordData } from "@angular-monorepo/entities"
-import { insertSql, selectOneWhereSql, selectWhereSql } from "../connection/helper"
+import { insertSql, mysqlDate, selectOneWhereSql, selectWhereSql } from "../connection/helper"
 import { EntityPropertyType, RecordEntity } from "../types"
 import { lastInsertId, query } from "../connection/connection";
 
@@ -23,6 +23,26 @@ export const RECORD_SERVICE = {
         ));
 
         const recordId = await lastInsertId();
+
+        return RECORD_SERVICE.getRecordById(recordId);
+    },
+    editRecord: async (
+        userId: number,
+        recordId: number,
+        data: RecordData,
+    ) => {
+
+        await RECORD_SERVICE.getRecordById(recordId);
+
+        const updateSql = `
+            UPDATE \`Record\`
+            SET
+            data = '${JSON.stringify(data)}',
+            edited = '${mysqlDate(new Date())}',
+            editedBy = ${userId}
+            WHERE id = ${recordId}
+        `;
+        await query(updateSql);
 
         return RECORD_SERVICE.getRecordById(recordId);
     },

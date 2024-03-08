@@ -7,7 +7,8 @@
         <li
             *ngFor="let record of records"
             data-test="namespace-record"
-            class="list-item"
+            class="list-item box"
+            (click)="selectRecord.emit(record)"
         >
             <avatar
                 *ngFor="let payer of record.data.paidBy"

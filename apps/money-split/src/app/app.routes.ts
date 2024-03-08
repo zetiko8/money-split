@@ -10,6 +10,7 @@ import { InviteView } from './modules/namespace/views/invite/invite.view';
 import { EditProfileView } from './modules/edit-profile/views/profile/edit-profile.view';
 import { InvitationLoginView } from './modules/invitation/views/login/invitation-login.view';
 import { InvitationRegisterView } from './modules/invitation/views/register/invitation-register.view';
+import { EditRecordView } from './modules/namespace/views/edit-record/edit-record.view';
 
 export const appRoutes: Route[] = [
     {
@@ -64,6 +65,10 @@ export const appRoutes: Route[] = [
             {
                 path: 'namespace/:namespaceId/invite',
                 component: InviteView,
+            },
+            {
+                path: 'namespace/:namespaceId/edit/:recordId',
+                component: EditRecordView,
             },
             {
                 path: 'profile',

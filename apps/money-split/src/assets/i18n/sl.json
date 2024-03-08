@@ -27,5 +27,10 @@
   "register_password_error": "Napačni vnos",
   "customizeAvatarDescription": "Ustvarite avatar",
   "avatarImageInputLabel": "Naložite sliko",
-  "avatarColorInputLabel": "Izberite barvo avatarja"
+  "avatarColorInputLabel": "Izberite barvo avatarja",
+  "addExpenseCostError": "Napačni vnos",
+  "addExpenseBenefitorsError": "Izberite vsaj enega dolžnika",
+  "addExpensePaidByError": "Izberite vsaj enega plačnika",
+  "addExpenseBenefitors": "Dolžniki",
+  "addExpensePaidBy": "Plačniki"
 }
