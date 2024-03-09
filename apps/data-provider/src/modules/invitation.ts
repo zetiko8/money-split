@@ -5,6 +5,7 @@ import { EntityPropertyType, InvitationEntity, MNamespaceEntity } from "../types
 import { addOwnerToNamespace } from "./namespace";
 import { createUser } from "./user";
 import { randomUUID } from "crypto";
+import { sendMail } from "./email";
 
 async function getInvitationByKey (
     invitationKey: string,
@@ -91,11 +92,27 @@ export async function inviteToNamespace (
 
   const id = await lastInsertId();
 
-  const invitations = await query<Invitation>(`
+  const invitations = await query<Invitation[]>(`
     SELECT * FROM \`Invitation\`
-    WHERE \`id\` = ${id}`)
+    WHERE \`id\` = ${id}`);
 
-  return invitations[0];
+  const invitation = invitations[0];
+
+  await sendMail({
+    subject: 'Invitation to Money Split Group',
+    text: `
+      <h1>
+        Your friend has invited you to join a group.
+      </h1>
+      <p>
+        Follow the link bellow to join.
+      </p>
+      <a href="http://localhost:4200/invitation/${invitation.invitationKey}/join">Link</a>
+    `,
+    to: email,
+  })
+
+  return invitation;
 }
 
 export const INVITATION_SERVICE = {
