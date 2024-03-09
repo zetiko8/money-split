@@ -36,6 +36,7 @@
         </p>
     </div>
     <checkbox-group
+        data-testid="add-benefitor"
         [formControl]="form.controls.benefitors"
         [options]="usersOptions"
         [label]="'addExpenseBenefitors' | translate"
@@ -43,6 +44,7 @@
             ? 'addExpenseBenefitorsError' : '' | translate"
     ></checkbox-group>
     <checkbox-group
+        data-testid="add-paid-by"
         [formControl]="form.controls.paidBy"
         [options]="usersOptions"
         [label]="'addExpensePaidBy' | translate "
@@ -62,7 +64,6 @@
             type="submit"
             data-test="add-expense-confirm-btn"
             [disabled]="!form.valid"
-            (click)="submit()"
         >
         {{ submitButtonText}}
         </button>

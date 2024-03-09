@@ -77,23 +77,15 @@ describe('Add expense', () => {
                 .type('5.4');
             cy.get('[data-testid="add-benefitor"]')
                 .contains('atestuser1')
-                .parent()
-                .find('input')
                 .click();
             cy.get('[data-testid="add-benefitor"]')
                 .contains('btestuser2')
-                .parent()
-                .find('input')
                 .click();
             cy.get('[data-testid="add-benefitor"]')
                 .contains('ctestuser3')
-                .parent()
-                .find('input')
                 .click();
             cy.get('[data-testid="add-paid-by"]')
                 .contains('testuser')
-                .parent()
-                .find('input')
                 .click();
             cy.get('[data-test="add-expense-confirm-btn"]').click();
             
