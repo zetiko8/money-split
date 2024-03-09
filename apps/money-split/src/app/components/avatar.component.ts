@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, Input, inject } from '@angular/core';
-import { ConfigService } from '../services/config.service';
-import { AvatarData } from '@angular-monorepo/entities';
+import { AvatarService } from '../services/avatar.service';
+import { take } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -41,7 +41,7 @@ import { AvatarData } from '@angular-monorepo/entities';
 export class AvatarComponent {
 
   private readonly http = inject(HttpClient);
-  private readonly config = inject(ConfigService);
+  private readonly avatarService = inject(AvatarService);
 
     @Input() name = '';
     @Input() color = '#271d3b';
@@ -51,17 +51,19 @@ export class AvatarComponent {
     public dataUrl: string | null = null;
     @Input() 
     set avatarId (id: number | null) {
-      this.http.get<AvatarData>(
-        this.config.getConfig().middlewareUrl + '/avatar/' + id
-      ).subscribe(
-        avatar => {
-          if (avatar.dataUrl) {
-            this.dataUrl = avatar.dataUrl;
-          } 
-          else {
-            this.backgroundColor = avatar.color;
+      if (id !== null) {
+        this.avatarService.load(id)
+        .pipe(take(1))
+        .subscribe(
+          avatar => {
+            if (avatar.dataUrl) {
+              this.dataUrl = avatar.dataUrl;
+            } 
+            else {
+              this.backgroundColor = avatar.color;
+            }
           }
-        }
-      )
+        );
+      }
     };
 }

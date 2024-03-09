@@ -12,6 +12,7 @@ import { InternationalizationModule } from './services/internationalization/inte
 import { AppNotificationsService, NotificationsService } from './components/notifications/notifications.service';
 import { DisplayErrorService, GlobalErrorHandlerService } from './services/global-error-handler.service';
 import { RoutingService } from './services/routing/routing.service';
+import { AvatarService } from './services/avatar.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -51,6 +52,7 @@ export const appConfig: ApplicationConfig = {
       useClass: NotificationsService,
     },
     RoutingService,
+    AvatarService,
   ],
 };
 

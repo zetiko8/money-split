@@ -11,6 +11,7 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
+import { asyncMap } from '../helpers';
 
 export const mainRouter = Router();
 
@@ -87,6 +88,30 @@ mainRouter.get('/avatar/:avatarId',
       );
 
       res.json(avatar);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.get('/avatar',
+  logRequestMiddleware('GET avatar'),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      const queryParams = (req.query['avatarIds'] as string[]);
+
+      const ids = Array.isArray(queryParams)
+        ? queryParams.map(id => Number(id))
+        : [Number(queryParams)];
+        
+      const avatarDatas = await asyncMap(ids, async (id) => {
+        return await AVATAR_SERVICE.getById(id);
+      });
+
+      res.json(avatarDatas);
     } catch (error) {
       next(error);
     }
