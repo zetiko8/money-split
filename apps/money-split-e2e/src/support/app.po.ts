@@ -37,3 +37,112 @@ export const REGISTER_FORM = {
         .click()
     }
 }
+
+export const NAMESPACE_SCREEN = {
+    visit (
+        ownerKey: string,
+        namespaceId: number,
+    ) {
+        cy.visit(`/${ownerKey}/namespace/${namespaceId}`);
+    },
+    goToAddRecord () {
+        cy.get('[data-test="add-expense-button"]').click();
+    }
+}
+
+export const RECORD_LIST = {
+    shouldHaveNumberOfRecords (num: number) {
+        cy.get('[data-test="namespace-record"]')
+        .should('have.length', num);
+    },
+    RECORD: (
+        index: number
+    ) => {
+        const $el = () => cy
+            .get('[data-test="namespace-record"]')
+            .eq(index);
+
+        return {
+            shouldHaveNumberOfPayers (num: number) {
+                $el().find('[data-test="payer-avatar"]')
+                    .should('have.length', num)
+            },
+            shouldHaveNumberOfBenefitors (num: number) {
+                $el().find('[data-test="benefitor-avatar"]')
+                    .should('have.length', num)
+            },
+            PAYER: (index: number) => {
+                const payer$ = () => $el()
+                    .find('[data-test="payer-avatar"]')
+                    .eq(index);
+
+                return {
+                    hasId (id: string) {
+                        payer$()
+                        .should('have.attr', 'id')
+                        .should('equal', id);
+                    }
+                }
+
+            },
+            BENEFITOR: (index: number) => {
+                const payer$ = () => $el()
+                    .find('[data-test="benefitor-avatar"]')
+                    .eq(index);
+
+                return {
+                    hasId (id: string) {
+                        payer$()
+                        .should('have.attr', 'id')
+                        .should('equal', id);
+                    }
+                }
+
+            },
+            shouldHaveCost (cost: string) {
+                $el().find('[data-test="record-cost"]')
+                    .should('contain.text', cost);
+            },
+            shouldHaveCurrency (value: string) {
+                $el().find('[data-test="record-currency"]')
+                    .should('contain.text', value);
+            },
+        }
+    }
+}
+
+export const RECORD_FORM = {
+    setCurrency (
+        currency: string,
+    ) {
+        cy.get('[data-testid="currency-input" ]')
+        .clear();
+        cy.get('[data-testid="currency-input" ]')
+            .type(currency);
+    },
+    setCost (
+        cost: string,
+    ) {
+        cy.get('[data-testid="cost-input"]')
+        .clear();
+        cy.get('[data-testid="cost-input"]')
+            .type(cost);
+    },
+    clickBenefitor (
+        username: string,
+    ) {
+        cy.get('[data-testid="add-benefitor"]')
+        .contains(username)
+        .click();
+    },
+    clickPaidBy (
+        username: string,
+    ) {
+        cy.get('[data-testid="add-paid-by"]')
+        .contains(username)
+        .click();
+    },
+    confirm () {
+        cy.get('[data-test="add-expense-confirm-btn"]').click();
+    }
+}

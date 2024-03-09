@@ -1,5 +1,6 @@
 import { MNamespace, Owner } from "@angular-monorepo/entities";
-import { ACTIONS } from "../support/actions";
+import { prepareNamespace } from "../support/prepare";
+import { NAMESPACE_SCREEN, RECORD_FORM, RECORD_LIST } from "../support/app.po";
 
 describe('Add expense', () => {
 
@@ -7,123 +8,55 @@ describe('Add expense', () => {
         let owner!: Owner;
         let namespace!: MNamespace;
 
+        const scenario = prepareNamespace(
+            'testnamespace',
+            {  username: 'testuser'},
+            [
+                {  username: 'atestuser1'},
+                {  username: 'btestuser2'},
+                {  username: 'ctestuser3'},
+            ]    
+        );
+
         before(() => {
-    
-            ACTIONS.deleteOwner('testuser');
-            ACTIONS.deleteOwner('atestuser1');
-            ACTIONS.deleteOwner('btestuser2');
-            ACTIONS.deleteOwner('ctestuser3');
-            ACTIONS.deleteNamespaceByName('testnamespace');
-            ACTIONS.deleteInvitation('atestuser1@gmail.com');
-            ACTIONS.deleteInvitation('btestuser2@gmail.com');
-            ACTIONS.deleteInvitation('ctestuser3@gmail.com');
-            ACTIONS.registerOwner('atestuser1', 'testpassword')
-            ACTIONS.registerOwner('btestuser2', 'testpassword')
-            ACTIONS.registerOwner('ctestuser3', 'testpassword')
-            ACTIONS.registerOwner('testuser', 'testpassword')
-                .then(ownerRes => {
-                    owner = ownerRes;
-                    ACTIONS.createNamespace('testnamespace', owner.key)
-                        .then(namespaceRes => {
-                            namespace = namespaceRes;
-                            ACTIONS.invite(
-                                ownerRes.key,
-                                namespaceRes.id,
-                                'atestuser1@gmail.com',
-                            );
-                            ACTIONS.invite(
-                                ownerRes.key,
-                                namespaceRes.id,
-                                'btestuser2@gmail.com',
-                            );
-                            ACTIONS.invite(
-                                ownerRes.key,
-                                namespaceRes.id,
-                                'ctestuser3@gmail.com',
-                            );
-                        })
+            scenario.before()
+                .then(data => {
+                    owner = data.owner;
+                    namespace = data.namespace;
                 });
-            ACTIONS.acceptInvitation(
-                'atestuser1', 'atestuser1', 'atestuser1@gmail.com')
-            ACTIONS.acceptInvitation(
-                'btestuser2', 'btestuser2', 'btestuser2@gmail.com')
-            ACTIONS.acceptInvitation(
-                'ctestuser3', 'ctestuser3', 'ctestuser3@gmail.com')
-            ACTIONS.login('testuser', 'testpassword');
         });
 
         after(() => {
-            ACTIONS.deleteOwner('testuser');
-            ACTIONS.deleteOwner('atestuser1');
-            ACTIONS.deleteOwner('btestuser2');
-            ACTIONS.deleteOwner('ctestuser3');
-            ACTIONS.deleteNamespaceByName('testnamespace');
-            ACTIONS.deleteInvitation('atestuser1@gmail.com');
-            ACTIONS.deleteInvitation('btestuser2@gmail.com');
-            ACTIONS.deleteInvitation('ctestuser3@gmail.com');
+            scenario.after();
         });
 
         it('can add an expense', () => {
     
-            cy.visit(`/${owner.key}/namespace/${namespace.id}`);
-            cy.get('[data-test="add-expense-button"]').click();
-            cy.get('[data-testid="currency-input" ]')
-                .clear();
-            cy.get('[data-testid="currency-input" ]')
-                .type('SIT');
-            cy.get('[data-testid="cost-input"]')
-                .clear();
-            cy.get('[data-testid="cost-input"]')
-                .type('5.4');
-            cy.get('[data-testid="add-benefitor"]')
-                .contains('atestuser1')
-                .click();
-            cy.get('[data-testid="add-benefitor"]')
-                .contains('btestuser2')
-                .click();
-            cy.get('[data-testid="add-benefitor"]')
-                .contains('ctestuser3')
-                .click();
-            cy.get('[data-testid="add-paid-by"]')
-                .contains('testuser')
-                .click();
-            cy.get('[data-test="add-expense-confirm-btn"]').click();
+            NAMESPACE_SCREEN.visit(owner.key, namespace.id);
+            NAMESPACE_SCREEN.goToAddRecord();
+            RECORD_FORM.setCurrency('SIT');
+            RECORD_FORM.setCost('5.4');
+            RECORD_FORM.clickBenefitor('atestuser1');
+            RECORD_FORM.clickBenefitor('btestuser2');
+            RECORD_FORM.clickBenefitor('ctestuser3');
+            RECORD_FORM.clickPaidBy('testuser');
+            RECORD_FORM.confirm();
             
-            cy.get('[data-test="namespace-record"]')
-                .should('have.length', 1);
-            cy.get('[data-test="namespace-record"]')
-                .eq(0)
-                .find('[data-test="payer-avatar"]')
-                .should('have.length', 1)
-                .eq(0)
-                .should('have.attr', 'id')
-                .should('equal', 'payer-avatar-testuser');
-            cy.get('[data-test="record-cost"]')
-                .should('contain.text', '5.4');
-            cy.get('[data-test="record-currency"]')
-                .should('contain.text', 'SIT');
-            cy.get('[data-test="namespace-record"]')
-                .eq(0)
-                .find('[data-test="benefitor-avatar"]')
-                .should('have.length', 3);
-            cy.get('[data-test="namespace-record"]')
-                .eq(0)
-                .find('[data-test="benefitor-avatar"]')
-                .eq(0)
-                .should('have.attr', 'id')
-                .should('equal', 'benefitor-avatar-atestuser1');
-            cy.get('[data-test="namespace-record"]')
-                .eq(0)
-                .find('[data-test="benefitor-avatar"]')
-                .eq(1)
-                .should('have.attr', 'id')
-                .should('equal', 'benefitor-avatar-btestuser2');
-            cy.get('[data-test="namespace-record"]')
-                .eq(0)
-                .find('[data-test="benefitor-avatar"]')
-                .eq(2)
-                .should('have.attr', 'id')
-                .should('equal', 'benefitor-avatar-ctestuser3');
+            RECORD_LIST.shouldHaveNumberOfRecords(1);
+            RECORD_LIST.RECORD(0)
+                .shouldHaveNumberOfPayers(1);
+            RECORD_LIST.RECORD(0).PAYER(0)
+                .hasId('payer-avatar-testuser');
+            RECORD_LIST.RECORD(0).shouldHaveCost('5.4');
+            RECORD_LIST.RECORD(0).shouldHaveCurrency('SIT');
+            RECORD_LIST.RECORD(0)
+                .shouldHaveNumberOfBenefitors(3);
+            RECORD_LIST.RECORD(0).BENEFITOR(0)
+                .hasId('benefitor-avatar-atestuser1');
+            RECORD_LIST.RECORD(0).BENEFITOR(1)
+                .hasId('benefitor-avatar-btestuser2');
+            RECORD_LIST.RECORD(0).BENEFITOR(2)
+                .hasId('benefitor-avatar-ctestuser3');
         });
     });
 
