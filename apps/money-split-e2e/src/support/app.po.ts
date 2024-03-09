@@ -1,3 +1,5 @@
+import moment = require("moment");
+
 export const getGreeting = () => cy.get('h1');
 
 export const LOGIN_FORM = {
@@ -55,10 +57,38 @@ export const RECORD_LIST = {
         cy.get('[data-test="namespace-record"]')
         .should('have.length', num);
     },
-    RECORD: (
-        index: number
-    ) => {
+    DATE: (index: number) => {
         const $el = () => cy
+            .get('[data-test="records-day"]')
+            .eq(index);
+
+        return {
+            RECORD: (index: number) => {
+                return RECORD_LIST.RECORD(index, $el);
+            },
+            hasDate (date: Date) {
+                if (moment(date).month() !== 2)
+                    throw Error('Not implemented jet');
+                const string = `Mar ${moment(date).date()}, ${moment(date).year()}`
+                $el().find('[data-test="records-day-label"]')
+                    .contains(string)
+            },
+            shouldHaveNumberOfRecords (num: number) {
+                $el().find('[data-test="namespace-record"]')
+                .should('have.length', num);
+            },
+        }
+    },
+    RECORD: (
+        index: number,
+        inSection?: () =>  Cypress.Chainable<JQuery>,
+    ) => {
+        const $el = 
+            inSection ?
+            () => inSection()
+            .find('[data-test="namespace-record"]')
+            .eq(index)
+            : () => cy
             .get('[data-test="namespace-record"]')
             .eq(index);
 

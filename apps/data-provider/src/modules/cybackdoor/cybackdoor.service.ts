@@ -1,7 +1,9 @@
-import { ERROR_CODE, Invitation, MNamespace, Owner, User } from "@angular-monorepo/entities"
-import { query } from "../../connection/connection"
-import { selectOneWhereSql } from "../../connection/helper"
-import { EntityPropertyType, InvitationEntity } from "../../types"
+import { ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, User } from "@angular-monorepo/entities"
+import { lastInsertId, query } from "../../connection/connection"
+import { insertSql, selectOneWhereSql } from "../../connection/helper"
+import { EntityPropertyType, InvitationEntity, RecordEntity } from "../../types"
+import { RECORD_SERVICE } from "../record"
+import { asyncMap } from "../../helpers"
 
 export const CYBACKDOOR_SERVICE = {
     deleteOwner: async (
@@ -76,4 +78,42 @@ export const CYBACKDOOR_SERVICE = {
           InvitationEntity,
         )
     },
+    addRecord: async (
+      namespaceId: number,
+      userId: number,
+      data: RecordDataCy,
+  ) => {
+
+      const recordData: RecordData = {
+        paidBy: (
+          await asyncMap(data.paidBy, async (b) => {
+            return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
+              .id;
+          })),
+        benefitors: (
+          await asyncMap(data.benefitors, async (b) => {
+            return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
+              .id;
+          })),
+        cost: data.cost,
+        currency: data.currency,
+      };
+
+      await query(insertSql(
+          'Record',
+          RecordEntity,
+          {
+              created: new Date(data.created),
+              edited: new Date(data.edited),
+              createdBy: userId,
+              editedBy: userId,
+              data: recordData,
+              namespaceId,
+          }
+      ));
+
+      const recordId = await lastInsertId();
+
+      return RECORD_SERVICE.getRecordById(recordId);
+  },
 }

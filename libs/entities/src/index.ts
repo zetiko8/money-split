@@ -70,6 +70,8 @@ export interface RecordDataCy {
     cost: number,
     currency: string,
     paidBy: string[],
+    created: Date,
+    edited: Date,
 }
 
 export interface RecordDataView {

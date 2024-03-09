@@ -4,46 +4,61 @@
         {{ 'recordsList' | translate }}
     </h5>
     <ul>
-        <li
-            *ngFor="let record of records"
-            data-test="namespace-record"
-            class="list-item box"
-            (click)="selectRecord.emit(record)"
+        <ng-container
+            *ngFor="let item of _items"
         >
-            <avatar
-                *ngFor="let payer of record.data.paidBy"
-                [name]="payer.name"
-                [avatarId]="payer.avatarId"
-                style="display: inline-block;"
-                data-test="payer-avatar"
-                [id]="'payer-avatar-' + payer.name"
+            <li
+                data-test="records-day"
             >
-            </avatar>
-            <span>
-                {{ 'paidWord' | translate }}
-            </span>
-            <span
-                data-test="record-cost"
-            >
-                {{ record.data.cost }}
-            </span>
-            <span
-                data-test="record-currency"
-            >
-                {{ record.data.currency }}
-            </span>
-            <span>
-                {{ 'toWord' | translate }}
-            </span>
-            <avatar
-                *ngFor="let benefitor of record.data.benefitors"
-                [name]="benefitor.name"
-                [avatarId]="benefitor.avatarId"
-                style="display: inline-block;"
-                data-test="benefitor-avatar"
-                [id]="'benefitor-avatar-' + benefitor.name"
-            >
-            </avatar>
-        </li>
+                <p
+                    data-test="records-day-label"
+                >
+                    {{ item.date | date }}
+                </p>
+                <ul>
+                    <li
+                        *ngFor="let record of item.records"
+                        data-test="namespace-record"
+                        class="list-item box"
+                        (click)="selectRecord.emit(record)"
+                    >
+                        <avatar
+                            *ngFor="let payer of record.data.paidBy"
+                            [name]="payer.name"
+                            [avatarId]="payer.avatarId"
+                            style="display: inline-block;"
+                            data-test="payer-avatar"
+                            [id]="'payer-avatar-' + payer.name"
+                        >
+                        </avatar>
+                        <span>
+                            {{ 'paidWord' | translate }}
+                        </span>
+                        <span
+                            data-test="record-cost"
+                        >
+                            {{ record.data.cost }}
+                        </span>
+                        <span
+                            data-test="record-currency"
+                        >
+                            {{ record.data.currency }}
+                        </span>
+                        <span>
+                            {{ 'toWord' | translate }}
+                        </span>
+                        <avatar
+                            *ngFor="let benefitor of record.data.benefitors"
+                            [name]="benefitor.name"
+                            [avatarId]="benefitor.avatarId"
+                            style="display: inline-block;"
+                            data-test="benefitor-avatar"
+                            [id]="'benefitor-avatar-' + benefitor.name"
+                        >
+                        </avatar>
+                    </li>
+                </ul>
+            </li>
+        </ng-container>
     </ul>
 </section>

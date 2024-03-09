@@ -1,6 +1,7 @@
 import { MNamespace, Owner } from "@angular-monorepo/entities";
 import { prepareNamespace } from "../support/prepare";
 import { NAMESPACE_SCREEN, RECORD_FORM, RECORD_LIST } from "../support/app.po";
+import * as moment from 'moment';
 
 describe('Add expense', () => {
 
@@ -60,7 +61,7 @@ describe('Add expense', () => {
         });
     });
 
-    describe.only('add a second expense',() => {
+    describe('add a second expense',() => {
         let owner!: Owner;
         let namespace!: MNamespace;
 
@@ -83,7 +84,9 @@ describe('Add expense', () => {
                         ],
                         cost: 5.4,
                         currency: 'SIT',
-                        paidBy: ['testuser'], 
+                        paidBy: ['testuser'],
+                        created: moment().subtract(2, 'hours').toDate(),
+                        edited: moment().subtract(2, 'hours').toDate(),
                     },
                 },
             ],

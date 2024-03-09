@@ -147,25 +147,10 @@ cyBackdoorRouter.post('/record/:namespaceName/:createdByUsername',
       const createdBy = await CYBACKDOOR_SERVICE
         .getUserByUsername(stringRouteParam(req, 'createdByUsername'));
 
-      const recordData: RecordData = {
-        paidBy: (
-          await asyncMap(req.body.paidBy, async (b) => {
-            return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
-              .id;
-          })),
-        benefitors: (
-          await asyncMap(req.body.benefitors, async (b) => {
-            return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
-              .id;
-          })),
-        cost: req.body.cost,
-        currency: req.body.currency,
-
-      };
-      const record = await RECORD_SERVICE.addRecord(
+      const record = await CYBACKDOOR_SERVICE.addRecord(
         namespace.id,
         createdBy.id,
-        recordData,
+        req.body,
       );
 
       res.json(record);
