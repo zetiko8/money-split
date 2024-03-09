@@ -1,4 +1,4 @@
-import { ERROR_CODE, Invitation, Owner } from "@angular-monorepo/entities"
+import { ERROR_CODE, Invitation, MNamespace, Owner, User } from "@angular-monorepo/entities"
 import { query } from "../../connection/connection"
 import { selectOneWhereSql } from "../../connection/helper"
 import { EntityPropertyType, InvitationEntity } from "../../types"
@@ -19,6 +19,15 @@ export const CYBACKDOOR_SERVICE = {
             WHERE name = "${namespaceName}"
             `
         )
+    },
+    getNamespaceByName: async (
+      namespaceName: string
+    ) => {
+        return (await query<MNamespace>(
+            `SELECT * FROM \`Namespace\`
+            WHERE name = "${namespaceName}"
+            `
+        ))[0];
     },
     deleteInvitationByEmail: async (
         email: string
@@ -43,6 +52,18 @@ export const CYBACKDOOR_SERVICE = {
         delete (owner[0] as any).hash;
       
         return owner[0];
+    },
+    getUserByUsername: async (
+        username: string
+      ) => {
+        const user = await query<User[]>(`
+        SELECT * FROM \`User\`
+        WHERE \`name\` = "${username}"`);
+      
+        if (!user.length)
+          throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
+            
+        return user[0];
     },
     getInvitationByEmail: async (
         email: string

@@ -60,12 +60,15 @@ export const RECORD_SERVICE = {
     getNamespaceRecords: async (
         namespaceId: number,
     ) => {
-        return await selectWhereSql<Record[]>(
+        const records = await selectWhereSql<Record[]>(
             'Record',
             'namespaceId',
             EntityPropertyType.ID,
             namespaceId,
             RecordEntity,
         );
+
+        records.sort((a, b) => a.created < b.created ? 1 : -1);
+        return records;
     }
 }

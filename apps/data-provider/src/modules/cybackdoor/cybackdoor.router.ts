@@ -5,6 +5,9 @@ import { OWNER_SERVICE } from "../owners";
 import { NAMESPACE_SERVICE } from "../namespace";
 import { INVITATION_SERVICE } from "../invitation";
 import { CYBACKDOOR_SERVICE } from "./cybackdoor.service";
+import { RECORD_SERVICE } from "../record";
+import { asyncMap, stringRouteParam } from "../../helpers";
+import { RecordData, RecordDataCy } from "@angular-monorepo/entities";
 
 export const cyBackdoorRouter = Router();
 
@@ -126,6 +129,46 @@ cyBackdoorRouter.post('/invitation/accept',
       );
 
       res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+cyBackdoorRouter.post('/record/:namespaceName/:createdByUsername',
+  logRequestMiddleware('CYBACKDOOR - acceptInvitation'),
+  async (
+    req: TypedRequestBody<RecordDataCy>,
+    res,
+    next,
+  ) => {
+    try {
+      const namespace = await CYBACKDOOR_SERVICE
+        .getNamespaceByName(stringRouteParam(req, 'namespaceName'));
+      const createdBy = await CYBACKDOOR_SERVICE
+        .getUserByUsername(stringRouteParam(req, 'createdByUsername'));
+
+      const recordData: RecordData = {
+        paidBy: (
+          await asyncMap(req.body.paidBy, async (b) => {
+            return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
+              .id;
+          })),
+        benefitors: (
+          await asyncMap(req.body.benefitors, async (b) => {
+            return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
+              .id;
+          })),
+        cost: req.body.cost,
+        currency: req.body.currency,
+
+      };
+      const record = await RECORD_SERVICE.addRecord(
+        namespace.id,
+        createdBy.id,
+        recordData,
+      );
+
+      res.json(record);
     } catch (error) {
       next(error);
     }

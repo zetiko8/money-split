@@ -1,4 +1,4 @@
-import { Invitation, MNamespace, Owner } from "@angular-monorepo/entities";
+import { Invitation, MNamespace, Owner, RecordDataCy } from "@angular-monorepo/entities";
 
 function getRandomColor () {
     return "#000000".replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
@@ -111,6 +111,17 @@ export const ACTIONS = {
             url: `http://localhost:3333/cybackdoor/invitation/accept`,
             method: 'POST',
             body: { email, name, ownerUsername }
+        }).then(res => res.body);
+    },
+    addRecord (
+        namespaceName: string,
+        createdBy: string,
+        record: RecordDataCy,
+    ) {
+        return cy.request<Invitation>({
+            url: `http://localhost:3333/cybackdoor/record/${namespaceName}/${createdBy}`,
+            method: 'POST',
+            body: record,
         }).then(res => res.body);
     }
 }

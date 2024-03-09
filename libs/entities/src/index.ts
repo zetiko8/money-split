@@ -65,6 +65,13 @@ export interface RecordData {
     paidBy: number[],
 }
 
+export interface RecordDataCy {
+    benefitors: string[],
+    cost: number,
+    currency: string,
+    paidBy: string[],
+}
+
 export interface RecordDataView {
     benefitors: User[],
     cost: number,

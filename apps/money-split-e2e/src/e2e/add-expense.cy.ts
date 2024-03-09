@@ -60,4 +60,61 @@ describe('Add expense', () => {
         });
     });
 
+    describe.only('add a second expense',() => {
+        let owner!: Owner;
+        let namespace!: MNamespace;
+
+        const scenario = prepareNamespace(
+            'testnamespace',
+            {  username: 'testuser'},
+            [
+                {  username: 'atestuser1'},
+                {  username: 'btestuser2'},
+                {  username: 'ctestuser3'},
+            ],
+            [
+                {
+                    user: 'testuser',
+                    record: {
+                        benefitors: [
+                            'atestuser1',
+                            'btestuser2',
+                            'ctestuser3',
+                        ],
+                        cost: 5.4,
+                        currency: 'SIT',
+                        paidBy: ['testuser'], 
+                    },
+                },
+            ],
+        );
+
+        before(() => {
+            scenario.before()
+                .then(data => {
+                    owner = data.owner;
+                    namespace = data.namespace;
+                });
+        });
+
+        after(() => {
+            scenario.after();
+        });
+
+        it('can add an expense', () => {
+    
+            NAMESPACE_SCREEN.visit(owner.key, namespace.id);
+            NAMESPACE_SCREEN.goToAddRecord();
+            RECORD_FORM.setCurrency('SIT');
+            RECORD_FORM.setCost('10');
+            RECORD_FORM.clickBenefitor('atestuser1');
+            RECORD_FORM.clickBenefitor('btestuser2');
+            RECORD_FORM.clickBenefitor('ctestuser3');
+            RECORD_FORM.clickPaidBy('testuser');
+            RECORD_FORM.confirm();            
+            RECORD_LIST.RECORD(0).shouldHaveCost('10');
+            RECORD_LIST.RECORD(1).shouldHaveCost('5.4');
+        });
+    });
+
 });

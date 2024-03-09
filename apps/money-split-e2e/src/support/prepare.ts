@@ -1,4 +1,4 @@
-import { MNamespace, Owner } from "@angular-monorepo/entities";
+import { MNamespace, Owner, RecordDataCy } from "@angular-monorepo/entities";
 import { ACTIONS } from "./actions";
 
 export interface TestUser {
@@ -17,6 +17,7 @@ export function prepareNamespace (
     namespaceName: string,
     creator: TestUser,
     users: TestUser[],
+    records: { user: string, record: RecordDataCy }[] = [],
 ) {
 
     const pCreator: PTestUser = {
@@ -72,6 +73,12 @@ export function prepareNamespace (
                 user.username, user.username, user.email));
 
             ACTIONS.login(pCreator.username, pCreator.password);
+
+            records.forEach(record => ACTIONS.addRecord(
+                namespaceName,
+                record.user,
+                record.record,
+            ));
         
             return cy.then(() => cy.wrap({ 
                 namespace, 
