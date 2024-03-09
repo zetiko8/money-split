@@ -1,6 +1,7 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { TypedRequestBody } from './types';
 import { logRequestMiddleware } from './request/service';
+import { ERROR_CODE } from '@angular-monorepo/entities';
 
 export function getControler <B, T>(
   router: Router,
@@ -37,4 +38,36 @@ export async function asyncMap<T, R> (
   }
 
   return result;
+}
+
+export function stringRouteParam (
+  request: Request,
+  paramName: string,
+  options = { 
+    required: true,
+  },
+): string {
+  const param = request.params[paramName];
+  if (options.required && !param) throw Error(
+    ERROR_CODE.INVALID_REQUEST);
+
+  return param;
+}
+
+export function numberRouteParam (
+  request: Request,
+  paramName: string,
+  options = { 
+    required: true,
+  },
+): number {
+  const param = request.params[paramName];
+  if (options.required && param === undefined) throw Error(
+    ERROR_CODE.INVALID_REQUEST);
+
+  const numberParam = Number(param);
+  if (Number.isNaN(numberParam)) throw Error(
+    ERROR_CODE.INVALID_REQUEST);
+
+  return numberParam;
 }

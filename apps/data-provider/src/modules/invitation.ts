@@ -116,26 +116,6 @@ export async function inviteToNamespace (
 }
 
 export const INVITATION_SERVICE = {
-  deleteInvitationByEmail: async (
-    email: string
-  ) => {
-    await query(
-      `DELETE FROM \`Invitation\`
-      WHERE email = "${email}"
-      `
-    )
-  },
-  getInvitationByEmail: async (
-    email: string
-  ) => {
-    return await selectOneWhereSql<Invitation>(
-      'Invitation',
-      'email',
-      EntityPropertyType.STRING,
-      email,
-      InvitationEntity,
-    )
-  },
   acceptInvitation,
   getInvitationViewData,
   getInvitationByKey,

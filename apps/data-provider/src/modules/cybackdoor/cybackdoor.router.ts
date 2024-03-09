@@ -4,6 +4,7 @@ import { TypedRequestBody } from "../../types";
 import { OWNER_SERVICE } from "../owners";
 import { NAMESPACE_SERVICE } from "../namespace";
 import { INVITATION_SERVICE } from "../invitation";
+import { CYBACKDOOR_SERVICE } from "./cybackdoor.service";
 
 export const cyBackdoorRouter = Router();
 
@@ -16,7 +17,7 @@ cyBackdoorRouter.delete('/owner/:username',
   ) => {
     try {
       
-        await OWNER_SERVICE.deleteOwner(req.params['username'] as string);
+        await CYBACKDOOR_SERVICE.deleteOwner(req.params['username'] as string);
 
       res.json({ success: true });
     } catch (error) {
@@ -52,7 +53,7 @@ cyBackdoorRouter.delete('/namespaceName/:namespaceName',
   ) => {
     try {
       
-        await NAMESPACE_SERVICE
+        await CYBACKDOOR_SERVICE
           .deleteNamespaceByName(
             req.params['namespaceName'] as string);
 
@@ -71,7 +72,7 @@ cyBackdoorRouter.delete('/invitation/:email',
   ) => {
     try {
       
-        await INVITATION_SERVICE
+        await CYBACKDOOR_SERVICE
           .deleteInvitationByEmail(
             req.params['email'] as string);
 
@@ -115,9 +116,9 @@ cyBackdoorRouter.post('/invitation/accept',
     try {
 
       const owner 
-        = await OWNER_SERVICE.getOwnerByUsername(req.body.ownerUsername);
+        = await CYBACKDOOR_SERVICE.getOwnerByUsername(req.body.ownerUsername);
       const invitation
-        = await INVITATION_SERVICE.getInvitationByEmail(req.body.email);
+        = await CYBACKDOOR_SERVICE.getInvitationByEmail(req.body.email);
       await INVITATION_SERVICE.acceptInvitation(
         invitation.invitationKey,
         owner,

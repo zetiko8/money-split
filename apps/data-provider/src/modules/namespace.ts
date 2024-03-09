@@ -210,15 +210,6 @@ export const NAMESPACE_SERVICE = {
             `
         )
     },
-    deleteNamespaceByName: async (
-        namespaceName: string
-    ) => {
-        await query(
-            `DELETE FROM \`Namespace\`
-            WHERE name = "${namespaceName}"
-            `
-        )
-    },
     getNamespaceByName: async (
         namespaceName: string
     ) => {
