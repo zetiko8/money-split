@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { PageComponent } from '../../../../components/page/page.component';
 import { NamespaceService } from '../../services/namespace.service';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
@@ -104,7 +103,6 @@ export function getRecordForm (
     RouterModule,
     CommonModule,
     TranslateModule,
-    PageComponent,
     ReactiveFormsModule,
     CheckboxGroupComponent,
     CheckboxRadioGroupComponent,

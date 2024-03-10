@@ -2,15 +2,16 @@ import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../../components/page/page.component';
-import { Observable, filter, map, merge, mergeMap, of, tap } from 'rxjs';
+import { PageComponent } from '../../../../layout/page/page.component';
+import { Observable, ReplaySubject, filter, map, merge, mergeMap, of, share, tap } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { CreateRecordData } from '@angular-monorepo/entities';
+import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
 import { RecordFormComponent, getRecordForm } from '../../components/record-form/record-form.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { RecordFormGroup } from '../../../../types';
 
 @Component({
   standalone: true,
@@ -56,6 +57,10 @@ export class AddExpenseView {
         });
         return { namespace, form }; 
       }),
+      share({ connector: () => new ReplaySubject<{
+        namespace: NamespaceView;
+        form: RecordFormGroup;
+      }>() }),
     );
 
   public readonly isLoading = combineLoaders([

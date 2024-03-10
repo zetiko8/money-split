@@ -2,19 +2,23 @@
 <page
     [isLoading]="isLoading"
     [notifications$]="notification$"
+    class="with-page-header"
 >
+    <h4
+        page-header
+        *ngIf="namespace$ | async as namespace"
+    >
+        <button
+            class="icon-btn"
+            (click)="routingService.goToOwnerRealmView()"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        {{ namespace.name }}
+    </h4>
     <ng-container
         *ngIf="namespace$ | async as namespace"
     >
-        <h4>
-            <button
-                class="icon-btn"
-                (click)="routingService.goToOwnerRealmView()"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-            {{ namespace.name }}
-        </h4>
         <users-list
             [users]="namespace.users"
             [invitations]="namespace.invitations"

@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { AppErrorCode } from '../../../types';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../components/page/page.component';
+import { PageComponent } from '../../../layout/page/page.component';
 import { Observable, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../components/notifications/notifications.types';
 import { AuthService } from '../../../services/auth/token/auth.token.service';

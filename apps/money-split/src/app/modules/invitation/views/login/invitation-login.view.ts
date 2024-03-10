@@ -6,7 +6,7 @@ import { LoginService } from 'apps/money-split/src/app/components/login/login.se
 import { RoutingService } from 'apps/money-split/src/app/services/routing/routing.service';
 import { ImprovedProcess } from 'apps/money-split/src/helpers';
 import { InvitationService } from '../../services/invitation.service';
-import { PageComponent } from 'apps/money-split/src/app/components/page/page.component';
+import { PageComponent } from 'apps/money-split/src/app/layout/page/page.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Injectable()

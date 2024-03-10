@@ -2,7 +2,6 @@
     (submit)="$event.preventDefault(); submit()"
     *ngIf="form"
 >
-    <ng-content select="[record-form-header]"></ng-content>
     <div class="input-group">
         <label>{{ 'currency' | translate }}</label>
         <input

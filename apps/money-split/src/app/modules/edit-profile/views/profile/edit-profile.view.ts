@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../../components/page/page.component';
+import { PageComponent } from '../../../../layout/page/page.component';
 import { Observable, filter, map, merge, shareReplay, take } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { EditProfileService } from '../../services/edit-profile.service';

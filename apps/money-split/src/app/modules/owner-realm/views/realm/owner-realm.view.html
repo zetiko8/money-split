@@ -2,8 +2,11 @@
 <page
     [isLoading]="loadProcess.inProgress$"
     [notifications$]="notification$"
+    class="with-page-header"
 >
-    <h4>
+    <h4
+        page-header
+    >
         {{ 'myNamespaces' | translate }}
     </h4>
     <section>

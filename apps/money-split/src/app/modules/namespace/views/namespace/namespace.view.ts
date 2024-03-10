@@ -3,14 +3,15 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../../components/page/page.component';
-import { Observable, Subject, filter, map, merge, mergeMap, of } from 'rxjs';
+import { PageComponent } from '../../../../layout/page/page.component';
+import { Observable, ReplaySubject, Subject, filter, map, merge, mergeMap, of, share } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
 import { UsersListComponent } from '../../components/users-list/users-list.component';
 import { RecordsListComponent } from '../../components/records-list/records-list.component';
+import { NamespaceView as MNamespaceView } from '@angular-monorepo/entities';
 
 @Component({
   standalone: true,
@@ -46,6 +47,7 @@ export class NamespaceView {
       this.reload$
     ).pipe(
       mergeMap(() => this.loadProcess.execute('')),
+      share({ connector: () => new ReplaySubject<MNamespaceView>() })
     );
 
   public readonly isLoading = combineLoaders([

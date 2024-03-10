@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
-import { PageComponent } from '../../../../components/page/page.component';
+import { PageComponent } from '../../../../layout/page/page.component';
 import { Observable, ReplaySubject, filter, map, merge, mergeMap, of, share, take, tap } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { NamespaceService } from '../../services/namespace.service';

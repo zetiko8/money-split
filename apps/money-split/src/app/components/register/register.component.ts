@@ -7,7 +7,7 @@ import { BoundProcess } from 'rombok';
 import { Observable, filter, map, merge } from 'rxjs';
 import { RegisterOwnerPayload } from '@angular-monorepo/entities';
 import { FileInputComponent } from '@angular-monorepo/components';
-import { PageComponent } from '../page/page.component';
+import { PageComponent } from '../../layout/page/page.component';
 import { AvatarComponent } from '../avatar.component';
 import { UserService } from '../../services/auth/token/auth.token.user.service';
 import { getRandomColor } from 'apps/money-split/src/helpers';
