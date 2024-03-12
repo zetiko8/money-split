@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, OnDestroy, inject } from '@angular/core';
 import { AvatarService } from '../services/avatar.service';
-import { take } from 'rxjs';
+import { Subject, take, takeUntil } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -38,10 +38,11 @@ import { take } from 'rxjs';
   host: { class: 'avatar' },
   styles: [ '.avatar-image { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }' ]
 })
-export class AvatarComponent {
+export class AvatarComponent implements OnDestroy {
 
   private readonly http = inject(HttpClient);
   private readonly avatarService = inject(AvatarService);
+  private readonly destroy$ = new Subject<void>();
 
     @Input() name = '';
     @Input() color = '#271d3b';
@@ -53,7 +54,10 @@ export class AvatarComponent {
     set avatarId (id: number | null) {
       if (id !== null) {
         this.avatarService.load(id)
-        .pipe(take(1))
+        .pipe(
+          takeUntil(this.destroy$),
+          take(1),  
+        )
         .subscribe(
           avatar => {
             if (avatar.dataUrl) {
@@ -66,4 +70,9 @@ export class AvatarComponent {
         );
       }
     };
+
+  ngOnDestroy(): void {
+      this.destroy$.next();
+      this.destroy$.complete();
+  }
 }
