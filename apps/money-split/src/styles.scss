@@ -333,6 +333,7 @@ ul {
     header {
         position: fixed;
         width: 100%;
+        background-color: var(--background-color-primary);
     }
     page {
         display: block;
@@ -343,6 +344,7 @@ ul {
                 padding-top: 60px;
 
                 .page-header {
+                    background-color: var(--background-color-primary);
                     position: fixed;
                     height: 40px;
                     width: 100%;
