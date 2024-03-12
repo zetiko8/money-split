@@ -1,6 +1,6 @@
 import { Invitation, MNamespace, Owner } from "@angular-monorepo/entities";
 import { ACTIONS } from "../support/actions";
-import { INVITATION_FORM, LOGIN_FORM, REGISTER_FORM } from "../support/app.po";
+import { INVITATION_FORM, LOGIN_FORM, NAMESPACE_SCREEN, REGISTER_FORM } from "../support/app.po";
 
 describe('Invitation', () => {
 
@@ -86,6 +86,7 @@ describe('Invitation', () => {
             cy.visit(`/invitation/${invitation.invitationKey}/join`)
             INVITATION_FORM.accept(email);    
             cy.url().should('contain', '/namespace/');
+            NAMESPACE_SCREEN.openMembersTab();
             cy.get('[data-test="number-of-invited-users"]')
                 .should('contain.text', '(0)')
             cy.get('[data-test="invited-owner"]')
@@ -135,6 +136,7 @@ describe('Invitation', () => {
             
             LOGIN_FORM.login('testuser1', 'testpassword');
             INVITATION_FORM.accept(email);
+            NAMESPACE_SCREEN.openMembersTab();
             cy.url().should('contain', '/namespace/');
             cy.get('[data-test="number-of-invited-users"]')
                 .should('contain.text', '(0)')
@@ -186,6 +188,7 @@ describe('Invitation', () => {
             REGISTER_FORM.register('testuser1', 'testpassword');
             LOGIN_FORM.login('testuser1', 'testpassword');
             INVITATION_FORM.accept(email);
+            NAMESPACE_SCREEN.openMembersTab();
             cy.url().should('contain', '/namespace/');
             cy.get('[data-test="number-of-invited-users"]')
                 .should('contain.text', '(0)')

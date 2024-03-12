@@ -49,7 +49,15 @@ export const NAMESPACE_SCREEN = {
     },
     goToAddRecord () {
         cy.get('[data-test="add-expense-button"]').click();
-    }
+    },
+    openMembersTab () {
+        cy.get('[role=tab][data-test=tab-users]')
+            .click();
+    },
+    openRecordsListTab () {
+        cy.get('[role=tab][data-test=tab-recordsList]')
+            .click();
+    },
 }
 
 export const RECORD_LIST = {
