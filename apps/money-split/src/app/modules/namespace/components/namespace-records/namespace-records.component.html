@@ -1,14 +1,12 @@
+<button
+    (click)="routingService.goToAddExpenseView()"
+    data-test="add-expense-button"
+    class="floating-action-button"
+>
+    <i class="fa-solid fa-plus"></i>
+</button>
 <records-list
     [records]="namespace.records"
     (selectRecord)="routingService
         .goToEditRecordView($event.id)"
 ></records-list>
-<div>
-<button
-    (click)="routingService.goToAddExpenseView()"
-    data-test="add-expense-button"
->
-    <i class="fa-solid fa-plus"></i>
-    {{ 'addExpense' | translate }}
-</button>
-</div>
