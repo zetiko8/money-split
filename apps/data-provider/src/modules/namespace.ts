@@ -1,10 +1,11 @@
-import { ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataView, RecordView, User } from "@angular-monorepo/entities";
+import { CreateNamespacePayload, ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataView, RecordView, User } from "@angular-monorepo/entities";
 import { query } from "../connection/connection";
 import { insertSql, lastInsertId, selectOneWhereSql, selectWhereSql } from "../connection/helper";
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity } from "../types";
 import { USER_SERVICE } from "./user";
 import { RECORD_SERVICE } from "./record";
 import { asyncMap } from "../helpers";
+import { AVATAR_SERVICE } from "./avatar";
 
 export async function getNamespacesForOwner (
     ownerId: number,
@@ -45,7 +46,7 @@ export async function addOwnerToNamespace (
 }
 
 async function createNamespace (
-    name: string,
+    payload: CreateNamespacePayload,
     owner: Owner,
   ): Promise<MNamespace> {
   
@@ -55,16 +56,21 @@ async function createNamespace (
     INNER JOIN Namespace n 
     ON n.id = no2.namespaceId
     WHERE no2.ownerId = ${owner.id}
-    AND n.name = "${name}"
+    AND n.name = "${payload.namespaceName}"
     `);
   
     if (namespaces.length)
       throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
+
+    const avatar = await AVATAR_SERVICE.createAvatar(
+        payload.avatarColor,
+        payload.avatarImage,
+    );
   
     await query(insertSql(
       'Namespace',
       MNamespaceEntity,
-      { name }
+      { name: payload.namespaceName, avatarId: avatar.id }
     ));
   
     const namespaceId = await lastInsertId();
@@ -76,10 +82,7 @@ async function createNamespace (
         owner.id,
     )
   
-    return {
-      id: namespaceId,
-      name,
-    };
+    return await getNamespaceById(namespaceId);
   }
 
 async function getNamespaceViewForOwner (
@@ -162,6 +165,7 @@ const namespaceView: NamespaceView = {
     users,
     ownerUsers,
     records: recordViews,
+    avatarId: namespace.avatarId,
 };
 
 return namespaceView;

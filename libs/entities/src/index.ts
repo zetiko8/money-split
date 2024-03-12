@@ -1,6 +1,7 @@
 export interface MNamespace {
     id: number,
     name: string,
+    avatarId: number,
 }
 
 export interface NamespaceView extends MNamespace {
@@ -20,6 +21,12 @@ export interface Owner {
 export interface RegisterOwnerPayload {
     password: string,
     username: string,
+    avatarColor: string | null,
+    avatarImage: string | null,
+}
+
+export interface CreateNamespacePayload {
+    namespaceName: string,
     avatarColor: string | null,
     avatarImage: string | null,
 }

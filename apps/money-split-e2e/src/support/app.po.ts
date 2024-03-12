@@ -40,6 +40,19 @@ export const REGISTER_FORM = {
     }
 }
 
+export const CREATE_NAMESPACE_FORM = {
+    setName (
+        name: string
+    ) {
+        cy.get('input[name="namespaceName"]') // enter a username
+        .type(name)
+    },
+    submit () {
+        cy.get('button[type=submit]')
+            .click();
+    },
+}
+
 export const NAMESPACE_SCREEN = {
     visit (
         ownerKey: string,
@@ -56,6 +69,24 @@ export const NAMESPACE_SCREEN = {
     },
     openRecordsListTab () {
         cy.get('[role=tab][data-test=tab-recordsList]')
+            .click();
+    },
+    userIsOn (
+        namespaceName: string,
+    ) {
+        cy.get('[data-test="namespace-view-page-header"]')
+            .should('contain.text', namespaceName);
+    }
+}
+
+export const REALM_SCREEN = {
+    visit (
+        ownerKey: string,
+    ) {
+        cy.visit(`/${ownerKey}/realm`);
+    },
+    goToCreateANamespace () {
+        cy.get('[data-test="new-namespace-button"]')
             .click();
     },
 }

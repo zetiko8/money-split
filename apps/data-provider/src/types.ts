@@ -39,6 +39,7 @@ export const NamespaceOwnerEntity: Entity = {
 export const MNamespaceEntity: Entity = {
   id: EntityPropertyType.AUTO_ID,
   name: EntityPropertyType.NON_EMPTY_STRING,
+  avatarId: EntityPropertyType.ID,
 };
 
 export const UserEntity: Entity = {

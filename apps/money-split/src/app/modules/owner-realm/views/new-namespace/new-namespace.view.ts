@@ -3,13 +3,15 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { AppErrorCode } from '../../../../types';
 import { BoundProcess } from 'rombok';
 import { PageComponent } from '../../../../layout/page/page.component';
 import { Observable, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { OwnerRealmService } from '../../services/owner-realm.service';
 import { RoutingService } from '../../../../services/routing/routing.service';
+import { getRandomColor } from '../../../../../helpers';
+import { CustomizeAvatarComponent } from '../../../../components/customize-avatar/customize-avatar.component';
+import { CreateNamespacePayload } from '@angular-monorepo/entities';
 
 @Component({
   standalone: true,
@@ -19,6 +21,7 @@ import { RoutingService } from '../../../../services/routing/routing.service';
     ReactiveFormsModule,
     TranslateModule,
     PageComponent,
+    CustomizeAvatarComponent,
   ],
   selector: 'new-namespace',
   templateUrl: './new-namespace.view.html',
@@ -35,10 +38,14 @@ export class NewNamespaceView {
   public readonly form = new FormGroup({
     namespaceName: new FormControl<string>(
       '', { validators: [ Validators.required ] }),
+    avatarColor: new FormControl<string>(
+      getRandomColor()),
+    avatarImage: new FormControl<string | null>(
+      null)
   });
 
   public readonly createProcess = new BoundProcess(
-    (data: { namespaceName: string }) => this
+    (data: CreateNamespacePayload) => this
       .ownerRealmService.createNewNamespace(data) 
   )
 
@@ -53,14 +60,11 @@ export class NewNamespaceView {
 
   public create () {
 
-    if (!this.form.valid) throw Error(AppErrorCode.FormValidation);
-
-    this.createProcess.execute({
-      namespaceName: this.form.value.namespaceName as string,
-    }
+    this.createProcess.execute(
+      this.form.value as CreateNamespacePayload
     )
       .subscribe(namespace => {
         this.routingService.goToNamespaceView(namespace.id);
-      })
+      });
   }
 }

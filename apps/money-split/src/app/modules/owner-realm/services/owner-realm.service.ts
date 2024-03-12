@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { ConfigService } from "../../../services/config.service";
 import { Observable, mergeMap } from "rxjs";
-import { MNamespace } from "@angular-monorepo/entities";
+import { CreateNamespacePayload, MNamespace } from "@angular-monorepo/entities";
 import { RoutingService } from "../../../services/routing/routing.service";
 
 @Injectable()
@@ -13,9 +13,7 @@ export class OwnerRealmService {
     private readonly routingService = inject(RoutingService);
 
     public createNewNamespace (
-        data: { 
-            namespaceName: string
-        }
+        data: CreateNamespacePayload,
     ): Observable<MNamespace> {
         return this.routingService.getOwnerKey()
             .pipe(
@@ -24,7 +22,7 @@ export class OwnerRealmService {
                         + '/'
                         + ownerKey
                         + "/namespace",
-                        { name: data.namespaceName }
+                        data,
                     )
                 )
             )

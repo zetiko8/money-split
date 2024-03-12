@@ -1,6 +1,6 @@
 import { Invitation, MNamespace, Owner, RecordDataCy } from "@angular-monorepo/entities";
 
-function getRandomColor () {
+export function getRandomColor () {
     return "#000000".replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
 }
 
@@ -55,6 +55,11 @@ export const ACTIONS = {
             cy.window().then(win => {
                 win.localStorage.setItem('token', res.body.token);
             })
+        });
+    },
+    logout () {
+        cy.window().then(win => {
+            win.localStorage.removeItem('token');
         });
     },
     createNamespace (

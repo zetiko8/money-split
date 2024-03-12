@@ -26,9 +26,15 @@
                 name="namespaceName"    
             >
         </div>
+        <customize-avatar
+            [avatarColor]="form.controls.avatarColor"
+            [avatarImage]="form.controls.avatarImage"
+            [avatarName]="form.controls.namespaceName.value || ''"
+        ></customize-avatar>
         <div class="input-group">
             <button
                 type="submit"
+                [disabled]="!form.valid"
             >
                 {{ 'confirm' | translate }}
             </button>

@@ -5,7 +5,7 @@ import { OWNER_SERVICE } from "../owners";
 import { NAMESPACE_SERVICE } from "../namespace";
 import { INVITATION_SERVICE } from "../invitation";
 import { CYBACKDOOR_SERVICE } from "./cybackdoor.service";
-import { stringRouteParam } from "../../helpers";
+import { getRandomColor, stringRouteParam } from "../../helpers";
 import { RecordDataCy } from "@angular-monorepo/entities";
 
 export const cyBackdoorRouter = Router();
@@ -115,7 +115,11 @@ cyBackdoorRouter.post('/:ownerKey/namespace',
           req.params['ownerKey'] as string
         );
       const mNamaespace = await NAMESPACE_SERVICE.createNamespace(
-        req.body.name, owner);
+        {
+          namespaceName: req.body.name,
+          avatarColor: getRandomColor(),
+          avatarImage: null,
+        }, owner);
       res.json(mNamaespace);
     } catch (error) {
       next(error);

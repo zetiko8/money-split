@@ -3,7 +3,7 @@ import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { decodeJwt, login } from './service';
 import { query } from '../connection/connection';
-import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload } from '@angular-monorepo/entities';
+import { CreateNamespacePayload, ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
@@ -18,7 +18,7 @@ export const mainRouter = Router();
 mainRouter.post('/:ownerKey/namespace',
   logRequestMiddleware('POST namespace'),
   async (
-    req: TypedRequestBody<{ name: string }>,
+    req: TypedRequestBody<CreateNamespacePayload>,
     res,
     next,
   ) => {
@@ -26,7 +26,7 @@ mainRouter.post('/:ownerKey/namespace',
       const owner = await getOwnerFromToken(req);
 
       const mNamaespace = await NAMESPACE_SERVICE.createNamespace(
-        req.body.name, owner);
+        req.body, owner);
 
       res.json(mNamaespace);
     } catch (error) {

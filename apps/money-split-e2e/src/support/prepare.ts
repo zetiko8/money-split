@@ -13,18 +13,83 @@ interface PTestUser {
     email: string,
 }
 
+function prepareRealmInternal (
+    creator: TestUser,
+) {
+    const pCreator: PTestUser = {
+        username: creator.username,
+        password: creator.password || 'testpassword',
+        email: creator.username + '@testemail.com',
+    }
+
+    const cleanup = () => {
+        ACTIONS.deleteOwner(creator.username);
+    }
+
+    return {
+        setup: () => {
+            let owner!: Owner;
+            
+            cleanup();
+            ACTIONS.registerOwner(
+                pCreator.username, pCreator.password
+            )
+                .then(ownerRes => {
+                    owner = ownerRes;
+                });
+        
+            return cy.then(() => cy.wrap({ 
+                owner,
+                creator: pCreator,
+            }));
+        },
+        cleanup,
+        creator: pCreator,
+    };
+}
+
+export function prepareRealm (
+    creator: TestUser,
+) {
+
+    const prepareRealmP = prepareRealmInternal(creator);
+
+    const cleanup = () => {
+        prepareRealmP.cleanup();
+        ACTIONS.logout()
+    }
+
+    return {
+        before: () => {
+            let owner!: Owner;
+            
+            cleanup();
+            prepareRealmP.setup()
+                .then(res => {
+                    owner = res.owner;
+                });
+            ACTIONS.login(
+                prepareRealmP.creator.username, 
+                prepareRealmP.creator.password,
+            );
+        
+            return cy.then(() => cy.wrap({ 
+                owner,
+                creator: prepareRealmP.creator,
+            }));
+        },
+        after: () => cleanup(),
+    };
+
+}
+
 export function prepareNamespace (
     namespaceName: string,
     creator: TestUser,
     users: TestUser[],
     records: { user: string, record: RecordDataCy }[] = [],
 ) {
-
-    const pCreator: PTestUser = {
-        username: creator.username,
-        password: creator.password || 'testpassword',
-        email: creator.username + '@testemail.com',
-    }
+    const prepareRealmP = prepareRealmInternal(creator);
 
     const pUsers: PTestUser[] = users.map(user => {
         return {
@@ -35,7 +100,8 @@ export function prepareNamespace (
     });
 
     const cleanup = () => {
-        [ creator, ...users ]
+        prepareRealmP.cleanup();
+        users
             .forEach(user => ACTIONS.deleteOwner(user.username));
         [ creator, ...users ]
             .forEach(user => ACTIONS.deleteUser(user.username));
@@ -54,17 +120,15 @@ export function prepareNamespace (
                 .forEach(user => ACTIONS.registerOwner(
                     user.username, user.password,
                 ));
-            ACTIONS.registerOwner(
-                pCreator.username, pCreator.password
-            )
-                .then(ownerRes => {
-                    owner = ownerRes;
+            prepareRealmP.setup()
+                .then(res => {
+                    owner = res.owner;
                     ACTIONS.createNamespace(
                         namespaceName, owner.key)
                         .then(namespaceRes => {
                             namespace = namespaceRes;
                             pUsers.forEach(user => ACTIONS.invite(
-                                ownerRes.key,
+                                owner.key,
                                 namespaceRes.id,
                                 user.email,
                             ));
@@ -74,7 +138,10 @@ export function prepareNamespace (
             pUsers.forEach(user => ACTIONS.acceptInvitation(
                 user.username, user.username, user.email));
 
-            ACTIONS.login(pCreator.username, pCreator.password);
+            ACTIONS.login(
+                prepareRealmP.creator.username, 
+                prepareRealmP.creator.password,
+            );
 
             records.forEach(record => ACTIONS.addRecord(
                 namespaceName,
@@ -85,7 +152,7 @@ export function prepareNamespace (
             return cy.then(() => cy.wrap({ 
                 namespace, 
                 owner,
-                creator: pCreator,
+                creator: prepareRealmP.creator,
                 users: pUsers, 
             }));
         },
