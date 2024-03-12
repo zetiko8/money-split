@@ -40,8 +40,4 @@ export class TabsHeaderComponent {
     }[] = [];
     @Input() selectedTab = '';
     @Output() tabSelected = new EventEmitter<string>();
-
-    constructor () {
-        console.log(this);
-    }
 }
