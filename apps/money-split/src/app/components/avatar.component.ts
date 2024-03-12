@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, Input, OnDestroy, inject } from '@angular/core';
 import { AvatarService } from '../services/avatar.service';
 import { Subject, take, takeUntil } from 'rxjs';
@@ -40,7 +39,6 @@ import { Subject, take, takeUntil } from 'rxjs';
 })
 export class AvatarComponent implements OnDestroy {
 
-  private readonly http = inject(HttpClient);
   private readonly avatarService = inject(AvatarService);
   private readonly destroy$ = new Subject<void>();
 
