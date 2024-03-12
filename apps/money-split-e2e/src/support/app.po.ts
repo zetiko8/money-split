@@ -93,6 +93,9 @@ export const RECORD_LIST = {
             .eq(index);
 
         return {
+            goToEdit () {
+                $el().click();
+            },
             shouldHaveNumberOfPayers (num: number) {
                 $el().find('[data-test="payer-avatar"]')
                     .should('have.length', num)
@@ -150,6 +153,12 @@ export const RECORD_FORM = {
         cy.get('[data-testid="currency-input" ]')
             .type(currency);
     },
+    currencyIsSetTo (
+        currency: string,
+    ) {
+        cy.get('[data-testid="currency-input" ]')
+        .should('have.value', currency);
+    },
     setCost (
         cost: string,
     ) {
@@ -158,12 +167,42 @@ export const RECORD_FORM = {
         cy.get('[data-testid="cost-input"]')
             .type(cost);
     },
+    costIsSetTo (
+        cost: string,
+    ) {
+        cy.get('[data-testid="cost-input"]')
+        .should('have.value', cost);
+    },
     clickBenefitor (
         username: string,
     ) {
         cy.get('[data-testid="add-benefitor"]')
         .contains(username)
         .click();
+    },
+    BENEFITORS: {
+        areSelected (
+            names: string[],
+        ) {
+            names.forEach(name => {
+                cy.get('[data-testid="add-benefitor"]')
+                .contains(name)
+                .parent()
+                .find('i')
+                .should('have.class', 'fa-check');
+            })
+        },
+        areNotSelected (
+            names: string[],
+        ) {
+            names.forEach(name => {
+                cy.get('[data-testid="add-benefitor"]')
+                .contains(name)
+                .parent()
+                .find('i')
+                .should('have.class', 'fa-square');
+            })
+        },
     },
     clickPaidBy (
         username: string,
@@ -172,7 +211,31 @@ export const RECORD_FORM = {
         .contains(username)
         .click();
     },
+    PAID_BY: {
+        areSelected (
+            names: string[],
+        ) {
+            names.forEach(name => {
+                cy.get('[data-testid="add-paid-by"]')
+                .contains(name)
+                .parent()
+                .find('i')
+                .should('have.class', 'fa-check');
+            })
+        },
+        areNotSelected (
+            names: string[],
+        ) {
+            names.forEach(name => {
+                cy.get('[data-testid="add-paid-by"]')
+                .contains(name)
+                .parent()
+                .find('i')
+                .should('have.class', 'fa-square');
+            })
+        },
+    },
     confirm () {
         cy.get('[data-test="add-expense-confirm-btn"]').click();
-    }
+    },
 }
