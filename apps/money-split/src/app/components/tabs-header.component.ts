@@ -27,6 +27,9 @@ import { TranslateModule } from '@ngx-translate/core';
         </div>
     </div>
   `,
+  // eslint-disable-next-line @angular-eslint/no-host-metadata-property
+//   host: { class: 'avatar' },
+  styles: [ ':host { display: block; }' ]
 })
 export class TabsHeaderComponent {
 

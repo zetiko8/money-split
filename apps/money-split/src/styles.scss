@@ -359,6 +359,22 @@ ul {
                     }
                 }
             }
+
+            &.with-page-tabs {
+
+                main {
+                    padding-top: 100px;
+                }
+
+                .page-tabs {
+                    position: fixed;
+                    height: 40px;
+                    width: 100%;
+                    left: 0;
+                    top: 120px;
+                    background-color: var(--background-color-primary);
+                }
+            }
         }
 
         main {
