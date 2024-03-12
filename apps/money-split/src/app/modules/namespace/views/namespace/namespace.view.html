@@ -16,27 +16,34 @@
         </button>
         {{ namespace.name }}
     </h4>
+    <tabs-header
+        page-tabs
+        [tabs]="[
+            { 
+                label: 'recordsList', 
+                icon: 'fa-solid fa-coins', 
+                id: 'recordsList' 
+            },
+            { 
+                label: 'users', 
+                icon: 'fa-solid fa-user', 
+                id: 'users'
+            },
+        ]"
+        [selectedTab]="activeTab$.value"
+        (tabSelected)="activeTab$.next($event)"
+    >
+    </tabs-header>
     <ng-container
         *ngIf="namespace$ | async as namespace"
     >
-        <users-list
-            [users]="namespace.users"
-            [invitations]="namespace.invitations"
-            (invite)="routingService.goToInviteView()"
-        ></users-list>
-        <records-list
-            [records]="namespace.records"
-            (selectRecord)="routingService
-                .goToEditRecordView($event.id)"
-        ></records-list>
-        <div>
-            <button
-                (click)="addRecord()"
-                data-test="add-expense-button"
-            >
-                <i class="fa-solid fa-plus"></i>
-                {{ 'addExpense' | translate }}
-            </button>
-        </div>
+        <namespace-records
+            *ngIf="activeTab$.value === 'recordsList'"
+            [namespace]="namespace"
+        ></namespace-records>
+        <namespace-members
+            *ngIf="activeTab$.value === 'users'"
+            [namespace]="namespace"
+        ></namespace-members>
     </ng-container>
 </page>

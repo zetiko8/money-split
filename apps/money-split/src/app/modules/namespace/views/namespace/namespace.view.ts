@@ -1,27 +1,25 @@
 import { Component, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { BoundProcess } from 'rombok';
 import { PageComponent } from '../../../../layout/page/page.component';
-import { Observable, ReplaySubject, Subject, filter, map, merge, mergeMap, of, share } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject, filter, map, merge, mergeMap, of, share, tap } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
-import { UsersListComponent } from '../../components/users-list/users-list.component';
-import { RecordsListComponent } from '../../components/records-list/records-list.component';
 import { NamespaceView as MNamespaceView } from '@angular-monorepo/entities';
+import { TabsHeaderComponent } from '../../../../components/tabs-header.component';
+import { NamespaceRecordsComponent } from '../../components/namespace-records/namespace-records.component';
+import { NamespaceMembersComponent } from '../../components/namespace-members/namespace-members.component';
 
 @Component({
   standalone: true,
   imports: [
-    RouterModule,
     CommonModule,
-    TranslateModule,
     PageComponent,
-    UsersListComponent,
-    RecordsListComponent,
+    TabsHeaderComponent,
+    NamespaceRecordsComponent,
+    NamespaceMembersComponent,
   ],
   selector: 'namespace',
   templateUrl: './namespace.view.html',
@@ -39,14 +37,17 @@ export class NamespaceView {
     () => this.nameSpaceService.getNamespace() 
   );
 
-  public readonly reload$ = new Subject<void>();
-
   public readonly namespace$
     = merge(
       of(''),
-      this.reload$
     ).pipe(
       mergeMap(() => this.loadProcess.execute('')),
+      tap(namespace => {
+        this.activeTab$.next((
+          namespace.records.length === 0 
+          && namespace.users.length < 2
+        ) ? 'users' : 'recordsList')
+      }),
       share({ connector: () => new ReplaySubject<MNamespaceView>() })
     );
 
@@ -65,7 +66,5 @@ export class NamespaceView {
       }),  
     );
 
-  addRecord () {
-    this.routingService.goToAddExpenseView();
-  }
+  public activeTab$ = new BehaviorSubject<string>('');
 }

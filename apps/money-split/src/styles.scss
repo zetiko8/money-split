@@ -67,7 +67,6 @@ ul {
         font-weight: var(--font-weight-text);
         font-size: var(--font-size-text);
         line-height: var(--line-height-text);
-        background-color: var(--background-color-primary);
         color: var(--text-color);
         label {
             color: var(--text-title-color);
@@ -130,28 +129,24 @@ ul {
         font-weight: var(--font-weight-h3);
         font-size: var(--font-size-h3);
         line-height: var(--line-height-h3);
-        margin-bottom: var(--gap-small);
     }
     h4 {
         font-style: normal;
         font-weight: var(--font-weight-h4);
         font-size: var(--font-size-h4);
         line-height: var(--line-height-h4);
-        margin-bottom: var(--gap-small);
     }
     h5 {
         font-style: normal;
         font-weight: var(--font-weight-title);
         font-size: var(--font-size-title);
         line-height: var(--line-height-title);
-        margin-bottom: var(--gap-small);
 
         a {
             font-style: normal;
             font-weight: var(--font-weight-title);
             font-size: var(--font-size-title);
             line-height: var(--line-height-title);
-            margin-bottom: var(--gap-small);
             text-decoration: underline;    
         }
     }
@@ -382,6 +377,25 @@ ul {
     
             p {
                 font-weight: bold;
+            }
+        }
+    }
+
+    [role="tablist"] {
+        display: flex;
+
+        [role="tab"] {
+            width: 100%;
+            text-align: center;
+            border: 1px solid var(--color-primary);
+            padding: var(--gap-normal) var(--gap-normal);
+
+            &.active {
+                background-color: var(--color-primary);
+            }
+
+            h5 {
+                margin-left: var(--gap-small);
             }
         }
     }
