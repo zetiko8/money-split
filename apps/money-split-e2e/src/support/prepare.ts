@@ -37,6 +37,8 @@ export function prepareNamespace (
     const cleanup = () => {
         [ creator, ...users ]
             .forEach(user => ACTIONS.deleteOwner(user.username));
+        [ creator, ...users ]
+            .forEach(user => ACTIONS.deleteUser(user.username));
         ACTIONS.deleteNamespaceByName(namespaceName);
         pUsers
             .forEach(user => ACTIONS.deleteInvitation(user.email));
