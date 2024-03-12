@@ -5,14 +5,13 @@ import { OWNER_SERVICE } from "../owners";
 import { NAMESPACE_SERVICE } from "../namespace";
 import { INVITATION_SERVICE } from "../invitation";
 import { CYBACKDOOR_SERVICE } from "./cybackdoor.service";
-import { RECORD_SERVICE } from "../record";
-import { asyncMap, stringRouteParam } from "../../helpers";
-import { RecordData, RecordDataCy } from "@angular-monorepo/entities";
+import { stringRouteParam } from "../../helpers";
+import { RecordDataCy } from "@angular-monorepo/entities";
 
 export const cyBackdoorRouter = Router();
 
 cyBackdoorRouter.delete('/owner/:username',
-  logRequestMiddleware(),
+  logRequestMiddleware('CYBACKDOOR - DELETE owner'),
   async (
     req: TypedRequestBody<null>,
     res,
@@ -21,6 +20,24 @@ cyBackdoorRouter.delete('/owner/:username',
     try {
       
         await CYBACKDOOR_SERVICE.deleteOwner(req.params['username'] as string);
+
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+cyBackdoorRouter.delete('/user/:username',
+  logRequestMiddleware('CYBACKDOOR - DELETE user'),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      
+        await CYBACKDOOR_SERVICE
+          .deleteUser(req.params['username'] as string);
 
       res.json({ success: true });
     } catch (error) {

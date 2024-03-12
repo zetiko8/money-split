@@ -30,6 +30,16 @@ export const ACTIONS = {
                 expect(response.status).to.equal(200);
             });
     },
+    deleteUser: (
+        username: string,
+    ) => {
+        cy.request(
+            'DELETE', 
+            'http://localhost:3333/cybackdoor/user/' + username
+            ).then((response) => {
+                expect(response.status).to.equal(200);
+            });
+    },
     login: (
         username: string,
         password: string,

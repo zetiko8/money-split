@@ -13,6 +13,13 @@ export const CYBACKDOOR_SERVICE = {
             `DELETE FROM Owner WHERE username = "${username}"`
         )
     },
+    deleteUser: async (
+        username: string
+    ) => {
+        await query(
+            `DELETE FROM \`User\` WHERE name = "${username}"`
+        )
+    },
     deleteNamespaceByName: async (
         namespaceName: string
     ) => {
