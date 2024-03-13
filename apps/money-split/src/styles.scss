@@ -361,14 +361,12 @@ ul {
                 .page-header {
                     background-color: var(--background-color-primary);
                     position: fixed;
-                    height: 40px;
                     width: 100%;
                     border-bottom: 1px solid var(--color-primary);
                     left: 0;
                     top: 60px;
                     display: flex;
                     align-items: center;
-                    padding: var(--gap-normal);
                     h4 {
                         margin: 0;
                     }
@@ -383,10 +381,9 @@ ul {
 
                 .page-tabs {
                     position: fixed;
-                    height: 40px;
                     width: 100%;
                     left: 0;
-                    top: 120px;
+                    top: 110px;
                     background-color: var(--background-color-primary);
                 }
             }

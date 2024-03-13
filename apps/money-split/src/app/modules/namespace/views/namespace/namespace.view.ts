@@ -11,6 +11,7 @@ import { NamespaceView as MNamespaceView } from '@angular-monorepo/entities';
 import { TabsHeaderComponent } from '../../../../components/tabs-header.component';
 import { NamespaceRecordsComponent } from '../../components/namespace-records/namespace-records.component';
 import { NamespaceMembersComponent } from '../../components/namespace-members/namespace-members.component';
+import { NamespaceHeaderComponent } from '../../components/namespace.header.component';
 
 @Component({
   standalone: true,
@@ -20,6 +21,7 @@ import { NamespaceMembersComponent } from '../../components/namespace-members/na
     TabsHeaderComponent,
     NamespaceRecordsComponent,
     NamespaceMembersComponent,
+    NamespaceHeaderComponent,
   ],
   selector: 'namespace',
   templateUrl: './namespace.view.html',
