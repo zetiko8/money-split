@@ -14,7 +14,6 @@ connection.connect();
 export async function query<T>(
   sql: string,
 ): Promise<T> {
-  console.log(sql);
   return new Promise((resolve, reject) => {
     connection.query(
       sql,
