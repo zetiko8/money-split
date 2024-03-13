@@ -1,6 +1,12 @@
 import moment = require("moment");
 
-export const getGreeting = () => cy.get('h1');
+
+export const APP = {
+    loaderISvisible () {
+        cy.get('full-screen-loader')
+            .should('be.visible');
+    },
+}
 
 export const LOGIN_FORM = {
     login (

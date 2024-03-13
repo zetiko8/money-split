@@ -77,9 +77,9 @@ export class UserService {
             && 
             err.error.error 
             === 
-            ERROR_CODE.RESOURCE_ALREADY_EXISTS
+            ERROR_CODE.OWNER_USERNAME_ALREADY_EXISTS
           ) {
-            return throwError(() => Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS));
+            return throwError(() => Error(ERROR_CODE.OWNER_USERNAME_ALREADY_EXISTS));
           } else {
             return throwError(() => err);
           }

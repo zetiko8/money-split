@@ -46,7 +46,7 @@ async function createOwner (
   WHERE \`username\` = "${data.username}"`);
 
   if (sameName.length)
-    throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
+    throw Error(ERROR_CODE.OWNER_USERNAME_ALREADY_EXISTS);
 
   const avatar = await AVATAR_SERVICE.createAvatar(
     data.avatarColor, data.avatarImage,

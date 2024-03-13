@@ -32,5 +32,6 @@
   "addExpenseBenefitorsError": "Izberite vsaj enega dolžnika",
   "addExpensePaidByError": "Izberite vsaj enega plačnika",
   "addExpenseBenefitors": "Dolžniki",
-  "addExpensePaidBy": "Plačniki"
+  "addExpensePaidBy": "Plačniki",
+  "OWNER_USERNAME_ALREADY_EXISTS": "Uporabniško ime že obstaja"
 }

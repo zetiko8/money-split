@@ -1,5 +1,5 @@
 import { ACTIONS } from "../support/actions"
-import { REGISTER_FORM } from "../support/app.po";
+import { APP, REGISTER_FORM } from "../support/app.po";
 
 describe('Register Component', () => {
 
@@ -54,8 +54,13 @@ describe('Register Component', () => {
         cy
           .get('[data-cy="notification"]')
           .should('be.visible')
-          .and('contain', 'RESOURCE_ALREADY_EXISTS')  
+          .and('contain', 'Uporabniško ime že obstaja')  
       });
 
-      // TODO - add test for selecting an avatar
-  })
+    it('should show a loader while registering', () => {
+      cy.visit('/register');
+      cy.intercept('**/register', { delay: 200 });
+      REGISTER_FORM.register('testuser', 'testpassword'); 
+      APP.loaderISvisible();
+    });
+  });
