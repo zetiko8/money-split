@@ -8,6 +8,7 @@ import { Observable, combineLatest, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { OwnerRealmService } from '../../services/owner-realm.service';
 import { RoutingService } from '../../../../services/routing/routing.service';
+import { PageHeaderComponent } from '../../../../components/page.header.component';
 
 @Component({
   standalone: true,
@@ -16,6 +17,7 @@ import { RoutingService } from '../../../../services/routing/routing.service';
     CommonModule,
     TranslateModule,
     PageComponent,
+    PageHeaderComponent,
   ],
   selector: 'owner-realm',
   templateUrl: './owner-realm.view.html',
