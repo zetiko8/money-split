@@ -43,7 +43,7 @@ export class EditProfileView {
 
   public readonly profile$
     = merge(
-      this.loadProcess.execute(''),
+      this.loadProcess.execute(),
       this.submitProcess.success$,
     )
     .pipe(

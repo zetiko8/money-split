@@ -3,14 +3,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { BoundProcess } from 'rombok';
+import { AsyncProcess } from 'rombok';
 import { Observable, filter, map, merge } from 'rxjs';
 import { RegisterOwnerPayload } from '@angular-monorepo/entities';
 import { FileInputComponent } from '@angular-monorepo/components';
 import { PageComponent } from '../../layout/page/page.component';
 import { AvatarComponent } from '../avatar.component';
 import { UserService } from '../../services/auth/token/auth.token.user.service';
-import { getRandomColor } from 'apps/money-split/src/helpers';
+import { getRandomColor } from '../../../helpers';
 import { Notification } from '../notifications/notifications.types';
 import { AppErrorCode } from '../../types';
 
@@ -47,7 +47,7 @@ export class RegisterComponent {
       null)
   });
 
-  public readonly registerProcess = new BoundProcess(
+  public readonly registerProcess = new AsyncProcess(
     (data: RegisterOwnerPayload) => this
       .userService.register(data) 
   )

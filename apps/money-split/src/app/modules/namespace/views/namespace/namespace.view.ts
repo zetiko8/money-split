@@ -43,7 +43,7 @@ export class NamespaceView {
     = merge(
       of(''),
     ).pipe(
-      mergeMap(() => this.loadProcess.execute('')),
+      mergeMap(() => this.loadProcess.execute()),
       tap(namespace => {
         this.activeTab$.next((
           namespace.records.length === 0 

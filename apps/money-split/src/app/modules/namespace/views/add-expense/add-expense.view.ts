@@ -48,7 +48,7 @@ export class AddExpenseView {
     = merge(
       of(''),
     ).pipe(
-      mergeMap(() => this.loadProcess.execute('')),
+      mergeMap(() => this.loadProcess.execute()),
       map(namespace => {
         const form = getRecordForm({
           createdBy: namespace.ownerUsers.length === 1 

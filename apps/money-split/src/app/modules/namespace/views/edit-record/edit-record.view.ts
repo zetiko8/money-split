@@ -56,7 +56,7 @@ export class EditRecordView {
     = merge(
       of(''),
     ).pipe(
-      mergeMap(() => this.loadProcess.execute('')),
+      mergeMap(() => this.loadProcess.execute()),
       map(data => {
         const form = getRecordForm({
           benefitors: data.record.data.benefitors

@@ -35,7 +35,7 @@ export class OwnerRealmView {
 
   public readonly namespaces$
     = combineLatest([
-      this.loadProcess.execute(''),
+      this.loadProcess.execute(),
       this.routingService.getOwnerKey(),
     ])
     .pipe(map(([mNamespaces, ownerKey]) => {
