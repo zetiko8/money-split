@@ -9,6 +9,7 @@ import { Notification } from '../../../../components/notifications/notifications
 import { OwnerRealmService } from '../../services/owner-realm.service';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { PageHeaderComponent } from '../../../../components/page.header.component';
+import { AvatarComponent } from '../../../../components/avatar.component';
 
 @Component({
   standalone: true,
@@ -18,6 +19,7 @@ import { PageHeaderComponent } from '../../../../components/page.header.componen
     TranslateModule,
     PageComponent,
     PageHeaderComponent,
+    AvatarComponent,
   ],
   selector: 'owner-realm',
   templateUrl: './owner-realm.view.html',
@@ -42,6 +44,7 @@ export class OwnerRealmView {
     ])
     .pipe(map(([mNamespaces, ownerKey]) => {
       return mNamespaces.map(ns => ({
+        avatarId: ns.avatarId,
         name: ns.name,
         link: this.routingService.namespaceViewLink(ownerKey, ns.id),
       }))

@@ -18,8 +18,14 @@
                 class="box"
                 role="link"
                 [routerLink]="mNamespace.link"
+                style="display: flex; align-items: center;"
             >
-                {{ mNamespace.name }}
+                <avatar
+                    [avatarId]="mNamespace.avatarId"
+                ></avatar>
+                <h5>
+                    {{ mNamespace.name }}
+                </h5>
             </li>
         </ul>
     </section>
