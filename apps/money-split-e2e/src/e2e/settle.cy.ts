@@ -47,7 +47,7 @@ describe('Settle', () => {
         const firstDate = moment().set({
             year: 2024,
             month: 2,
-            day: 15,
+            date: 15,
         }).toDate();
         const secondDate = moment(firstDate)
             .subtract(2, 'hours').toDate();
@@ -137,6 +137,7 @@ describe('Settle', () => {
                         namespace.name,
                         'testuser',
                         data.records.map(r => r.id),
+                        firstDate,
                     );
                 });
         });
@@ -159,7 +160,7 @@ describe('Settle', () => {
         const firstDate = moment().set({
             year: 2024,
             month: 2,
-            day: 15,
+            date: 15,
         }).toDate();
         const secondDate = moment(firstDate)
             .subtract(2, 'hours').toDate()
@@ -258,6 +259,32 @@ describe('Settle', () => {
             RECORD_LIST.settleButton.click();
             SETTLE_PREVIEW_SCREEN.settleButton.click();
             NAMESPACE_SCREEN.userIsOn(namespace.name);
+
+            RECORD_LIST.SETTLEMENT(0).isSettledOn(new Date());
+            RECORD_LIST.SETTLEMENT(0).RECORD(0).IN_DEBT()
+                .hasId('benefitor-avatar-atestuser1');
+            RECORD_LIST.SETTLEMENT(0).RECORD(0).DEBT_TO()
+                .hasId('payer-avatar-testuser');
+            RECORD_LIST.SETTLEMENT(0).RECORD(0)
+                .shouldHaveDebtAmount('7.47');
+            RECORD_LIST.SETTLEMENT(0).RECORD(0)
+                .shouldHaveCurrency('SIT');
+            RECORD_LIST.SETTLEMENT(0).RECORD(1).IN_DEBT()
+                .hasId('benefitor-avatar-btestuser2');
+            RECORD_LIST.SETTLEMENT(0).RECORD(1).DEBT_TO()
+                .hasId('payer-avatar-testuser');
+            RECORD_LIST.SETTLEMENT(0).RECORD(1)
+                .shouldHaveDebtAmount('7.47');
+            RECORD_LIST.SETTLEMENT(0).RECORD(1)
+                .shouldHaveCurrency('SIT');
+            RECORD_LIST.SETTLEMENT(0).RECORD(2).IN_DEBT()
+                .hasId('benefitor-avatar-ctestuser3');
+            RECORD_LIST.SETTLEMENT(0).RECORD(2).DEBT_TO()
+                .hasId('payer-avatar-testuser');
+            RECORD_LIST.SETTLEMENT(0).RECORD(2)
+                .shouldHaveDebtAmount('7.47');
+            RECORD_LIST.SETTLEMENT(0).RECORD(2)
+                .shouldHaveCurrency('SIT');
         });
     });
 

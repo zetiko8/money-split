@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { RecordDataView } from '@angular-monorepo/entities';
 import { AvatarComponent } from '../../../../components/avatar.component';
 import { DebtItemComponent } from '../debt-item/debt-ltem.component';
+import { SettlementRecord } from '@angular-monorepo/entities';
 
 @Component({
   standalone: true,
@@ -21,7 +21,7 @@ import { DebtItemComponent } from '../debt-item/debt-ltem.component';
   }
 })
 export class DebtListComponent {
-  @Input() debts: RecordDataView[] = [];
+  @Input() debts: SettlementRecord[] = [];
 
-  @Output() selectDebt = new EventEmitter<RecordDataView>();
+  @Output() selectDebt = new EventEmitter<SettlementRecord>();
 }

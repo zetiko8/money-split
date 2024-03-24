@@ -283,6 +283,13 @@ ul {
         margin-bottom: var(--gap-large);
     }
 
+    .record-item-header {
+        padding: var(--gap-small);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
     button {
         background-color: var(--color-primary);
         border-radius: var(--button-border-radius);

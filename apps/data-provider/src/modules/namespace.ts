@@ -1,11 +1,26 @@
-import { CreateNamespacePayload, ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, Record, RecordData, RecordDataView, RecordView, User } from "@angular-monorepo/entities";
+import { 
+    CreateNamespacePayload, 
+    ERROR_CODE, 
+    Invitation, 
+    MNamespace, 
+    NamespaceView, 
+    Owner, 
+    Record, 
+    RecordData, 
+    RecordDataView, 
+    RecordView, 
+    Settlement, 
+    SettlementListView, 
+    User, 
+} from "@angular-monorepo/entities";
 import { query } from "../connection/connection";
 import { insertSql, lastInsertId, selectOneWhereSql, selectWhereSql } from "../connection/helper";
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity } from "../types";
+import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity, SettlementEntity } from "../types";
 import { USER_SERVICE } from "./user";
 import { RECORD_SERVICE } from "./record";
 import { asyncMap } from "../helpers";
 import { AVATAR_SERVICE } from "./avatar";
+import { SETTLE_SERVICE } from "./settle";
 
 export async function getNamespacesForOwner (
     ownerId: number,
@@ -139,6 +154,9 @@ async function getNamespaceViewForOwner (
         return false;
     })();
 
+    const settlements 
+        = await NAMESPACE_SERVICE.getSettlementListViews(namespaceId);
+
     const namespaceView: NamespaceView = {
         id: namespaces[0].id,
         name: namespaces[0].name,
@@ -148,6 +166,7 @@ async function getNamespaceViewForOwner (
         records: recordViews,
         avatarId: namespace.avatarId,
         hasRecordsToSettle,
+        settlements,
     };
 
     return namespaceView;
@@ -160,6 +179,8 @@ async function mapToRecordView (
     const createdBy = await USER_SERVICE.getUserById(record.createdBy);
     const editedBy = await USER_SERVICE.getUserById(record.editedBy);
     const data = await mapToRecordDataView(record.data);
+    const settlement = await SETTLE_SERVICE
+        .getSettlementMaybeById(record.settlementId);
     const recordView: RecordView = {
         created: record.created,
         edited: record.edited,
@@ -169,6 +190,7 @@ async function mapToRecordView (
         namespace,
         data,
         settlementId: record.settlementId,
+        settledOn: settlement?.created || null,
     }
 
     return recordView;
@@ -195,6 +217,36 @@ async function mapToRecordDataView (
     return data;
 }
 
+async function getSettlementListViews (
+    namespaceId: number
+): Promise<SettlementListView[]> {
+    const settlements = await selectWhereSql<Settlement[]>(
+        'Settlement',
+        'namespaceId',
+        EntityPropertyType.ID,
+        namespaceId,
+        SettlementEntity,
+    );
+
+    settlements.sort((a, b) => a.created < b.created ? 1 : -1);
+
+    const settlementListViews = await asyncMap<
+        Settlement, SettlementListView>(
+        settlements,
+        async settlement => {
+            return {
+                settlement,
+                settledBy: await USER_SERVICE
+                    .getUserById(settlement.createdBy),
+                settleRecords: await SETTLE_SERVICE
+                    .getSettlementRecordViews(settlement.id),
+            }
+        },
+    );
+
+    return settlementListViews;
+}
+
 export const NAMESPACE_SERVICE = {
     deleteNamespace: async (
         namespaceId: number
@@ -212,4 +264,5 @@ export const NAMESPACE_SERVICE = {
     getNamespacesForOwner,
     mapToRecordView,
     mapToRecordDataView,
+    getSettlementListViews,
 }

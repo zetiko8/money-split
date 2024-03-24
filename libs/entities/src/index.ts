@@ -10,6 +10,7 @@ export interface NamespaceView extends MNamespace {
     ownerUsers: User[],
     records: RecordView[],
     hasRecordsToSettle: boolean,
+    settlements: SettlementListView[],
 }
 
 export interface Owner {
@@ -131,6 +132,8 @@ export interface Settlement {
 
 export interface SettlementDebt extends Record {
     settled: boolean,
+    settledOn: Date | null,
+    settledBy: number | null,
 }
 
 export interface RecordView {
@@ -142,10 +145,16 @@ export interface RecordView {
     data: RecordDataView,
     namespace: MNamespace,
     settlementId: number | null,
+    settledOn: Date | null,
 }
 
-export interface SettlementDebtView extends RecordView {
-    settled: boolean,
+export interface SettlementDebtView extends SettlementRecord {
+    id: number,
+    created: Date,
+    edited: Date,
+    createdBy: User,
+    editedBy: User,
+    settlementId: number | null,
 }
 
 export interface AvatarData {
@@ -179,16 +188,22 @@ export interface Debt {
 }
 
 export interface SettlementPreview {
-    settleRecords: RecordDataView[];
+    settleRecords: SettlementRecord[];
     records: RecordView[];
     namespace: NamespaceView,
 }
 
-export interface SettlementView {
-    settleRecords: RecordDataView[];
-    records: RecordView[];
-    namespace: NamespaceView,
+export interface SettlementListView {
+    settlement: Settlement,
+    settleRecords: SettlementDebtView[];
     settledBy: User,
 }
+
+export interface SettlementRecord {
+    data: RecordDataView,
+    settled: boolean,
+    settledOn: Date,
+    settledBy: User | null,
+}  
 
 export * from './error';

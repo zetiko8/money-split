@@ -1,6 +1,6 @@
 import { ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, User } from "@angular-monorepo/entities"
 import { lastInsertId, query } from "../../connection/connection"
-import { insertSql, selectOneWhereSql } from "../../connection/helper"
+import { insertSql, mysqlDate, selectOneWhereSql } from "../../connection/helper"
 import { EntityPropertyType, InvitationEntity, RecordEntity } from "../../types"
 import { RECORD_SERVICE } from "../record"
 import { asyncMap } from "../../helpers"
@@ -129,15 +129,27 @@ export const CYBACKDOOR_SERVICE = {
     byUser: string,
     namespaceName: string,
     records: number[],
+    settledOn: Date,
   ) => {
     const user = await CYBACKDOOR_SERVICE.getUserByUsername(byUser);
     const namespace 
       = await CYBACKDOOR_SERVICE.getNamespaceByName(namespaceName);
 
-    return await SETTLE_SERVICE.settle(
+    const settlement = await SETTLE_SERVICE.settle(
       user.id,
       namespace.id,
       records,
     );
+
+    const updateSql = `
+        UPDATE \`Settlement\`
+        SET
+        created = '${mysqlDate(new Date())}'
+        WHERE id = ${settlement.id}
+    `;
+    await query(updateSql);
+
+    settlement.created = settledOn;
+    return settlement;
   }
 }

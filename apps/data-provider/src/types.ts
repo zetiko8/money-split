@@ -18,6 +18,7 @@ export enum EntityPropertyType {
   JSON = 'JSON',
   DOUBLE = 'DOUBLE',
   DATETIME = 'DATETIME',
+  NULLABLE_DATETIME = 'NULLABLE_DATETIME',
   BLOB = 'BLOB',
 }
 
@@ -71,6 +72,8 @@ export const SettlementDebtEntity: Entity = {
   namespaceId: EntityPropertyType.ID,
   settlementId: EntityPropertyType.NULLABLE_ID,
   settled: EntityPropertyType.BOOL,
+  settledOn: EntityPropertyType.NULLABLE_DATETIME,
+  settledBy: EntityPropertyType.NULLABLE_ID,
 };
 
 export const SettlementEntity: Entity = {

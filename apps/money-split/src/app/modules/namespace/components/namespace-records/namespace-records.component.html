@@ -14,7 +14,10 @@
     {{ 'settle' | translate }}
 </button>
 <records-list
-    [records]="namespace.records"
+    [records]="{ 
+        records: namespace.records, 
+        settlements: namespace.settlements, 
+    }"
     (selectRecord)="routingService
         .goToEditRecordView($event.id)"
 ></records-list>

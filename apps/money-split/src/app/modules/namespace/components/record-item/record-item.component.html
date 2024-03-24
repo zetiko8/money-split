@@ -1,0 +1,46 @@
+<div
+    class="record-item-header"
+>
+    <h5
+        data-test="settled-on-label"
+    >
+        {{ 'settledOn' | translate }}:
+        {{ record.settledOn | date }}
+    </h5>
+</div>
+<div>
+    <avatar
+        *ngFor="let payer of record.data.paidBy"
+        [name]="payer.name"
+        [avatarId]="payer.avatarId"
+        style="display: inline-block;"
+        data-test="payer-avatar"
+        [id]="'payer-avatar-' + payer.name"
+    >
+    </avatar>
+    <span>
+        {{ 'paidWord' | translate }}
+    </span>
+    <span
+        data-test="record-cost"
+    >
+        {{ record.data.cost }}
+    </span>
+    <span
+        data-test="record-currency"
+    >
+        {{ record.data.currency }}
+    </span>
+    <span>
+        {{ 'toWord' | translate }}
+    </span>
+    <avatar
+        *ngFor="let benefitor of record.data.benefitors"
+        [name]="benefitor.name"
+        [avatarId]="benefitor.avatarId"
+        style="display: inline-block;"
+        data-test="benefitor-avatar"
+        [id]="'benefitor-avatar-' + benefitor.name"
+    >
+    </avatar>
+</div>

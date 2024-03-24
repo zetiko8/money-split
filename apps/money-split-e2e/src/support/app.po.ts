@@ -114,7 +114,6 @@ export const RECORD_LIST = {
                 return RECORD_LIST.RECORD(index, $el);
             },
             hasDate (date: Date) {
-                console.log(date);
                 if (moment(date).month() !== 2)
                     throw Error('Not implemented jet');
                 const string = `Mar ${moment(date).date()}, ${moment(date).year()}`
@@ -187,6 +186,94 @@ export const RECORD_LIST = {
             shouldHaveCurrency (value: string) {
                 $el().find('[data-test="record-currency"]')
                     .should('contain.text', value);
+            },
+            isSettledOn (date: Date) {
+                if (moment(date).month() !== 2)
+                    throw Error('Not implemented jet');
+                const string 
+                    = `Mar ${moment(date).date()}, ${moment(date).year()}`
+                $el().find('[data-test="settled-on-label"]')
+                    .contains(string)
+            },
+        }
+    },
+    SETTLEMENT: (
+        index: number,
+        inSection?: () =>  Cypress.Chainable<JQuery>,
+    ) => {
+        const $el = 
+            inSection ?
+            () => inSection()
+            .find('[data-test="settlement-record"]')
+            .eq(index)
+            : () => cy
+            .get('[data-test="settlement-record"]')
+            .eq(index);
+
+        return {
+            RECORD: (index: number) => {  
+                const $recordEl = () => $el()
+                    .find('[data-test="debt-record"]')
+                    .eq(index);
+
+                return {
+                    goToEdit () {
+                        $recordEl().click();
+                    },
+                    IN_DEBT: () => {
+                        const indDebt$ = () => $recordEl()
+                            .find('[data-test="benefitor-avatar"]');
+
+                        return {
+                            hasId (id: string) {
+                                indDebt$()
+                                .should('have.attr', 'id')
+                                .should('equal', id);
+                            }
+                        }
+
+                    },
+                    DEBT_TO: () => {
+                        const debtTo$ = () => $recordEl()
+                            .find('[data-test="payer-avatar"]');
+
+                        return {
+                            hasId (id: string) {
+                                debtTo$()
+                                .should('have.attr', 'id')
+                                .should('equal', id);
+                            }
+                        }
+
+                    },
+                    shouldHaveDebtAmount (cost: string) {
+                        $recordEl().find('[data-test="record-cost"]')
+                            .should('contain.text', cost);
+                    },
+                    shouldHaveCurrency (value: string) {
+                        $recordEl().find('[data-test="record-currency"]')
+                            .should('contain.text', value);
+                    },
+                    isSettledOn (date: Date) {
+                        if (moment(date).month() !== 2)
+                            throw Error('Not implemented jet');
+                        const string 
+                            = `Mar ${moment(date).date()}, ${moment(date).year()}`
+                        $recordEl().find('[data-test="settled-on-label"]')
+                            .contains(string)
+                    },
+                }
+            },
+            goToEdit () {
+                $el().click();
+            },
+            isSettledOn (date: Date) {
+                if (moment(date).month() !== 2)
+                    throw Error('Not implemented jet');
+                const string 
+                    = `Mar ${moment(date).date()}, ${moment(date).year()}`
+                $el().find('[data-test="settled-on-label"]')
+                    .contains(string)
             },
         }
     },

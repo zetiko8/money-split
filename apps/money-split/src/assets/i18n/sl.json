@@ -38,5 +38,6 @@
   "toOneWord": "osebi",
   "settle": "Poravnava",
   "settlePreview": "Predogled",
-  "settleConfirm": "Potrdi poravnavo"
+  "settleConfirm": "Potrdi poravnavo",
+  "settledOn": "Poravnava"
 }

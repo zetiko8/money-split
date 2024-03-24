@@ -1,5 +1,5 @@
 <avatar
-    *ngFor="let benefitor of record.benefitors"
+    *ngFor="let benefitor of debt.data.benefitors"
     [name]="benefitor.name"
     [avatarId]="benefitor.avatarId"
     style="display: inline-block;"
@@ -13,22 +13,22 @@
 <span
     data-test="record-cost"
 >
-    {{ record.cost }}
+    {{ debt.data.cost }}
 </span>
 <span
     data-test="record-currency"
 >
-    {{ record.currency }}
+    {{ debt.data.currency }}
 </span>
 <span>
     {{ 'toOneWord' | translate }}
 </span>
 <avatar
-    *ngFor="let payer of record.paidBy"
+    *ngFor="let payer of debt.data.paidBy"
     [name]="payer.name"
     [avatarId]="payer.avatarId"
     style="display: inline-block;"
-    data-test="payer"
+    data-test="payer-avatar"
     [id]="'payer-avatar-' + payer.name"
 >
 </avatar>

@@ -122,6 +122,13 @@ function addValue (
   else if (type === EntityPropertyType.DATETIME) {
     values += '\'' + data[column].toISOString().slice(0, 19).replace('T', ' ') + '\'';
   }
+  else if (type === EntityPropertyType.NULLABLE_DATETIME) {
+    if (data[column] === null) {
+      values += 'NULL';
+    } else {
+      values += '\'' + data[column].toISOString().slice(0, 19).replace('T', ' ') + '\'';
+    }
+  }
   else values += '\'' + String(data[column]) + '\'';
   return values;
 }

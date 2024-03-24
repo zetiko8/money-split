@@ -143,11 +143,12 @@ export const ACTIONS = {
         namespaceName: string,
         byUsername: string,
         records: number[],
+        settledOn: Date,
     ) {
         return cy.request<Invitation>({
             url: `http://localhost:3333/cybackdoor/settle/${namespaceName}/${byUsername}`,
             method: 'POST',
-            body: { records },
+            body: { records, settledOn },
         }).then(res => res.body);
     }
 }

@@ -1,0 +1,14 @@
+<div
+    class="record-item-header"
+>
+    <h5
+        data-test="settled-on-label"
+    >
+        {{ 'settledOn' | translate }}:
+        {{ settlement
+            .settlement.created | date }}
+    </h5>
+</div>
+<debt-list
+    [debts]="settlement.settleRecords"
+></debt-list>

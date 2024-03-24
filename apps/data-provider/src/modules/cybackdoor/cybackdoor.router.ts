@@ -6,7 +6,7 @@ import { NAMESPACE_SERVICE } from "../namespace";
 import { INVITATION_SERVICE } from "../invitation";
 import { CYBACKDOOR_SERVICE } from "./cybackdoor.service";
 import { getRandomColor, stringRouteParam } from "../../helpers";
-import { RecordDataCy, SettlePayload } from "@angular-monorepo/entities";
+import { RecordDataCy } from "@angular-monorepo/entities";
 
 export const cyBackdoorRouter = Router();
 
@@ -183,7 +183,10 @@ cyBackdoorRouter.post('/record/:namespaceName/:createdByUsername',
 cyBackdoorRouter.post('/settle/:namespaceName/:byUsername',
   logRequestMiddleware('CYBACKDOOR - acceptInvitation'),
   async (
-    req: TypedRequestBody<SettlePayload>,
+    req: TypedRequestBody<{
+      records: number[],
+      settledOn: Date,
+    }>,
     res,
     next,
   ) => {
@@ -192,7 +195,8 @@ cyBackdoorRouter.post('/settle/:namespaceName/:byUsername',
         .settleRecords(
           stringRouteParam(req, 'byUsername'),
           stringRouteParam(req, 'namespaceName'),
-          req.body.records
+          req.body.records,
+          new Date(req.body.settledOn),
           );
 
       res.json(result);

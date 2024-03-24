@@ -1,11 +1,12 @@
-import { ERROR_CODE, RecordData, Settlement, SettlementDebt, SettlementPreview } from "@angular-monorepo/entities";
+import { ERROR_CODE, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPreview, SettlementRecord } from "@angular-monorepo/entities";
 import { RECORD_SERVICE } from "./record";
 import { settle, deptToRecordData } from "@angular-monorepo/debt-simplification";
 import { asyncMap } from "../helpers";
 import { NAMESPACE_SERVICE } from "./namespace";
-import { insertSql, selectOneWhereSql } from "../connection/helper";
+import { insertSql, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from "../connection/helper";
 import { lastInsertId, query } from "../connection/connection";
 import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from "../types";
+import { USER_SERVICE } from "./user";
 
 export const SETTLE_SERVICE = {
     createSettlement: async (
@@ -34,6 +35,8 @@ export const SETTLE_SERVICE = {
         settlementId: number,
         data: RecordData,
         settled: boolean,
+        settledOn: Date | null,
+        settledBy: number | null,
     ): Promise<SettlementDebt> => {
         await query(insertSql(
             'SettlementDebt',
@@ -47,6 +50,8 @@ export const SETTLE_SERVICE = {
                 settlementId,
                 settled,
                 data,
+                settledOn,
+                settledBy,
             }
         ));
 
@@ -58,6 +63,17 @@ export const SETTLE_SERVICE = {
         settlementId: number
     ) => {
         return await selectOneWhereSql<Settlement>(
+            'Settlement',
+            'id',
+            EntityPropertyType.ID,
+            settlementId,
+            SettlementEntity,
+        );
+    },
+    getSettlementMaybeById: async (
+        settlementId: number
+    ): Promise<Settlement | null> => {
+        return await selectMaybeOneWhereSql<Settlement>(
             'Settlement',
             'id',
             EntityPropertyType.ID,
@@ -95,9 +111,17 @@ export const SETTLE_SERVICE = {
         const settleRecords = settle(records.map(record => record.data))
             .map(debt => deptToRecordData(debt, currency));
 
-        const settleRecordsData = await asyncMap(
-            settleRecords, async (record) => await NAMESPACE_SERVICE
-                .mapToRecordDataView(record));
+        const settleRecordsData = await asyncMap<
+            RecordData, SettlementRecord>(
+            settleRecords, async (record) => {
+                return {
+                    data: await NAMESPACE_SERVICE
+                        .mapToRecordDataView(record),
+                    settled: false,
+                    settledBy: null,
+                    settledOn: null,
+                }
+            });
         return {
             settleRecords: settleRecordsData,
             records: recordsView,
@@ -132,7 +156,13 @@ export const SETTLE_SERVICE = {
         await asyncMap(
             settleRecords,
             async (record) => await SETTLE_SERVICE.createSettlementDebt(
-                byUser, namespaceId, settlement.id, record, false,
+                byUser, 
+                namespaceId, 
+                settlement.id, 
+                record, 
+                false,
+                null,
+                null,
             ),
         );
 
@@ -140,5 +170,47 @@ export const SETTLE_SERVICE = {
             recordsToSettle.map(r => r.id), settlement.id, byUser);
 
         return settlement;
+    },
+    getSettlementRecordViews: async (
+        settlementId: number,
+    ): Promise<SettlementDebtView[]> => {
+        const settlementDebts = await selectWhereSql<SettlementDebt[]>(
+            'SettlementDebt',
+            'settlementId',
+            EntityPropertyType.ID,
+            settlementId,
+            SettlementDebtEntity,
+        );
+
+        const settlementDebtViews = await asyncMap<
+            SettlementDebt, SettlementDebtView>(
+                settlementDebts,
+                async settlementDebt => {
+
+                    const data: RecordDataView
+                        = await NAMESPACE_SERVICE.mapToRecordDataView(
+                            settlementDebt.data,
+                        );
+
+                    return {
+                        created: settlementDebt.created,
+                        edited: settlementDebt.edited,
+                        createdBy: await USER_SERVICE
+                            .getUserById(settlementDebt.createdBy),
+                        editedBy: await USER_SERVICE
+                            .getUserById(settlementDebt.editedBy),
+                        id: settlementDebt.id,
+                        settled: settlementDebt.settled,
+                        settlementId: settlementDebt.settlementId,
+                        data,
+                        settledOn: settlementDebt.settledOn,
+                        settledBy: settlementDebt.settledBy ?
+                            await USER_SERVICE.getUserById(settlementDebt.settledBy)
+                            : null,
+                    };
+                },
+            );
+
+        return settlementDebtViews;
     }
 };

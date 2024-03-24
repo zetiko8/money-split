@@ -1,13 +1,21 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { RecordView } from '@angular-monorepo/entities';
+import { RecordView, SettlementListView } from '@angular-monorepo/entities';
 import { AvatarComponent } from '../../../../components/avatar.component';
 import moment from 'moment';
+import { RecordItemComponent } from '../record-item/record-item.component';
+import { SettlementItemComponent } from '../settlement-item/settlement-item.component';
 
 interface DateItem {
   date: Date,
-  records: RecordView[],
+  contents: ({ 
+    isRecord: true,
+    data: RecordView,
+  } | {
+    isRecord: false,
+    data: SettlementListView,
+  })[],
 }
 
 @Component({
@@ -16,6 +24,8 @@ interface DateItem {
     CommonModule,
     TranslateModule,
     AvatarComponent,
+    RecordItemComponent,
+    SettlementItemComponent,
   ],
   selector: 'records-list',
   templateUrl: './records-list.component.html',
@@ -26,35 +36,71 @@ interface DateItem {
 })
 export class RecordsListComponent {
   @Input() 
-  set records (value: RecordView[]) {
+  set records (data: { 
+    records: RecordView[],
+    settlements: SettlementListView[],
+  }) {
     const items: DateItem[] = [];
-    value.forEach((v, i) => {
-      if (value[i - 1]) {
-        const prevDate = moment(value[i - 1].created);
-
-        if (
-          !(moment(prevDate)
-            .isSame(v.created, 'day'))
-        ) {
-          items.push({ 
-            date: v.created, 
-            records: [],
+    data.records.forEach((record) => {
+      if (record.settlementId === null) {
+        getDateItem(record.created, items)
+          .contents.push({
+            data: record,
+            isRecord: true,
           });
-        }
       }
-      else {
-        items.push({ 
-          date: v.created,
-          records: [],
-        });
-      }
-
-      items[items.length - 1].records.push(v);
     });
 
-    this._items = items;
+    data.settlements.forEach((settlementView) => {
+      getDateItem(settlementView.settlement.created, items)
+        .contents.push({
+          data: settlementView,
+          isRecord: false,
+        });
+    });
+
+    this._items
+      = items.filter(item => !!(item.contents.length));
   };
 
   @Output() selectRecord = new EventEmitter<RecordView>();
+  @Output() selectSettlement = new EventEmitter<SettlementListView>();
   public _items: DateItem[] = [];
+}
+
+function dateAlreadyExist (
+  date: Date,
+  items: DateItem[],
+) {
+  return items.find(
+    item => {
+      return (
+        moment(date).isSame(item.date, 'date')
+        &&
+        moment(date).isSame(item.date, 'month')
+        &&
+        moment(date).isSame(item.date, 'year')
+      )
+    },
+  );
+}
+
+function getDateItem (
+  date: Date,
+  items: DateItem[],
+): DateItem {
+  const item = dateAlreadyExist(date, items);
+  if (
+    item === undefined
+  ) {
+    const newItem = { 
+      date, 
+      contents: [],
+    };
+    items.push(newItem);
+
+    return newItem;
+  } else {
+    return item;
+  }
 }
