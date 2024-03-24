@@ -1,17 +1,3 @@
 {
-    "middlewareUrl": "http://localhost:8081/bdca-api",
-    "commonApiUrl": "http://localhost:8082/common-api",
-    "legalApiUrl": "http://localhost:8085/legal-api",
-    "webApplications": {
-        "BDCA_STANDARD_V_PRISOTNOSTI": "http://localhost:4200/dr-best/v-prisotnosti/standard",
-        "BDCA_PREMIUM_V_PRISOTNOSTI": "http://localhost:4200/dr-best/v-prisotnosti/premium",
-        "BDCA_BASIC_V_PRISOTNOSTI": "http://localhost:4200/dr-best/v-prisotnosti/basic",
-        "BDCA_STANDARD_NA_DALJAVO": "http://localhost:4200/dr-best/na-daljavo/standard",
-        "BDCA_PREMIUM_NA_DALJAVO": "http://localhost:4200/dr-best/na-daljavo/premium",
-        "BDCA_BASIC_NA_DALJAVO": "http://localhost:4200/dr-best/na-daljavo/basic",
-        "DR_BEST_HOME": "https://dr-best.si/"
-    },
-    "keycloakAuthUrl": "https://demoeu.eureko.si/auth",
-    "keycloakRealm": "svetovalci",
-    "keycloakClientId": "bdca-ui"
+    "middlewareUrl": "http://localhost:3333/app"
 }
