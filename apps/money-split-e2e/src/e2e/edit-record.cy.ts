@@ -12,7 +12,7 @@ describe('Add expense', () => {
         const firstDate = moment().set({
             year: 2024,
             month: 2,
-            day: 15,
+            date: 15,
         }).toDate();
 
         const scenario = prepareNamespace(
