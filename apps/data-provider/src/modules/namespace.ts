@@ -90,58 +90,59 @@ async function getNamespaceViewForOwner (
     ownerId: number,
 ): Promise<NamespaceView> {
 
-const namespaces = await query<MNamespace[]>
+    const namespaces = await query<MNamespace[]>
+        (
+        `
+        SELECT * FROM NamespaceOwner no2 
+        INNER JOIN Namespace n 
+        ON n.id = no2.namespaceId
+        WHERE no2.ownerId = ${ownerId}
+        AND n.id = ${namespaceId}
+        `
+        );
+
+    if (!namespaces.length)
+        throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
+
+    const invitations = (await selectWhereSql<Invitation[]>(
+        'Invitation', 
+        'namespaceId', 
+        EntityPropertyType.ID,
+        namespaceId,
+        InvitationEntity,
+    )).filter(invitation => !invitation.accepted);
+
+    const users = await query<User[]>
     (
-    `
-    SELECT * FROM NamespaceOwner no2 
-    INNER JOIN Namespace n 
-    ON n.id = no2.namespaceId
-    WHERE no2.ownerId = ${ownerId}
-    AND n.id = ${namespaceId}
-    `
+        `
+        SELECT * FROM \`User\` 
+        WHERE namespaceId = ${namespaceId}
+        `
     );
 
-if (!namespaces.length)
-    throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
+    const ownerUsers = await USER_SERVICE
+        .getNamespaceOwnerUsers(ownerId, namespaceId);
 
-const invitations = (await selectWhereSql<Invitation[]>(
-    'Invitation', 
-    'namespaceId', 
-    EntityPropertyType.ID,
-    namespaceId,
-    InvitationEntity,
-)).filter(invitation => !invitation.accepted);
+    const namespace = await getNamespaceById(namespaceId);
+    const records 
+        = await RECORD_SERVICE.getNamespaceRecords(namespaceId);
 
-const users = await query<User[]>
-(
-    `
-    SELECT * FROM \`User\` 
-    WHERE namespaceId = ${namespaceId}
-    `
-);
+    const recordViews: RecordView[]
+        = await asyncMap<Record, RecordView>(
+            records, async (record) => await mapToRecordView(record, namespace))
+            
 
-const ownerUsers = await USER_SERVICE
-    .getNamespaceOwnerUsers(ownerId, namespaceId);
+    const namespaceView: NamespaceView = {
+        id: namespaces[0].id,
+        name: namespaces[0].name,
+        invitations,
+        users,
+        ownerUsers,
+        records: recordViews,
+        avatarId: namespace.avatarId,
+    };
 
-const namespace = await getNamespaceById(namespaceId);
-const records 
-    = await RECORD_SERVICE.getNamespaceRecords(namespaceId);
-
-const recordViews: RecordView[]
-    = await asyncMap<Record, RecordView>(
-        records, async (record) => await mapToRecordView(record, namespace))
-
-const namespaceView: NamespaceView = {
-    id: namespaces[0].id,
-    name: namespaces[0].name,
-    invitations,
-    users,
-    ownerUsers,
-    records: recordViews,
-    avatarId: namespace.avatarId,
-};
-
-return namespaceView;
+    return namespaceView;
 }
 
 async function mapToRecordView (
