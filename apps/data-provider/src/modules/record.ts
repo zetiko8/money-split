@@ -2,6 +2,7 @@ import { Record, RecordData } from "@angular-monorepo/entities"
 import { insertSql, mysqlDate, selectOneWhereSql, selectWhereSql } from "../connection/helper"
 import { EntityPropertyType, RecordEntity } from "../types"
 import { lastInsertId, query } from "../connection/connection";
+import { asyncMap } from "../helpers";
 
 export const RECORD_SERVICE = {
     addRecord: async (
@@ -19,6 +20,7 @@ export const RECORD_SERVICE = {
                 editedBy: userId,
                 data,
                 namespaceId,
+                settlementId: null,
             }
         ));
 
@@ -46,6 +48,37 @@ export const RECORD_SERVICE = {
 
         return RECORD_SERVICE.getRecordById(recordId);
     },
+    addRecordToSettlement: async (
+        recordId: number,
+        settlementId: number,
+        addedBy: number,
+    ) => {
+
+        await RECORD_SERVICE.getRecordById(recordId);
+
+        const updateSql = `
+            UPDATE \`Record\`
+            SET
+            settlementId = ${settlementId},
+            edited = '${mysqlDate(new Date())}',
+            editedBy = ${addedBy}
+            WHERE id = ${recordId}
+        `;
+        await query(updateSql);
+
+        return RECORD_SERVICE.getRecordById(recordId);
+    },
+    addRecordsToSettlement: async (
+        records: number[],
+        settlementId: number,
+        addedBy: number,
+    ) => {
+        return await asyncMap(
+            records, 
+            async (recordId) => await RECORD_SERVICE
+                .addRecordToSettlement(recordId, settlementId, addedBy),
+        );
+    },
     getRecordById: async (
         recordId: number
     ) => {
@@ -70,5 +103,16 @@ export const RECORD_SERVICE = {
 
         records.sort((a, b) => a.created < b.created ? 1 : -1);
         return records;
-    }
+    },
+    getRecordsById: async (
+        records: number[]
+    ): Promise<Record[]> => {
+        const result = await asyncMap(
+            records, 
+            async (recordId) => await RECORD_SERVICE
+                .getRecordById(recordId)
+        );
+
+        return result;
+    },
 }

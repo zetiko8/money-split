@@ -99,43 +99,6 @@ export function constructDebts (
     return debts;
 }
 
-export function settleDebug () {
-    const debts = settle([
-        {
-          benefitors: [2, 3, 1],
-          cost: 10,
-          currency: 'EUR',
-          paidBy: [4, 1],
-        },
-        {
-          benefitors: [4],
-          cost: 2,
-          currency: 'EUR',
-          paidBy: [3],
-        },
-        {
-          benefitors: [3],
-          cost: 1,
-          currency: 'EUR',
-          paidBy: [4],
-        },
-        {
-          benefitors: [1],
-          cost: 2,
-          currency: 'EUR',
-          paidBy: [4],
-        },
-        {
-          benefitors: [3, 4],
-          cost: 5,
-          currency: 'EUR',
-          paidBy: [4],
-        },
-      ]);
-
-    console.table(debts);
-}
-
 function findACycle (
     debts: Debt[]
 ): LinkElement[] | null {
@@ -307,5 +270,22 @@ export function settle (records: RecordData[]) {
         }
     }
 
-    return tidied.map(denormalize);
+    return tidied.map(denormalize)
+        .map(item => {
+            item.value = Math.round(
+                (item.value + Number.EPSILON) * 100) / 100;
+            return item;
+        });
+}
+
+export function deptToRecordData (
+    debt: Debt,
+    currency: string,    
+): RecordData {
+    return {
+        benefitors: [debt.debtor],
+        cost: debt.value,
+        currency,
+        paidBy: [debt.creditor],
+    };
 }

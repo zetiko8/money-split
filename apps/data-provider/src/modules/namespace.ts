@@ -1,4 +1,4 @@
-import { CreateNamespacePayload, ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataView, RecordView, User } from "@angular-monorepo/entities";
+import { CreateNamespacePayload, ERROR_CODE, Invitation, MNamespace, NamespaceView, Owner, Record, RecordData, RecordDataView, RecordView, User } from "@angular-monorepo/entities";
 import { query } from "../connection/connection";
 import { insertSql, lastInsertId, selectOneWhereSql, selectWhereSql } from "../connection/helper";
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity } from "../types";
@@ -128,35 +128,8 @@ const records
     = await RECORD_SERVICE.getNamespaceRecords(namespaceId);
 
 const recordViews: RecordView[]
-    = await asyncMap<Record, RecordView>(records, async (record) => {
-        const createdBy = await USER_SERVICE.getUserById(record.createdBy);
-        const editedBy = await USER_SERVICE.getUserById(record.editedBy);
-        const benefitors = await asyncMap(
-            record.data.benefitors,
-            async benefitorId => await USER_SERVICE.getUserById(benefitorId),
-        );
-        const paidBy = await asyncMap(
-            record.data.paidBy,
-            async paidById => await USER_SERVICE.getUserById(paidById),
-        );
-        const data: RecordDataView = {
-            cost: record.data.cost,
-            currency: record.data.currency,
-            benefitors,
-            paidBy, 
-        }
-        const recordView: RecordView = {
-            created: record.created,
-            edited: record.edited,
-            id: record.id,
-            createdBy,
-            editedBy,
-            namespace,
-            data,
-        }
-
-        return recordView;
-    })
+    = await asyncMap<Record, RecordView>(
+        records, async (record) => await mapToRecordView(record, namespace))
 
 const namespaceView: NamespaceView = {
     id: namespaces[0].id,
@@ -177,20 +150,7 @@ async function mapToRecordView (
 ): Promise<RecordView> {
     const createdBy = await USER_SERVICE.getUserById(record.createdBy);
     const editedBy = await USER_SERVICE.getUserById(record.editedBy);
-    const benefitors = await asyncMap(
-        record.data.benefitors,
-        async benefitorId => await USER_SERVICE.getUserById(benefitorId),
-    );
-    const paidBy = await asyncMap(
-        record.data.paidBy,
-        async paidById => await USER_SERVICE.getUserById(paidById),
-    );
-    const data: RecordDataView = {
-        cost: record.data.cost,
-        currency: record.data.currency,
-        benefitors,
-        paidBy, 
-    }
+    const data = await mapToRecordDataView(record.data);
     const recordView: RecordView = {
         created: record.created,
         edited: record.edited,
@@ -199,9 +159,31 @@ async function mapToRecordView (
         editedBy,
         namespace,
         data,
+        settlementId: record.settlementId,
     }
 
     return recordView;
+}
+
+async function mapToRecordDataView (
+    record: RecordData,
+): Promise<RecordDataView> {
+    const benefitors = await asyncMap(
+        record.benefitors,
+        async benefitorId => await USER_SERVICE.getUserById(benefitorId),
+    );
+    const paidBy = await asyncMap(
+        record.paidBy,
+        async paidById => await USER_SERVICE.getUserById(paidById),
+    );
+    const data: RecordDataView = {
+        cost: record.cost,
+        currency: record.currency,
+        benefitors,
+        paidBy, 
+    }
+
+    return data;
 }
 
 export const NAMESPACE_SERVICE = {
@@ -220,4 +202,5 @@ export const NAMESPACE_SERVICE = {
     getNamespaceById,
     getNamespacesForOwner,
     mapToRecordView,
+    mapToRecordDataView,
 }

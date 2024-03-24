@@ -2,7 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import { ConfigService } from "../../../services/config.service";
 import { Observable, catchError, combineLatest, mergeMap, throwError } from "rxjs";
-import { CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, NamespaceView, Record, RecordView } from "@angular-monorepo/entities";
+import { CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, NamespaceView, Record, RecordView, SettlePayload, SettlementPreview } from "@angular-monorepo/entities";
 import { RoutingService } from "../../../services/routing/routing.service";
 
 @Injectable()
@@ -130,6 +130,49 @@ export class NamespaceService {
                         + '/edit/record/'
                         + recordData.recordId,
                         recordData,
+                    ),
+                )
+            );
+    }
+
+    public settlePreview () {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+            .pipe(
+                mergeMap(([ownerKey, namespaceId]) => this
+                    .http.get<SettlementPreview>(
+                        this.config.getConfig().middlewareUrl 
+                        + '/'
+                        + ownerKey
+                        + "/namespace/"
+                        + namespaceId
+                        + '/settle/preview'
+                    ),
+                )
+            );
+    }
+
+    public settle (
+        byUser: number,
+        payload: SettlePayload,    
+    ) {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+            .pipe(
+                mergeMap(([ownerKey, namespaceId]) => this
+                    .http.post<SettlementPreview>(
+                        this.config.getConfig().middlewareUrl 
+                        + '/'
+                        + ownerKey
+                        + "/namespace/"
+                        + namespaceId
+                        + '/settle/confirm/'
+                        + byUser,
+                        payload,
                     ),
                 )
             );

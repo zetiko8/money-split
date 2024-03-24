@@ -1,0 +1,34 @@
+<avatar
+    *ngFor="let benefitor of record.benefitors"
+    [name]="benefitor.name"
+    [avatarId]="benefitor.avatarId"
+    style="display: inline-block;"
+    data-test="benefitor-avatar"
+    [id]="'benefitor-avatar-' + benefitor.name"
+>
+</avatar>
+<span>
+    {{ 'owesWord' | translate }}
+</span>
+<span
+    data-test="record-cost"
+>
+    {{ record.cost }}
+</span>
+<span
+    data-test="record-currency"
+>
+    {{ record.currency }}
+</span>
+<span>
+    {{ 'toOneWord' | translate }}
+</span>
+<avatar
+    *ngFor="let payer of record.paidBy"
+    [name]="payer.name"
+    [avatarId]="payer.avatarId"
+    style="display: inline-block;"
+    data-test="payer"
+    [id]="'payer-avatar-' + payer.name"
+>
+</avatar>

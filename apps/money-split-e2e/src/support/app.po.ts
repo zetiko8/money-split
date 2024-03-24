@@ -82,6 +82,8 @@ export const NAMESPACE_SCREEN = {
     ) {
         cy.get('[data-test="namespace-view-page-header"]')
             .should('contain.text', namespaceName);
+        cy.get('[role=tab][data-test=tab-users]')
+            .should('be.visible');
     }
 }
 
@@ -112,6 +114,7 @@ export const RECORD_LIST = {
                 return RECORD_LIST.RECORD(index, $el);
             },
             hasDate (date: Date) {
+                console.log(date);
                 if (moment(date).month() !== 2)
                     throw Error('Not implemented jet');
                 const string = `Mar ${moment(date).date()}, ${moment(date).year()}`
@@ -186,7 +189,99 @@ export const RECORD_LIST = {
                     .should('contain.text', value);
             },
         }
-    }
+    },
+    settleButton: {
+        isNotVisible () {
+            cy.get('[data-test="settle-button"]')
+                .should('not.be.visible');
+        },
+        click () {
+            cy.get('[data-test="settle-button"]')
+                .should('be.visible')
+                .click();
+        },
+    },
+}
+
+export const SETTLE_PREVIEW_SCREEN = {
+    shouldHaveNumberOfRecords (num: number) {
+        cy.get('[data-test="namespace-record"]')
+        .should('have.length', num);
+    },
+    RECORD: (
+        index: number,
+        inSection?: () =>  Cypress.Chainable<JQuery>,
+    ) => {
+        const $el = 
+            inSection ?
+            () => inSection()
+            .find('[data-test="namespace-record"]')
+            .eq(index)
+            : () => cy
+            .get('[data-test="namespace-record"]')
+            .eq(index);
+
+        return {
+            goToEdit () {
+                $el().click();
+            },
+            shouldHaveNumberOfPayers (num: number) {
+                $el().find('[data-test="payer-avatar"]')
+                    .should('have.length', num)
+            },
+            shouldHaveNumberOfBenefitors (num: number) {
+                $el().find('[data-test="benefitor-avatar"]')
+                    .should('have.length', num)
+            },
+            PAYER: (index: number) => {
+                const payer$ = () => $el()
+                    .find('[data-test="payer-avatar"]')
+                    .eq(index);
+
+                return {
+                    hasId (id: string) {
+                        payer$()
+                        .should('have.attr', 'id')
+                        .should('equal', id);
+                    }
+                }
+
+            },
+            BENEFITOR: (index: number) => {
+                const payer$ = () => $el()
+                    .find('[data-test="benefitor-avatar"]')
+                    .eq(index);
+
+                return {
+                    hasId (id: string) {
+                        payer$()
+                        .should('have.attr', 'id')
+                        .should('equal', id);
+                    }
+                }
+
+            },
+            shouldHaveCost (cost: string) {
+                $el().find('[data-test="record-cost"]')
+                    .should('contain.text', cost);
+            },
+            shouldHaveCurrency (value: string) {
+                $el().find('[data-test="record-currency"]')
+                    .should('contain.text', value);
+            },
+        }
+    },
+    settleButton: {
+        isNotVisible () {
+            cy.get('[data-test="settle-preview-confirm-button"]')
+                .should('not.be.visible');
+        },
+        click () {
+            cy.get('[data-test="settle-preview-confirm-button"]')
+                .should('be.visible')
+                .click();
+        },
+    },
 }
 
 export const RECORD_FORM = {

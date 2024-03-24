@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { NamespaceService } from '../../services/namespace.service';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
 import { RecordFormGroup } from '../../../../types';
@@ -109,9 +108,6 @@ export function getRecordForm (
   ],
   selector: 'record-form',
   templateUrl: './record-form.component.html',
-  providers: [
-    NamespaceService,
-  ],
 })
 export class RecordFormComponent {
 

@@ -72,6 +72,10 @@ export interface RecordData {
     paidBy: number[],
 }
 
+export interface SettlePayload {
+    records: number[],
+}
+
 export interface RecordDataCy {
     benefitors: string[],
     cost: number,
@@ -113,6 +117,19 @@ export interface Record {
     editedBy: number,
     data: RecordData,
     namespaceId: number,
+    settlementId: number | null,
+}
+
+export interface Settlement {
+    id: number,
+    created: Date,
+    edited: Date,
+    createdBy: number,
+    editedBy: number,
+}
+
+export interface SettlementDebt extends Record {
+    settled: boolean,
 }
 
 export interface RecordView {
@@ -123,6 +140,11 @@ export interface RecordView {
     editedBy: User,
     data: RecordDataView,
     namespace: MNamespace,
+    settlementId: number | null,
+}
+
+export interface SettlementDebtView extends RecordView {
+    settled: boolean,
 }
 
 export interface AvatarData {
@@ -153,6 +175,19 @@ export interface Debt {
     debtor: number,
     creditor: number,
     value: number,
+}
+
+export interface SettlementPreview {
+    settleRecords: RecordDataView[];
+    records: RecordView[];
+    namespace: NamespaceView,
+}
+
+export interface SettlementView {
+    settleRecords: RecordDataView[];
+    records: RecordView[];
+    namespace: NamespaceView,
+    settledBy: User,
 }
 
 export * from './error';

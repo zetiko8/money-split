@@ -5,6 +5,13 @@
 >
     <i class="fa-solid fa-plus"></i>
 </button>
+<button
+    (click)="routingService.goToSettleView()"
+    data-test="settle-button"
+    style="width: 100%;"
+>
+    {{ 'settle' | translate }}
+</button>
 <records-list
     [records]="namespace.records"
     (selectRecord)="routingService

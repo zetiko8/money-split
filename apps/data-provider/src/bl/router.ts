@@ -3,7 +3,7 @@ import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { decodeJwt, login } from './service';
 import { query } from '../connection/connection';
-import { CreateNamespacePayload, ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload } from '@angular-monorepo/entities';
+import { CreateNamespacePayload, ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
@@ -11,7 +11,8 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
-import { asyncMap } from '../helpers';
+import { asyncMap, numberRouteParam } from '../helpers';
+import { SETTLE_SERVICE } from '../modules/settle';
 
 export const mainRouter = Router();
 
@@ -290,6 +291,51 @@ async (
     )
 
     res.json(record);
+  } catch (error) {
+    next(error);
+  }
+});
+
+mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
+logRequestMiddleware(),
+async (
+  req: TypedRequestBody<null>,
+  res,
+  next,
+) => {
+  try {
+    const owner = await getOwnerFromToken(req);
+
+    const settlmentPreview = await SETTLE_SERVICE
+      .settleNamespacePreview(
+        numberRouteParam(req, 'namespaceId'),
+        owner.id,
+      );
+
+    res.json(settlmentPreview);
+  } catch (error) {
+    next(error);
+  }
+});
+
+mainRouter.post('/:ownerKey/namespace/:namespaceId/settle/confirm/:byUser',
+logRequestMiddleware(),
+async (
+  req: TypedRequestBody<SettlePayload>,
+  res,
+  next,
+) => {
+  try {
+    await getOwnerFromToken(req);
+
+    const result = await SETTLE_SERVICE
+      .settle(
+        numberRouteParam(req, 'byUser'),
+        numberRouteParam(req, 'namespaceId'),
+        req.body.records,
+      );
+
+    res.json(result);
   } catch (error) {
     next(error);
   }

@@ -1,0 +1,10 @@
+<ul>
+    <debt-item
+        *ngFor="let debt of debts"
+        data-test="debt-record"
+        [record]="debt"
+        class="list-item box"
+        role="listitem"
+        (click)="selectDebt.emit(debt)"
+    ></debt-item>
+</ul>

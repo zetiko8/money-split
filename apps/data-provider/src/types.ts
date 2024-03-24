@@ -58,6 +58,28 @@ export const RecordEntity: Entity = {
   editedBy: EntityPropertyType.ID,
   data: EntityPropertyType.JSON,
   namespaceId: EntityPropertyType.ID,
+  settlementId: EntityPropertyType.NULLABLE_ID,
+};
+
+export const SettlementDebtEntity: Entity = {
+  id: EntityPropertyType.AUTO_ID,
+  created: EntityPropertyType.DATETIME,
+  edited: EntityPropertyType.DATETIME,
+  createdBy: EntityPropertyType.ID,
+  editedBy: EntityPropertyType.ID,
+  data: EntityPropertyType.JSON,
+  namespaceId: EntityPropertyType.ID,
+  settlementId: EntityPropertyType.NULLABLE_ID,
+  settled: EntityPropertyType.BOOL,
+};
+
+export const SettlementEntity: Entity = {
+  id: EntityPropertyType.AUTO_ID,
+  created: EntityPropertyType.DATETIME,
+  edited: EntityPropertyType.DATETIME,
+  createdBy: EntityPropertyType.ID,
+  editedBy: EntityPropertyType.ID,
+  namespaceId: EntityPropertyType.ID,
 };
 
 export const InvitationEntity: Entity = {

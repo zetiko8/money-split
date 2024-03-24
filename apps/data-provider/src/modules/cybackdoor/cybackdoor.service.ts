@@ -116,6 +116,7 @@ export const CYBACKDOOR_SERVICE = {
               editedBy: userId,
               data: recordData,
               namespaceId,
+              settlementId: null,
           }
       ));
 

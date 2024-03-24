@@ -243,6 +243,8 @@ ul {
 
     .list-item {
         padding: var(--gap-small) 0;
+        display: list-item;
+        text-align: -webkit-match-parent;
     }
 
     .avatar {
