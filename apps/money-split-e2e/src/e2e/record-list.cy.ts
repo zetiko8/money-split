@@ -12,7 +12,7 @@ describe('Record list', () => {
         const firstDate = moment().set({
             year: 2024,
             month: 2,
-            day: 15,
+            date: 15,
         }).toDate();
         const secondDate = moment(firstDate)
             .subtract(2, 'hours').toDate()
