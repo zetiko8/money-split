@@ -1,13 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BoundProcess } from 'rombok';
+import { AsyncProcess } from 'rombok';
 import { PageComponent } from '../../../../layout/page/page.component';
-import { BehaviorSubject, Observable, ReplaySubject, filter, map, merge, mergeMap, of, share, tap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, filter, map, merge, mergeMap, of, share, take, tap } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
-import { NamespaceView as MNamespaceView } from '@angular-monorepo/entities';
 import { TabsHeaderComponent } from '../../../../components/tabs-header.component';
 import { NamespaceRecordsComponent } from '../../components/namespace-records/namespace-records.component';
 import { NamespaceMembersComponent } from '../../components/namespace-members/namespace-members.component';
@@ -35,22 +34,41 @@ export class NamespaceView {
   private readonly nameSpaceService = inject(NamespaceService);
   public readonly routingService = inject(RoutingService);
 
-  public readonly loadProcess = new BoundProcess(
+  public readonly loadProcess = new AsyncProcess(
     () => this.nameSpaceService.getNamespace() 
+  );
+  private readonly reload$ = new Subject<void>();
+  public readonly markAsSettledProcess = new AsyncProcess(
+    (settlementDebtId: number) => this
+      .namespace$.pipe(take(1))
+      .pipe(
+        mergeMap(namespace => this.nameSpaceService
+          .markAsSettled(settlementDebtId, namespace.ownerUsers[0].id)),
+        tap(() => this.reload$.next()),
+      ),
+  );
+  public readonly markAsUnsettledProcess = new AsyncProcess(
+    (settlementDebtId: number) => this
+      .namespace$.pipe(take(1))
+      .pipe(
+        mergeMap(namespace => this.nameSpaceService
+          .markAsUnSettled(settlementDebtId, namespace.ownerUsers[0].id)),
+        tap(() => this.reload$.next()),
+      ),
   );
 
   public readonly namespace$
     = merge(
       of(''),
+      this.reload$,
     ).pipe(
-      mergeMap(() => this.loadProcess.execute()),
+      mergeMap(() => this.loadProcess.share('')),
       tap(namespace => {
         this.activeTab$.next((
           namespace.records.length === 0 
           && namespace.users.length < 2
         ) ? 'users' : 'recordsList')
       }),
-      share({ connector: () => new ReplaySubject<MNamespaceView>() })
     );
 
   public readonly isLoading = combineLoaders([
@@ -60,6 +78,8 @@ export class NamespaceView {
   public readonly notification$: Observable<Notification> 
     = merge(
       this.loadProcess.error$,
+      this.markAsSettledProcess.error$,
+      this.markAsUnsettledProcess.error$,
     ) 
     .pipe(
       filter(err => err !== null),

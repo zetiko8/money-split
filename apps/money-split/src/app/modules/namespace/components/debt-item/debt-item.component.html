@@ -1,34 +1,15 @@
-<avatar
-    *ngFor="let benefitor of debt.data.benefitors"
-    [name]="benefitor.name"
-    [avatarId]="benefitor.avatarId"
-    style="display: inline-block;"
-    data-test="benefitor-avatar"
-    [id]="'benefitor-avatar-' + benefitor.name"
+<div
+    style="display: flex; align-items: center; justify-content: space-between;"
+    data-test="debt-item"
 >
-</avatar>
-<span>
-    {{ 'owesWord' | translate }}
-</span>
-<span
-    data-test="record-cost"
->
-    {{ debt.data.cost }}
-</span>
-<span
-    data-test="record-currency"
->
-    {{ debt.data.currency }}
-</span>
-<span>
-    {{ 'toOneWord' | translate }}
-</span>
-<avatar
-    *ngFor="let payer of debt.data.paidBy"
-    [name]="payer.name"
-    [avatarId]="payer.avatarId"
-    style="display: inline-block;"
-    data-test="payer-avatar"
-    [id]="'payer-avatar-' + payer.name"
->
-</avatar>
+	<debt-specification
+        [debt]="debt"
+    ></debt-specification>
+    <checkbox-button
+        class="p-lr-normal"
+        [value]="debt.settled"
+        (buttonChange)="$event ? 
+            markAsSettled.emit()
+            : markAsUnSettled.emit()"
+    ></checkbox-button>
+</div>

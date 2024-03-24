@@ -20,4 +20,6 @@
     }"
     (selectRecord)="routingService
         .goToEditRecordView($event.id)"
+    (markAsSettled)="markAsSettled.emit($event)"
+    (markAsUnSettled)="markAsUnSettled.emit($event)"
 ></records-list>

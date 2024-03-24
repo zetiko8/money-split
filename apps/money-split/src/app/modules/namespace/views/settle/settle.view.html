@@ -17,9 +17,15 @@
         <h4>
             {{ 'settlePreview' | translate }}
         </h4>
-        <debt-list
-            [debts]="preview.settleRecords"
-        ></debt-list>
+        <ul>
+            <debt-specification
+                *ngFor="let debt of preview.settleRecords"
+                data-test="debt-record"
+                [debt]="debt"
+                class="list-item box"
+                role="listitem"
+            ></debt-specification>
+        </ul>
         <button
             (click)="settle()"
             data-test="settle-preview-confirm-button"

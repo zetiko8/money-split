@@ -35,6 +35,8 @@
         <namespace-records
             *ngIf="activeTab$.value === 'recordsList'"
             [namespace]="namespace"
+            (markAsSettled)="markAsSettledProcess.load($event)"
+            (markAsUnSettled)="markAsUnsettledProcess.load($event)"
         ></namespace-records>
         <namespace-members
             *ngIf="activeTab$.value === 'users'"

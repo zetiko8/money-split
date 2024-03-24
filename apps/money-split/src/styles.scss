@@ -102,6 +102,10 @@ ul {
     .light {
     }
 
+    .bg-primary {
+        background-color: var(--background-color-primary) !important;
+    }
+
     .danger {
         background-color: var(--color-error);
         * {
@@ -264,18 +268,12 @@ ul {
         }
     }
 
-    .padding-normal {
-        padding: var(--gap-large);
+    .p-normal {
+        padding: var(--gap-normal);
     }
-
-    .mt-normal {
-        padding: var(--gap-large);
-    }
-    .mt-large {
-        padding: var(--gap-xlarge);
-    }
-    .mt-xlarge {
-        padding: var(--gap-xlarge);
+    .p-lr-normal {
+        padding-left: var(--gap-normal);
+        padding-right: var(--gap-normal);
     }
 
     .form-control {
@@ -441,6 +439,10 @@ ul {
                 margin-left: var(--gap-small);
             }
         }
+    }
+
+    .is-all-settled {
+        background-color: var(--color-primary);
     }
 }
 

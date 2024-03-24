@@ -177,4 +177,54 @@ export class NamespaceService {
                 )
             );
     }
+
+    public markAsSettled (
+        settlementDebtId: number,    
+        byUser: number,
+    ) {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+            .pipe(
+                mergeMap(([ownerKey, namespaceId]) => this
+                    .http.get<void>(
+                        this.config.getConfig().middlewareUrl 
+                        + '/'
+                        + ownerKey
+                        + "/namespace/"
+                        + namespaceId
+                        + '/settle/mark-as-settled/'
+                        + byUser
+                        + '/'
+                        + settlementDebtId
+                    ),
+                )
+            );
+    }
+
+    public markAsUnSettled (
+        settlementDebtId: number,    
+        byUser: number,
+    ) {
+        return combineLatest([
+            this.routingService.getOwnerKey(),
+            this.routingService.getNamespaceId()
+        ])
+            .pipe(
+                mergeMap(([ownerKey, namespaceId]) => this
+                    .http.get<void>(
+                        this.config.getConfig().middlewareUrl 
+                        + '/'
+                        + ownerKey
+                        + "/namespace/"
+                        + namespaceId
+                        + '/settle/mark-as-unsettled/'
+                        + byUser
+                        + '/'
+                        + settlementDebtId
+                    ),
+                )
+            );
+    }
 }

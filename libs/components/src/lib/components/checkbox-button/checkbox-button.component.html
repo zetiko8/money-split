@@ -1,34 +1,25 @@
 <div
-    (click)="change(!_value)"
+    (click)="change(!value)"
 >
     <input
         type="checkbox"
         [name]="name"
-        [required]="required"
         [readonly]="readonly"
-        [(ngModel)]="_value"
-        (ngModelChange)="handleChange($event)"
-        (focusout)="onBlur()"
+        [checked]="value"
         hidden
     >
     <i 
         class="fa-solid fa-check"
         style="font-size: 20px;"
-        *ngIf="_value"
+        *ngIf="value"
     ></i>
     <i 
         class="fa-regular fa-square"
         style="font-size: 20px;"
-        *ngIf="!_value"    
+        *ngIf="!value"    
     ></i>
     <label
     >
         {{ label }}
     </label>
-</div>
-<div 
-    class="error"
-    *ngIf="error"
->
-    {{ error }}
 </div>

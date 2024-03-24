@@ -65,6 +65,8 @@ export class RecordsListComponent {
 
   @Output() selectRecord = new EventEmitter<RecordView>();
   @Output() selectSettlement = new EventEmitter<SettlementListView>();
+  @Output() markAsSettled = new EventEmitter<number>();
+  @Output() markAsUnSettled = new EventEmitter<number>();
   public _items: DateItem[] = [];
 }
 

@@ -3,7 +3,7 @@ import { RECORD_SERVICE } from "./record";
 import { settle, deptToRecordData } from "@angular-monorepo/debt-simplification";
 import { asyncMap } from "../helpers";
 import { NAMESPACE_SERVICE } from "./namespace";
-import { insertSql, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from "../connection/helper";
+import { insertSql, mysqlDate, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from "../connection/helper";
 import { lastInsertId, query } from "../connection/connection";
 import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from "../types";
 import { USER_SERVICE } from "./user";
@@ -212,5 +212,21 @@ export const SETTLE_SERVICE = {
             );
 
         return settlementDebtViews;
+    },
+    setDebtIsSettled: async (
+        byUser: number,
+        debtId: number,
+        isSettled: boolean, 
+    ) => {
+        const updateSql = `
+            UPDATE \`SettlementDebt\`
+            SET settled = ${isSettled ? 1 : 0},
+            settledOn = ${isSettled ? ('\'' + mysqlDate(new Date()) + '\'') : 'NULL'},
+            settledBy = ${isSettled ? byUser : 'NULL'},
+            edited = '${mysqlDate(new Date())}',
+            editedBy = ${byUser}
+            WHERE id = ${debtId}
+        `;
+        await query(updateSql);
     }
 };

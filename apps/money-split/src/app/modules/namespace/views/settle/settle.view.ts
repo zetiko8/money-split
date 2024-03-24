@@ -8,8 +8,8 @@ import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
 import { NamespaceHeaderComponent } from '../../components/namespace.header.component';
-import { DebtListComponent } from '../../components/debt-list/debt-list.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { DebtSpecificationComponent } from '../../components/debt-specification/debt-specification.component';
 
 @Component({
   standalone: true,
@@ -17,7 +17,7 @@ import { TranslateModule } from '@ngx-translate/core';
     CommonModule,
     PageComponent,
     NamespaceHeaderComponent,
-    DebtListComponent,
+    DebtSpecificationComponent,
     TranslateModule,
   ],
   selector: 'settle-view',

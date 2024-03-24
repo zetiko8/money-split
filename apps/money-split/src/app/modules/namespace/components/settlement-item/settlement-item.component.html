@@ -9,6 +9,16 @@
             .settlement.created | date }}
     </h5>
 </div>
-<debt-list
-    [debts]="settlement.settleRecords"
-></debt-list>
+<ul
+    class="p-lr-normal"
+>
+    <debt-item
+        *ngFor="let debt of settlement.settleRecords"
+        data-test="debt-record"
+        [debt]="debt"
+        class="list-item box bg-primary"
+        role="listitem"
+        (markAsSettled)="markAsSettled.emit(debt.id)"
+        (markAsUnSettled)="markAsUnSettled.emit(debt.id)"
+    ></debt-item>
+</ul>

@@ -341,6 +341,52 @@ async (
   }
 });
 
+mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-settled/:byUser/:settlementDebtId',
+logRequestMiddleware(),
+async (
+  req: TypedRequestBody<null>,
+  res,
+  next,
+) => {
+  try {
+    await getOwnerFromToken(req);
+
+    const result = await SETTLE_SERVICE
+      .setDebtIsSettled(
+        numberRouteParam(req, 'byUser'),
+        numberRouteParam(req, 'settlementDebtId'),
+        true,
+      );
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-unsettled/:byUser/:settlementDebtId',
+logRequestMiddleware(),
+async (
+  req: TypedRequestBody<null>,
+  res,
+  next,
+) => {
+  try {
+    await getOwnerFromToken(req);
+
+    const result = await SETTLE_SERVICE
+      .setDebtIsSettled(
+        numberRouteParam(req, 'byUser'),
+        numberRouteParam(req, 'settlementDebtId'),
+        false,
+      );
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
 mainRouter.post('/login',
   logRequestMiddleware(),
   async (

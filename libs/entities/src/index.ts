@@ -197,6 +197,7 @@ export interface SettlementListView {
     settlement: Settlement,
     settleRecords: SettlementDebtView[];
     settledBy: User,
+    isAllSettled: boolean,
 }
 
 export interface SettlementRecord {

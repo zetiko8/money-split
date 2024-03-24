@@ -3,6 +3,7 @@
 >
     <h5
         data-test="settled-on-label"
+        *ngIf="record.settlementId !== null"
     >
         {{ 'settledOn' | translate }}:
         {{ record.settledOn | date }}

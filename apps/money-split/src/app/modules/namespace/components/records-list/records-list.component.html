@@ -27,8 +27,12 @@
                             [settlement]="content.data"
                             data-test="settlement-record"
                             class="list-item box"
-                            (click)="selectSettlement
-                                .emit(content.data)"
+                            [class.is-all-settled]="
+                                content.data.isAllSettled"
+                            (markAsSettled)="markAsSettled
+                                .emit($event)"
+                            (markAsUnSettled)="markAsUnSettled
+                                .emit($event)"
                         ></settlement-item>
                     </ng-container>
                 </ul>

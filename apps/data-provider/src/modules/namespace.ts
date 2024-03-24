@@ -228,19 +228,26 @@ async function getSettlementListViews (
         SettlementEntity,
     );
 
-    settlements.sort((a, b) => a.created < b.created ? 1 : -1);
+    settlements.sort((a, b) => a.created < b.created ? 1 : -1); 
 
     const settlementListViews = await asyncMap<
         Settlement, SettlementListView>(
         settlements,
         async settlement => {
+
+            const settleRecords = await SETTLE_SERVICE
+                .getSettlementRecordViews(settlement.id);
+
+            const isAllSettled = settleRecords
+                .every(record => record.settled);
+
             return {
                 settlement,
                 settledBy: await USER_SERVICE
                     .getUserById(settlement.createdBy),
-                settleRecords: await SETTLE_SERVICE
-                    .getSettlementRecordViews(settlement.id),
-            }
+                settleRecords,
+                isAllSettled,
+            };
         },
     );
 

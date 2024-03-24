@@ -213,7 +213,7 @@ export const RECORD_LIST = {
         return {
             RECORD: (index: number) => {  
                 const $recordEl = () => $el()
-                    .find('[data-test="debt-record"]')
+                    .find('[data-test="debt-item"]')
                     .eq(index);
 
                 return {
@@ -262,6 +262,24 @@ export const RECORD_LIST = {
                         $recordEl().find('[data-test="settled-on-label"]')
                             .contains(string)
                     },
+                    toggleSettled () {
+                        $recordEl()
+                            .find(
+                                'checkbox-button'
+                            ).click();
+                    },
+                    isSettled () {
+                        $recordEl()
+                            .find(
+                                'checkbox-button'
+                            ).find('input').should('be.checked');
+                    },
+                    isNotSettled () {
+                        $recordEl()
+                            .find(
+                                'checkbox-button'
+                            ).find('input').should('not.be.checked');
+                    },
                 }
             },
             goToEdit () {
@@ -274,6 +292,10 @@ export const RECORD_LIST = {
                     = `Mar ${moment(date).date()}, ${moment(date).year()}`
                 $el().find('[data-test="settled-on-label"]')
                     .contains(string)
+            },
+            shouldBeSettled () {
+                $el()
+                    .should('have.class', 'is-all-settled');
             },
         }
     },
