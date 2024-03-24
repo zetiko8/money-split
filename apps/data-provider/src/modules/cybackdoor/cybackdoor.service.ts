@@ -4,6 +4,7 @@ import { insertSql, selectOneWhereSql } from "../../connection/helper"
 import { EntityPropertyType, InvitationEntity, RecordEntity } from "../../types"
 import { RECORD_SERVICE } from "../record"
 import { asyncMap } from "../../helpers"
+import { SETTLE_SERVICE } from "../settle"
 
 export const CYBACKDOOR_SERVICE = {
     deleteOwner: async (
@@ -124,4 +125,19 @@ export const CYBACKDOOR_SERVICE = {
 
       return RECORD_SERVICE.getRecordById(recordId);
   },
+  settleRecords: async (
+    byUser: string,
+    namespaceName: string,
+    records: number[],
+  ) => {
+    const user = await CYBACKDOOR_SERVICE.getUserByUsername(byUser);
+    const namespace 
+      = await CYBACKDOOR_SERVICE.getNamespaceByName(namespaceName);
+
+    return await SETTLE_SERVICE.settle(
+      user.id,
+      namespace.id,
+      records,
+    );
+  }
 }

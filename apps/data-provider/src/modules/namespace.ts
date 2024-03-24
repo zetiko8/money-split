@@ -129,8 +129,15 @@ async function getNamespaceViewForOwner (
 
     const recordViews: RecordView[]
         = await asyncMap<Record, RecordView>(
-            records, async (record) => await mapToRecordView(record, namespace))
+            records, async (record) => await mapToRecordView(
+                record, namespace))
             
+    const hasRecordsToSettle = (() => {
+        if (!records.length) return false;
+        if (records.some(record => record.settlementId === null))
+            return true;
+        return false;
+    })();
 
     const namespaceView: NamespaceView = {
         id: namespaces[0].id,
@@ -140,6 +147,7 @@ async function getNamespaceViewForOwner (
         ownerUsers,
         records: recordViews,
         avatarId: namespace.avatarId,
+        hasRecordsToSettle,
     };
 
     return namespaceView;

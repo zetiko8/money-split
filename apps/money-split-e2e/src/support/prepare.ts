@@ -1,4 +1,4 @@
-import { MNamespace, Owner, RecordDataCy } from "@angular-monorepo/entities";
+import { MNamespace, Owner, Record, RecordDataCy } from "@angular-monorepo/entities";
 import { ACTIONS } from "./actions";
 
 export interface TestUser {
@@ -142,18 +142,23 @@ export function prepareNamespace (
                 prepareRealmP.creator.username, 
                 prepareRealmP.creator.password,
             );
+            
+            const recordsToReturn: Record[] = []
 
             records.forEach(record => ACTIONS.addRecord(
                 namespaceName,
                 record.user,
                 record.record,
-            ));
+            ).then(returnedRecord => {
+                recordsToReturn.push(returnedRecord);
+            }));
         
             return cy.then(() => cy.wrap({ 
                 namespace, 
                 owner,
                 creator: prepareRealmP.creator,
-                users: pUsers, 
+                users: pUsers,
+                records: recordsToReturn,
             }));
         },
         after: () => cleanup(),

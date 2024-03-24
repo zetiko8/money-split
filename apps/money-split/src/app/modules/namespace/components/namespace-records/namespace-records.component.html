@@ -9,6 +9,7 @@
     (click)="routingService.goToSettleView()"
     data-test="settle-button"
     style="width: 100%;"
+    [hidden]="!namespace.hasRecordsToSettle"
 >
     {{ 'settle' | translate }}
 </button>

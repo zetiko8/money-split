@@ -9,6 +9,7 @@ export interface NamespaceView extends MNamespace {
     users: User[],
     ownerUsers: User[],
     records: RecordView[],
+    hasRecordsToSettle: boolean,
 }
 
 export interface Owner {
