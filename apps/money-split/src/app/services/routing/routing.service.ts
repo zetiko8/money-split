@@ -1,6 +1,6 @@
 import { Injectable, inject } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { combineLatest, map, of, take } from "rxjs";
+import { combineLatest, map, of } from "rxjs";
 import { UserService } from "../auth/token/auth.token.user.service";
 import { APP_BASE_HREF } from "@angular/common";
 
