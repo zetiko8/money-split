@@ -2,7 +2,18 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AsyncProcess } from 'rombok';
 import { PageComponent } from '../../../../layout/page/page.component';
-import { BehaviorSubject, Observable, Subject, filter, map, merge, mergeMap, of, share, take, tap } from 'rxjs';
+import { 
+  BehaviorSubject, 
+  Observable, 
+  Subject, 
+  filter, 
+  map, 
+  merge, 
+  mergeMap, 
+  of, 
+  take, 
+  tap, 
+} from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceService } from '../../services/namespace.service';
@@ -34,10 +45,14 @@ export class NamespaceView {
   private readonly nameSpaceService = inject(NamespaceService);
   public readonly routingService = inject(RoutingService);
 
-  public readonly loadProcess = new AsyncProcess(
+  private readonly reload$ = new Subject<void>();
+  public readonly loadProcess = AsyncProcess.on(
+    merge(
+      of(''),
+      this.reload$,
+    ),
     () => this.nameSpaceService.getNamespace() 
   );
-  private readonly reload$ = new Subject<void>();
   public readonly markAsSettledProcess = new AsyncProcess(
     (settlementDebtId: number) => this
       .namespace$.pipe(take(1))
@@ -58,11 +73,7 @@ export class NamespaceView {
   );
 
   public readonly namespace$
-    = merge(
-      of(''),
-      this.reload$,
-    ).pipe(
-      mergeMap(() => this.loadProcess.share('')),
+    = this.loadProcess.share().pipe(
       tap(namespace => {
         this.activeTab$.next((
           namespace.records.length === 0 
