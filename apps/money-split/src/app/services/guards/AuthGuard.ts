@@ -1,35 +1,35 @@
 import { Injectable } from '@angular/core';
 import { Router, CanActivate, CanActivateChild } from '@angular/router';
-import { Observable, of, from } from 'rxjs';
-import { mergeMap, map } from 'rxjs/operators';
-import { AuthService } from '../auth.service';
+import { Observable, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { AuthService } from '../auth/token/auth.token.service';
+import { RoutingService } from '../routing/routing.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate, CanActivateChild {
-  constructor(public auth: AuthService, public router: Router) {}
-  canActivate(): Observable<boolean> {
-    return this.auth
-      .isLoggedIn()
-      .pipe(
-        mergeMap(isLoggedIn => {
-          if (!isLoggedIn)
-            return from(this.auth.login())
-              .pipe(map(() => true));
+  constructor(
+    public auth: AuthService, 
+    public router: Router,
+    private routingService: RoutingService,
+  ) {}
 
-          return of(true);
-        }),
-      );
+  canActivate(): Observable<boolean> {
+    return this.guardImplementation();
   }
 
   canActivateChild(): Observable<boolean> {
+    return this.guardImplementation();;
+  }
+
+  private guardImplementation () {
     return this.auth
       .isLoggedIn()
       .pipe(
         mergeMap(isLoggedIn => {
-          if (!isLoggedIn)
-            return from(this.auth.login())
-              .pipe(map(() => true));
-
+          if (!isLoggedIn) {
+            this.routingService.goToLoginView();
+            return of(false);
+          }
           return of(true);
         }),
       );

@@ -321,4 +321,8 @@ export class RoutingService {
     ) {
         return ['/', ownerKey, 'profile'];
     }
+
+    public goToLoginView () {
+        this.router.navigate(['/login']);
+    }
 }
