@@ -3,9 +3,9 @@ import { createConnection } from 'mysql2';
 const connObject = {
   host: process.env.MYSQL_HOST || 'localhost',
   user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'root',
+  password: process.env.MYSQL_PASSWORD || 'anze123',
   database: process.env.MYSQL_DATABASE || 'main',
-  port: process.env.MYSQL_PORT ? Number(process.env.MYSQL_PORT) : 13307,
+  port: process.env.MYSQL_PORT ? Number(process.env.MYSQL_PORT) : 13308,
 };
 
 export const connection

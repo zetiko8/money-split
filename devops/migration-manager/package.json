@@ -1,0 +1,13 @@
+{
+  "name": "migration-manager-only-dependencies",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "~4.18.2",
+    "mysql2": "^3.7.1",
+    "tslib": "^2.3.0"
+  }
+}

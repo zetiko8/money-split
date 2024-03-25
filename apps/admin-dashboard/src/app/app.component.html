@@ -1,0 +1,55 @@
+<header>
+    ADMIN DASHBOARD
+</header>
+<main>
+    <article>
+        <h1>
+            Migrations
+        </h1>
+        <section>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input 
+                    type="password"
+                    [(ngModel)]="password"
+                >
+            </div>
+        </section>
+        <section>
+            <ul>
+                <li
+                    *ngFor="let migration of migrations"
+                >
+                    <span
+                        *ngIf="!migration.isApplied"
+                    >
+                        {{ migration.id }}
+                    </span>
+                    <b
+                        *ngIf="migration.isApplied"
+                    >
+                        {{ migration.id }}
+                    </b>
+                    <button
+                        (click)="runMigrationDown(migration.id)"
+                    >
+                        DOWN
+                    </button>
+                    <button
+                        (click)="runMigrationUp(migration.id)"
+                    >
+                        UP
+                    </button>
+                </li>
+            </ul>
+        </section>
+        <section>
+            <p>
+                {{ error }}
+            </p>
+            <p>
+                {{ actionDetails }}
+            </p>
+        </section>
+    </article>
+</main>

@@ -1,0 +1,61 @@
+version: "3"
+name: money-split-container
+services:
+  main-db:
+    image: "mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - "${MYSQL_PORT}:3306"
+
+    volumes:
+      - db-data:/main
+
+  frontend:
+    image: "money-split-frontend"
+    ports:
+      - "8300:80"
+      - "8301:443"
+    environment:
+      - MIDDLEWARE_URL=${MIDDLEWARE_URL}
+
+  admin-dashboard:
+    image: "money-split-admin-dashboard"
+    ports:
+      - "8305:80"
+      - "8306:443"
+    environment:
+      - MIGRATION_MANAGER_URL=${MIGRATION_MANAGER_URL}
+
+  data-provider:
+    image: "money-split-data-provider"
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PORT=3306
+    ports:
+      - "8302:3333"
+    depends_on:
+      - main-db
+
+  migration-manager:
+    image: "money-split-migration-manager"
+    environment:
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PORT=3306
+      - ADMIN_MIGRATION_PASSWORD=${ADMIN_MIGRATION_PASSWORD}
+    ports:
+      - "8304:3334"
+    depends_on:
+      - main-db
+
+volumes:
+  db-data:

@@ -1,26 +1,26 @@
 {
-  "name": "money-split",
+  "name": "admin-dashboard",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "angular-monorepo",
-  "sourceRoot": "apps/money-split/src",
+  "sourceRoot": "apps/admin-dashboard/src",
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:application",
+      "executor": "@angular-devkit/build-angular:browser",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/apps/money-split",
-        "index": "apps/money-split/src/index.html",
-        "browser": "apps/money-split/src/main.ts",
+        "outputPath": "dist/apps/admin-dashboard",
+        "index": "apps/admin-dashboard/src/index.html",
+        "main": "apps/admin-dashboard/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "apps/money-split/tsconfig.app.json",
+        "tsConfig": "apps/admin-dashboard/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
-          "apps/money-split/src/favicon.ico",
-          "apps/money-split/src/assets"
+          "apps/admin-dashboard/src/favicon.ico",
+          "apps/admin-dashboard/src/assets"
         ],
-        "styles": ["apps/money-split/src/styles.scss"],
+        "styles": ["apps/admin-dashboard/src/styles.scss"],
         "scripts": []
       },
       "configurations": {
@@ -38,12 +38,15 @@
             }
           ],
           "outputHashing": "all",
-          "outputPath": "devops/money-split/dist"
+          "outputPath": "devops/admin-dashboard/dist"
         },
         "development": {
+          "buildOptimizer": false,
           "optimization": false,
+          "vendorChunk": true,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "namedChunks": true
         }
       },
       "defaultConfiguration": "production"
@@ -52,10 +55,11 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "money-split:build:production"
+          "buildTarget": "admin-dashboard:build:production"
         },
         "development": {
-          "buildTarget": "money-split:build:development"
+          "buildTarget": "admin-dashboard:build:development",
+          "port": 4201
         }
       },
       "defaultConfiguration": "development"
@@ -63,7 +67,7 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "buildTarget": "money-split:build"
+        "buildTarget": "admin-dashboard:build"
       }
     },
     "lint": {
@@ -74,14 +78,13 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/money-split/jest.config.ts"
+        "jestConfig": "apps/admin-dashboard/jest.config.ts"
       }
     },
     "serve-static": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "money-split:build",
-        "staticFilePath": "dist/apps/money-split/browser"
+        "buildTarget": "admin-dashboard:build"
       }
     }
   }
