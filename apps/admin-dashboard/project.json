@@ -21,7 +21,8 @@
           "apps/admin-dashboard/src/assets"
         ],
         "styles": ["apps/admin-dashboard/src/styles.scss"],
-        "scripts": []
+        "scripts": [],
+        "baseHref": "/admin-dashboard/"
       },
       "configurations": {
         "production": {

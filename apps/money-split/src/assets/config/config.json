@@ -1,4 +1,3 @@
 {
-    "XmiddlewareUrl": "https://demoeu.eureko.si/bdca-api",
-    "middlewareUrl": "http://localhost:3333/app"
+    "middlewareUrl": "http://localhost:3333/data-provider/app"
 }

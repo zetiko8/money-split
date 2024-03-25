@@ -10,7 +10,7 @@ export const ACTIONS = {
         password: string,
     ) => {
         return cy.request<Owner>({
-            url: 'http://localhost:3333/app/register',
+            url: 'http://localhost:3333/data-provider/app/register',
             body: {
                 username,
                 password,
@@ -25,7 +25,7 @@ export const ACTIONS = {
     ) => {
         cy.request(
             'DELETE', 
-            'http://localhost:3333/cybackdoor/owner/' + username
+            'http://localhost:3333/data-provider/cybackdoor/owner/' + username
             ).then((response) => {
                 expect(response.status).to.equal(200);
             });
@@ -35,7 +35,7 @@ export const ACTIONS = {
     ) => {
         cy.request(
             'DELETE', 
-            'http://localhost:3333/cybackdoor/user/' + username
+            'http://localhost:3333/data-provider/cybackdoor/user/' + username
             ).then((response) => {
                 expect(response.status).to.equal(200);
             });
@@ -45,7 +45,7 @@ export const ACTIONS = {
         password: string,
     ) => {
         return cy.request<{ token: string }>({
-            url: 'http://localhost:3333/app/login',
+            url: 'http://localhost:3333/data-provider/app/login',
             body: {
                 username,
                 password
@@ -67,7 +67,7 @@ export const ACTIONS = {
         ownerKey: string,
     ) {
         return cy.request<MNamespace>({
-            url: `http://localhost:3333/cybackdoor/${ownerKey}/namespace`,
+            url: `http://localhost:3333/data-provider/cybackdoor/${ownerKey}/namespace`,
             body: {
                 name,
             },
@@ -78,7 +78,7 @@ export const ACTIONS = {
         namespaceId: number,
     ) {
         return cy.request<MNamespace>({
-            url: `http://localhost:3333/cybackdoor/namespace/${namespaceId}`,
+            url: `http://localhost:3333/data-provider/cybackdoor/namespace/${namespaceId}`,
             method: 'DELETE'
         }).then(res => res.body);
     },
@@ -86,7 +86,7 @@ export const ACTIONS = {
         namespaceName: string,
     ) {
         return cy.request<MNamespace>({
-            url: `http://localhost:3333/cybackdoor/namespaceName/${namespaceName}`,
+            url: `http://localhost:3333/data-provider/cybackdoor/namespaceName/${namespaceName}`,
             method: 'DELETE'
         }).then(res => res.body);
     },
@@ -94,7 +94,7 @@ export const ACTIONS = {
         email: string,
     ) {
         return cy.request<Invitation>({
-            url: `http://localhost:3333/cybackdoor/invitation/${email}`,
+            url: `http://localhost:3333/data-provider/cybackdoor/invitation/${email}`,
             method: 'DELETE'
         }).then(res => res.body);
     },
@@ -102,7 +102,7 @@ export const ACTIONS = {
         email: string,
     ) {
         return cy.request<Invitation>({
-            url: `http://localhost:3333/cybackdoor/invitation/${email}`,
+            url: `http://localhost:3333/data-provider/cybackdoor/invitation/${email}`,
             method: 'DELETE'
         }).then(res => res.body);
     },
@@ -112,7 +112,7 @@ export const ACTIONS = {
         email: string
     ) {
         return cy.request<Invitation>({
-            url: `http://localhost:3333/app/${ownerKey}/namespace/${namespaceId}/invite`,
+            url: `http://localhost:3333/data-provider/app/${ownerKey}/namespace/${namespaceId}/invite`,
             method: 'POST',
             body: { email }
         }).then(res => res.body);
@@ -123,7 +123,7 @@ export const ACTIONS = {
         email: string
     ) {
         return cy.request<Invitation>({
-            url: `http://localhost:3333/cybackdoor/invitation/accept`,
+            url: `http://localhost:3333/data-provider/cybackdoor/invitation/accept`,
             method: 'POST',
             body: { email, name, ownerUsername }
         }).then(res => res.body);
@@ -134,7 +134,7 @@ export const ACTIONS = {
         record: RecordDataCy,
     ) {
         return cy.request<Record>({
-            url: `http://localhost:3333/cybackdoor/record/${namespaceName}/${createdBy}`,
+            url: `http://localhost:3333/data-provider/cybackdoor/record/${namespaceName}/${createdBy}`,
             method: 'POST',
             body: record,
         }).then(res => res.body);
@@ -146,7 +146,7 @@ export const ACTIONS = {
         settledOn: Date,
     ) {
         return cy.request<Invitation>({
-            url: `http://localhost:3333/cybackdoor/settle/${namespaceName}/${byUsername}`,
+            url: `http://localhost:3333/data-provider/cybackdoor/settle/${namespaceName}/${byUsername}`,
             method: 'POST',
             body: { records, settledOn },
         }).then(res => res.body);

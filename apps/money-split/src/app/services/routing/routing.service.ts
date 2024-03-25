@@ -2,6 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { combineLatest, map, of, take } from "rxjs";
 import { UserService } from "../auth/token/auth.token.user.service";
+import { APP_BASE_HREF } from "@angular/common";
 
 @Injectable()
 export class RoutingService {
@@ -9,39 +10,29 @@ export class RoutingService {
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly userService = inject(UserService);
+    private readonly baseHref = inject(APP_BASE_HREF);
     
     public getOwnerKey () {
         return this.userService.loadUserProfile()
             .pipe(map(up => up.key as string));
-        // i dont know why route params are not working - TODO
-        return of(window.location.href.split('/')[3])
-        return this.route
-            .params.pipe(
-                map(params => {
-                    console.log(params);
-                    return params['ownerKey'] as string
-                }),
-                take(1),
-            );
     }
 
     public getNamespaceId () {
         // i dont know why route params are not working - TODO
-        return of(window.location.href.split('/')[5])
-            .pipe(map(stringId => Number(stringId)))
+        return of(
+            window.location.href
+            .split(this.baseHref)[1]
+            .split('/')[2]
+            ).pipe(map(stringId => Number(stringId)));
     }
 
     public getInvitationId () {
         // i dont know why route params are not working - TODO
-        return of(window.location.href.split('/')[4])
-        return this.route
-            .params.pipe(
-                map(params => {
-                    console.log(params);
-                    return params['namespaceId'] as string
-                }),
-                take(1),
-            );
+        return of(
+            window.location.href
+            .split(this.baseHref)[1]
+            .split('/')[1]
+        );
     }
 
     public goToOwnerRealmView (

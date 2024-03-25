@@ -20,10 +20,12 @@
         },
         "development-watch": {
           "devServerTarget": "money-split:serve:development",
-          "watch": true
+          "watch": true,
+          "baseUrl": "http://localhost:4200/money-split"
         },
         "development": {
           "devServerTarget": "money-split:serve:development",
+          "baseUrl": "http://localhost:4200/money-split"
         }
       }
     },

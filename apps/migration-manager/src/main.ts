@@ -10,11 +10,11 @@ const app = express();
 app.use(cors.default());
 app.use(express.json({ limit: '50mb' }));
 
-app.get('/api', (req, res) => {
+app.get('/migration-manager/api', (req, res) => {
   res.json({ message: 'Welcome to migration-manager!' });
 });
 
-app.get('/api/migration', async (req, res) => {
+app.get('/migration-manager/api/migration', async (req, res) => {
   try {
     // authorize(req);
 
@@ -69,7 +69,7 @@ app.get('/api/migration', async (req, res) => {
   }
 });
 
-app.get('/api/migration/up/:id', async (req, res) => {
+app.get('/migration-manager/api/migration/up/:id', async (req, res) => {
   try {
     authorize(req);
 
@@ -91,7 +91,7 @@ app.get('/api/migration/up/:id', async (req, res) => {
   }
 });
 
-app.get('/api/migration/down/:id', async (req, res) => {
+app.get('/migration-manager/api/migration/down/:id', async (req, res) => {
   try {
     authorize(req);
 
@@ -115,7 +115,7 @@ app.get('/api/migration/down/:id', async (req, res) => {
 
 const port = process.env.PORT || 3334;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  console.log(`Listening at http://localhost:${port}/migration-manager/api`);
 });
 server.on('error', console.error);
 

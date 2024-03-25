@@ -35,12 +35,7 @@ describe('Register Component', () => {
       cy.url()
         .should('contain', 'login');
 
-        cy.request(
-          'DELETE', 
-          'http://localhost:3333/cybackdoor/owner/testuser'
-          ).then((response) => {
-              expect(response.status).to.equal(200);
-          });
+      ACTIONS.deleteOwner('testuser')
 
     });
 

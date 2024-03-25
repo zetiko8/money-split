@@ -8,25 +8,19 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "${MYSQL_PORT}:3306"
-
     volumes:
       - db-data:/main
+    networks:
+      main:
 
   frontend:
     image: "money-split-frontend"
-    ports:
-      - "8300:80"
-      - "8301:443"
     environment:
       - MIDDLEWARE_URL=${MIDDLEWARE_URL}
-
-  admin-dashboard:
-    image: "money-split-admin-dashboard"
-    ports:
-      - "8305:80"
-      - "8306:443"
-    environment:
-      - MIGRATION_MANAGER_URL=${MIGRATION_MANAGER_URL}
+    networks:
+      main:
+        aliases:
+          - frontend
 
   data-provider:
     image: "money-split-data-provider"
@@ -37,10 +31,21 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PORT=3306
-    ports:
-      - "8302:3333"
     depends_on:
       - main-db
+    networks:
+      main:
+        aliases:
+          - data-provider
+
+  admin-dashboard:
+    image: "money-split-admin-dashboard"
+    environment:
+      - MIGRATION_MANAGER_URL=${MIGRATION_MANAGER_URL}
+    networks:
+      main:
+        aliases:
+          - admin-dashboard
 
   migration-manager:
     image: "money-split-migration-manager"
@@ -52,10 +57,29 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PORT=3306
       - ADMIN_MIGRATION_PASSWORD=${ADMIN_MIGRATION_PASSWORD}
-    ports:
-      - "8304:3334"
     depends_on:
       - main-db
+    networks:
+      main:
+        aliases:
+          - migration-manager
+
+  proxy:
+    image: "money-split-proxy"
+    ports:
+      - 8310:80
+      - 8311:443
+    links:
+      - frontend:frontend
+    depends_on:
+      - frontend
+    networks:
+      main:
+        aliases:
+           - nginx
 
 volumes:
   db-data:
+
+networks:
+  main:

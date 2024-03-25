@@ -27,6 +27,66 @@ export async function query<T>(
   });
 }
 
+// export async function query<T>(
+//   sql: string,
+// ): Promise<T> {
+//   return new Promise((resolve, reject) => {
+//     let connection: Connection | null = null;
+//     try {
+//       connection
+//         = createConnection(connObject);
+      
+//       connection.connect(err => {
+//         if (err) {
+//           console.log(err);
+//           reject(err);
+//           try {
+//             connection.end();
+//             connection.destroy();
+//           } catch (error) {
+//             //
+//           }
+//         }
+//         else connection.query(
+//           sql,
+//           (err, rows) => {
+//             if (err) {
+//               try {                
+//                 connection.end();
+//                 connection.destroy();
+//               } catch (error) {
+//                 //
+//               }
+//               return reject(err);
+//             }
+//             else {
+//               try {
+//                 connection.end();
+//                 connection.destroy();
+//               } catch (error) {
+//                 //
+//               }
+//               return resolve(rows as unknown as T);
+//             }
+//           },
+//         );
+//       });
+      
+//     } catch (error) {
+//       if (connection) {
+//         try {
+//           connection.end();
+//           connection.destroy();          
+//         } catch (error) {
+//           //
+//         }
+//       } 
+//       reject(error);
+//     }
+
+//   });
+// }
+
 export async function lastInsertId(): Promise<number> {
   const d = await query<{
     'LAST_INSERT_ID()': number

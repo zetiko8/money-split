@@ -21,7 +21,8 @@
           "apps/money-split/src/assets"
         ],
         "styles": ["apps/money-split/src/styles.scss"],
-        "scripts": []
+        "scripts": [],
+        "baseHref": "/money-split/"
       },
       "configurations": {
         "production": {
@@ -38,7 +39,7 @@
             }
           ],
           "outputHashing": "all",
-          "outputPath": "devops/money-split/dist"
+          "outputPath": "devops/frontend/dist"
         },
         "development": {
           "optimization": false,
