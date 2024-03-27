@@ -13,6 +13,8 @@ import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
 import { asyncMap, numberRouteParam } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
+import multer from 'multer';
+import path from 'path';
 
 export const mainRouter = Router();
 
@@ -460,6 +462,69 @@ mainRouter.post('/invitation/:invitationKey/accept',
       );
 
       res.json(invitation);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.post('/invitation/:invitationKey/accept',
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<{ name: string }>,
+    res,
+    next,
+  ) => {
+    try {
+
+      const owner = await getOwnerFromToken(req);
+      const invitation = await INVITATION_SERVICE.acceptInvitation(
+        req.params['invitationKey'] as string,
+        owner,
+        req.body.name,
+      );
+
+      res.json(invitation);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+const multerStorage = multer.diskStorage({
+  destination: (
+    req, file, cb
+  ) => {
+    cb(null, path.join(__dirname, 'assets'));
+  },
+  filename: function (req, file, cb) {
+    console.log(file);
+    const uniqueSuffix 
+      = Date.now() 
+        + '-' + Math.round(Math.random() * 1E9);
+    console.log(
+      file.originalname.split('.')[1],
+    );
+    cb(
+      null, 
+      uniqueSuffix + '.' +
+      file.originalname.split('.')[1],
+    );
+  }
+})
+const upload = multer({
+  storage: multerStorage,
+});
+
+mainRouter.post('/upload',
+  logRequestMiddleware(),
+  upload.single('file'),
+  async (
+    req: TypedRequestBody<{ name: string }>,
+    res,
+    next,
+  ) => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.json({ url: (req as any).file.filename });
     } catch (error) {
       next(error);
     }

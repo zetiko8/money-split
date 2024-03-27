@@ -49,7 +49,7 @@ async function createOwner (
     throw Error(ERROR_CODE.OWNER_USERNAME_ALREADY_EXISTS);
 
   const avatar = await AVATAR_SERVICE.createAvatar(
-    data.avatarColor, data.avatarImage,
+    data.avatarColor, data.avatarUrl,
   );
 
   const hash = await bcrypt.hash(data.password, 10);

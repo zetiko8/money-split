@@ -101,5 +101,5 @@ export const InvitationEntity: Entity = {
 export const AvatarEntity: Entity = {
   id: EntityPropertyType.AUTO_ID,
   color: EntityPropertyType.STRING,
-  dataUrl: EntityPropertyType.BLOB,
+  url: EntityPropertyType.STRING,
 };

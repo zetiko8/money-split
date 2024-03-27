@@ -9,6 +9,10 @@ export class ConfigService {
   setConfig (
     config: AppConfig,
   ) {
+    if (config.staticUrl === undefined) {
+      config.staticUrl = config.middlewareUrl
+        .replace('app', 'assets');
+    }
     this.config = config;
   }
 

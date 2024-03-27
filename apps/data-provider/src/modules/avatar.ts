@@ -6,12 +6,12 @@ import { AvatarEntity, EntityPropertyType } from "../types"
 export const AVATAR_SERVICE = {
     createAvatar: async (
         color: string,
-        dataUrl: string,
+        url: string,
     ) => {
         await query(insertSql(
             'Avatar',
             AvatarEntity,
-            { color, dataUrl }
+            { color, url }
         ));
 
         const id = await lastInsertId();

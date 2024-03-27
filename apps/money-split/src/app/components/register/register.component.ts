@@ -6,13 +6,12 @@ import { CommonModule } from '@angular/common';
 import { AsyncProcess } from 'rombok';
 import { Observable, filter, map, merge } from 'rxjs';
 import { RegisterOwnerPayload } from '@angular-monorepo/entities';
-import { FileInputComponent } from '@angular-monorepo/components';
 import { PageComponent } from '../../layout/page/page.component';
-import { AvatarComponent } from '../avatar.component';
 import { UserService } from '../../services/auth/token/auth.token.user.service';
 import { getRandomColor } from '../../../helpers';
 import { Notification } from '../notifications/notifications.types';
 import { AppErrorCode } from '../../types';
+import { CustomizeAvatarComponent } from '../customize-avatar/customize-avatar.component';
 
 @Component({
   standalone: true,
@@ -22,8 +21,7 @@ import { AppErrorCode } from '../../types';
     ReactiveFormsModule,
     TranslateModule,
     PageComponent,
-    AvatarComponent,
-    FileInputComponent,
+    CustomizeAvatarComponent,
   ],
   selector: 'register',
   templateUrl: './register.component.html',
@@ -44,7 +42,9 @@ export class RegisterComponent {
     avatarColor: new FormControl<string>(
       getRandomColor()),
     avatarImage: new FormControl<string | null>(
-      null)
+      null),
+    avatarUrl: new FormControl<string | null>(
+      null),
   });
 
   public readonly registerProcess = new AsyncProcess(
@@ -70,7 +70,7 @@ export class RegisterComponent {
       username: this.form.value.username as string,
       password: this.form.value.password as string,
       avatarColor: this.form.value.avatarColor as string,
-      avatarImage: this.form.value.avatarImage as string,
+      avatarUrl: this.form.value.avatarUrl as string,
     }
     )
       .subscribe(() => {

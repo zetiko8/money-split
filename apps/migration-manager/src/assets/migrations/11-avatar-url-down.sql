@@ -1,0 +1,1 @@
+ALTER TABLE main.Avatar DROP COLUMN url;

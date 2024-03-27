@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnDestroy, inject } from '@angular/core';
 import { AvatarService } from '../services/avatar.service';
 import { Subject, take, takeUntil } from 'rxjs';
+import { ConfigService } from '../services/config.service';
 
 @Component({
   standalone: true,
@@ -11,7 +12,7 @@ import { Subject, take, takeUntil } from 'rxjs';
   selector: 'avatar',
   template: `
     <div
-        *ngIf="dataUrl === null && avatarDataUrl === null"
+        *ngIf="url === null && avatarUrl === null"
         class="avatar-image"
         [style]="{
             backgroundColor: backgroundColor,
@@ -21,16 +22,16 @@ import { Subject, take, takeUntil } from 'rxjs';
         {{ name.substring(0, 1).toUpperCase() }}
     </div>
     <div 
-        *ngIf="dataUrl !== null"
+        *ngIf="url !== null"
         class="avatar-image"
     >
-        <img [src]="dataUrl" alt="">
+        <img [src]="staticUrl + '/' + url" alt="">
     </div>
     <div 
-        *ngIf="avatarDataUrl !== null"
+        *ngIf="avatarUrl !== null"
         class="avatar-image"
     >
-        <img [src]="avatarDataUrl" alt="">
+        <img [src]="avatarUrl" alt="">
     </div>
   `,
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
@@ -39,15 +40,18 @@ import { Subject, take, takeUntil } from 'rxjs';
 })
 export class AvatarComponent implements OnDestroy {
 
+  private readonly config = inject(ConfigService);
   private readonly avatarService = inject(AvatarService);
   private readonly destroy$ = new Subject<void>();
 
+
+  public staticUrl = this.config.getConfig().staticUrl;
     @Input() name = '';
     @Input() color = '#271d3b';
     @Input() backgroundColor = '#2ebf91';
-    @Input() avatarDataUrl: string | null = null;
+    @Input() avatarUrl: string | null = null;
 
-    public dataUrl: string | null = null;
+    public url: string | null = null;
     @Input() 
     set avatarId (id: number | null) {
       if (id !== null) {
@@ -58,8 +62,8 @@ export class AvatarComponent implements OnDestroy {
         )
         .subscribe(
           avatar => {
-            if (avatar.dataUrl) {
-              this.dataUrl = avatar.dataUrl;
+            if (avatar.url) {
+              this.url = avatar.url;
             } 
             else {
               this.backgroundColor = avatar.color;

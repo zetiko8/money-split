@@ -53,7 +53,9 @@ export class EditProfileView {
             avatarColor: new FormControl<string>(
               profile.avatar.color),
             avatarImage: new FormControl<string | null>(
-              null)
+              null),
+            avatarUrl: new FormControl<string | null>(
+              null),
           })
         })
       }),
@@ -75,7 +77,7 @@ export class EditProfileView {
       map(profile => {
         const ownerAvatar: EditAvatarData = {
           avatarColor: profile.form.controls.avatarColor.value,
-          avatarImage: profile.form.controls.avatarImage.value,
+          avatarUrl: profile.form.controls.avatarUrl.value,
         };
         const payload: EditProfileData = {
           ownerAvatar

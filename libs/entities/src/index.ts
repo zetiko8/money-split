@@ -24,13 +24,13 @@ export interface RegisterOwnerPayload {
     password: string,
     username: string,
     avatarColor: string | null,
-    avatarImage: string | null,
+    avatarUrl: string | null,
 }
 
 export interface CreateNamespacePayload {
     namespaceName: string,
     avatarColor: string | null,
-    avatarImage: string | null,
+    avatarUrl: string | null,
 }
 
 export interface User {
@@ -160,7 +160,7 @@ export interface SettlementDebtView extends SettlementRecord {
 export interface AvatarData {
     id: number,
     color: string,
-    dataUrl: string,
+    url: string,
 }
 
 export interface OwnerProfileView {
@@ -174,7 +174,7 @@ export interface OwnerProfileView {
 
 export interface EditAvatarData {
     avatarColor: string | null,
-    avatarImage: string | null,
+    avatarUrl: string | null,
 }
 
 export interface EditProfileData {

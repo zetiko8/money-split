@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input, HostBinding } from '@angular/core';
+import { Component, forwardRef, Input, HostBinding, Output, EventEmitter } from '@angular/core';
 import { 
   ControlValueAccessor, 
   FormsModule, 
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { randomHtmlName } from '@angular-monorepo/utils';
+import { Observable } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -33,7 +34,10 @@ implements ControlValueAccessor {
   @Input() label = '';
   @Input() required = false;
   @Input() readonly = false;
-  // @Output() blur = new EventEmitter<void>();
+  @Input() uploadFn: ((fn: File) => Observable<{
+    url: string
+  }>) | null = null;
+  @Output() uploadedFileUrl = new EventEmitter<string>();
   
   _disabled = false;
   _value = '';
@@ -70,10 +74,20 @@ implements ControlValueAccessor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async handleChange ($event: any) {
     if ($event.target?.files?.length) {
-        console.log($event.target?.files[0]);
         const fileDataUrl
             = await getBase64($event.target?.files[0]);
         this.propagateChange(fileDataUrl);
+        if (this.uploadFn) {
+          this.uploadFn($event.target?.files[0])
+            .subscribe({
+              next: response => {
+                this.uploadedFileUrl.emit(response.url);
+              },
+              error: err => {
+                throw err;
+              }
+            })
+        }
     } else {
         this.propagateChange(null);
     }

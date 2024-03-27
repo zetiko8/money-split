@@ -41,7 +41,9 @@ export class NewNamespaceView {
     avatarColor: new FormControl<string>(
       getRandomColor()),
     avatarImage: new FormControl<string | null>(
-      null)
+      null),
+    avatarUrl: new FormControl<string | null>(
+      null),
   });
 
   public readonly createProcess = new BoundProcess(

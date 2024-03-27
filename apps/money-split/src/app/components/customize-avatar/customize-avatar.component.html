@@ -6,7 +6,7 @@
         [color]="'#271d3b'"
         [backgroundColor]="avatarColor.value || '#2ebf91'"
         [name]="avatarName"
-        [avatarDataUrl]="avatarImage.value"
+        [avatarUrl]="avatarImage.value"
     >
     </avatar>
     <div class="input-group">
@@ -15,6 +15,8 @@
             name="image"
             data-testid="image-input"
             [formControl]="avatarImage"
+            [uploadFn]="fileUploadService.upload"
+            (uploadedFileUrl)="avatarUrl.setValue($event)"
         ></file-input>
     </div>
     <div class="input-group">

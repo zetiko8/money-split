@@ -79,7 +79,7 @@ async function createNamespace (
 
     const avatar = await AVATAR_SERVICE.createAvatar(
         payload.avatarColor,
-        payload.avatarImage,
+        payload.avatarUrl,
     );
   
     await query(insertSql(

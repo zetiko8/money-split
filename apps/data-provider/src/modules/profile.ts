@@ -31,7 +31,7 @@ export const PROFILE_SERVICE = {
         data: EditProfileData,
     ) => {
         const avatar = await AVATAR_SERVICE.createAvatar(
-            data.ownerAvatar.avatarColor, data.ownerAvatar.avatarImage,
+            data.ownerAvatar.avatarColor, data.ownerAvatar.avatarUrl,
         );
         
         const profile = await PROFILE_SERVICE.getProfile(ownerId);
