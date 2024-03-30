@@ -2,7 +2,15 @@
   "name": "@angular-monorepo/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build": "npx nx run-many -t build",
+    "docker-build:admin-dashboard": "cd devops/admin-dashboard && docker build --tag money-split-admin-dashboard .",
+    "docker-build:data-provider": "cd devops/data-provider && docker build --tag money-split-data-provider .",
+    "docker-build:frontend": "cd devops/frontend && docker build --tag money-split-frontend .",
+    "docker-build:migration-manager": "cd devops/migration-manager && docker build --tag money-split-migration-manager .",
+    "docker-compose:local-up": "cd devops && docker-compose up",
+    "docker-compose:local": "npx nx run-many -t build && npm run docker-build:admin-dashboard && npm run docker-build:data-provider && npm run docker-build:frontend && npm run docker-build:migration-manager && npm run docker-compose:local-up"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "~17.0.0",
