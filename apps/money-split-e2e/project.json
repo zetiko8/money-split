@@ -8,24 +8,36 @@
       "executor": "@nx/cypress:cypress",
       "options": {
         "cypressConfig": "apps/money-split-e2e/cypress.config.ts",
-        "testingType": "e2e",
-        "devServerTarget": "money-split:serve:development"
+        "testingType": "e2e"
       },
       "configurations": {
-        "production": {
-          "devServerTarget": "money-split:serve:production"
+        "demo": {
+          "baseUrl": "https://62.171.161.203:8311/money-split/",
+          "env": {
+            "DATA_PROVIDER_URL": "https://62.171.161.203:8311/data-provider"
+          }
         },
-        "ci": {
-          "devServerTarget": "money-split:serve-static"
+        "demo-watch": {
+          "baseUrl": "https://62.171.161.203:8311/money-split/",
+          "watch": true,
+          "env": {
+            "DATA_PROVIDER_URL": "https://62.171.161.203:8311/data-provider"
+          }
         },
         "development-watch": {
           "devServerTarget": "money-split:serve:development",
           "watch": true,
-          "baseUrl": "http://localhost:4200/money-split"
+          "baseUrl": "http://localhost:4200/money-split",
+          "env": {
+            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider"
+          }
         },
         "development": {
           "devServerTarget": "money-split:serve:development",
-          "baseUrl": "http://localhost:4200/money-split"
+          "baseUrl": "http://localhost:4200/money-split",
+          "env": {
+            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider"
+          }
         }
       }
     },
