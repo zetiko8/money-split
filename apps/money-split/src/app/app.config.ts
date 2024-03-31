@@ -13,6 +13,7 @@ import { AppNotificationsService, NotificationsService } from './components/noti
 import { DisplayErrorService, GlobalErrorHandlerService } from './services/global-error-handler.service';
 import { RoutingService } from './services/routing/routing.service';
 import { AvatarService } from './services/avatar.service';
+import { HomeGuard } from './services/guards/HomeGuard';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -53,6 +54,7 @@ export const appConfig: ApplicationConfig = {
     },
     RoutingService,
     AvatarService,
+    HomeGuard,
   ],
 };
 

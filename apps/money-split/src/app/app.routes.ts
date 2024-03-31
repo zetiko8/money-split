@@ -12,8 +12,17 @@ import { InvitationLoginView } from './modules/invitation/views/login/invitation
 import { InvitationRegisterView } from './modules/invitation/views/register/invitation-register.view';
 import { EditRecordView } from './modules/namespace/views/edit-record/edit-record.view';
 import { SettleView } from './modules/namespace/views/settle/settle.view';
+import { HomeView } from './modules/home/home.view';
+import { HomeGuard } from './services/guards/HomeGuard';
 
 export const appRoutes: Route[] = [
+    {
+        path: '',
+        component: HomeView,
+        canActivate: [
+            HomeGuard,
+        ],
+    },
     {
         path: 'login',
         component: LoginView,
