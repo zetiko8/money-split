@@ -48,7 +48,7 @@ mainRouter.get('/:ownerKey/profile',
       const owner = await getOwnerFromToken(req);
 
       const profile = await PROFILE_SERVICE.getProfile(
-        owner.id
+        owner.id,
       );
 
       res.json(profile);
@@ -87,7 +87,7 @@ mainRouter.get('/avatar/:avatarId',
   ) => {
     try {
       const avatar = await AVATAR_SERVICE.getById(
-        Number(req.params['avatarId'] as string)
+        Number(req.params['avatarId'] as string),
       );
 
       res.json(avatar);
@@ -109,7 +109,7 @@ mainRouter.get('/avatar',
       const ids = Array.isArray(queryParams)
         ? queryParams.map(id => Number(id))
         : [Number(queryParams)];
-        
+
       const avatarDatas = await asyncMap(ids, async (id) => {
         return await AVATAR_SERVICE.getById(id);
       });
@@ -174,7 +174,7 @@ mainRouter.get(
           record,
           mNamaespace,
         )),
-      }
+      };
 
       res.json(editRecordView);
     } catch (error) {
@@ -198,8 +198,8 @@ mainRouter.post(
         Number(req.params['userId']),
         recordId,
         req.body,
-      )
-  
+      );
+
       res.json(record);
     } catch (error) {
       next(error);
@@ -230,164 +230,164 @@ mainRouter.get('/:ownerKey/namespace',
   });
 
 mainRouter.post('/:ownerKey/namespace/:namespaceId/user',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<{ name: string }>,
-  res,
-  next,
-) => {
-  try {
-    const owner = (await query<Owner>(`
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<{ name: string }>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = (await query<Owner>(`
     SELECT * FROM \`Owner\`
     WHERE \`key\` = "${req.params['ownerKey'] as string}"
     `))[0];
-    const mNamaespace = await createUser(
-      req.body.name,
-      Number(req.params['namespaceId'] as string),
-      owner.id,
-    );
-    res.json(mNamaespace);
-  } catch (error) {
-    next(error);
-  }
-});
+      const mNamaespace = await createUser(
+        req.body.name,
+        Number(req.params['namespaceId'] as string),
+        owner.id,
+      );
+      res.json(mNamaespace);
+    } catch (error) {
+      next(error);
+    }
+  });
 
 mainRouter.post('/:ownerKey/namespace/:namespaceId/invite',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<{ email: string }>,
-  res,
-  next,
-) => {
-  try {
-    const owner = (await query<Owner>(`
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<{ email: string }>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = (await query<Owner>(`
     SELECT * FROM \`Owner\`
     WHERE \`key\` = "${req.params['ownerKey'] as string}"
     `))[0];
 
-    const mNamaespace = await INVITATION_SERVICE.inviteToNamespace(
-      req.body.email,
-      Number(req.params['namespaceId'] as string),
-      owner.id,
-    );
-
-    res.json(mNamaespace);
-  } catch (error) {
-    next(error);
-  }
-});
-
-mainRouter.post('/:ownerKey/namespace/:namespaceId/:userId/add',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<RecordData>,
-  res,
-  next,
-) => {
-  try {
-    await getOwnerFromToken(req);
-    const record = await RECORD_SERVICE.addRecord(
-      Number(req.params['namespaceId'] as string),
-      Number(req.params['userId']),
-      req.body,
-    )
-
-    res.json(record);
-  } catch (error) {
-    next(error);
-  }
-});
-
-mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<null>,
-  res,
-  next,
-) => {
-  try {
-    const owner = await getOwnerFromToken(req);
-
-    const settlmentPreview = await SETTLE_SERVICE
-      .settleNamespacePreview(
-        numberRouteParam(req, 'namespaceId'),
+      const mNamaespace = await INVITATION_SERVICE.inviteToNamespace(
+        req.body.email,
+        Number(req.params['namespaceId'] as string),
         owner.id,
       );
 
-    res.json(settlmentPreview);
-  } catch (error) {
-    next(error);
-  }
-});
+      res.json(mNamaespace);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.post('/:ownerKey/namespace/:namespaceId/:userId/add',
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<RecordData>,
+    res,
+    next,
+  ) => {
+    try {
+      await getOwnerFromToken(req);
+      const record = await RECORD_SERVICE.addRecord(
+        Number(req.params['namespaceId'] as string),
+        Number(req.params['userId']),
+        req.body,
+      );
+
+      res.json(record);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      const owner = await getOwnerFromToken(req);
+
+      const settlmentPreview = await SETTLE_SERVICE
+        .settleNamespacePreview(
+          numberRouteParam(req, 'namespaceId'),
+          owner.id,
+        );
+
+      res.json(settlmentPreview);
+    } catch (error) {
+      next(error);
+    }
+  });
 
 mainRouter.post('/:ownerKey/namespace/:namespaceId/settle/confirm/:byUser',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<SettlePayload>,
-  res,
-  next,
-) => {
-  try {
-    await getOwnerFromToken(req);
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<SettlePayload>,
+    res,
+    next,
+  ) => {
+    try {
+      await getOwnerFromToken(req);
 
-    const result = await SETTLE_SERVICE
-      .settle(
-        numberRouteParam(req, 'byUser'),
-        numberRouteParam(req, 'namespaceId'),
-        req.body.records,
-      );
+      const result = await SETTLE_SERVICE
+        .settle(
+          numberRouteParam(req, 'byUser'),
+          numberRouteParam(req, 'namespaceId'),
+          req.body.records,
+        );
 
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
 
 mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-settled/:byUser/:settlementDebtId',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<null>,
-  res,
-  next,
-) => {
-  try {
-    await getOwnerFromToken(req);
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      await getOwnerFromToken(req);
 
-    const result = await SETTLE_SERVICE
-      .setDebtIsSettled(
-        numberRouteParam(req, 'byUser'),
-        numberRouteParam(req, 'settlementDebtId'),
-        true,
-      );
+      const result = await SETTLE_SERVICE
+        .setDebtIsSettled(
+          numberRouteParam(req, 'byUser'),
+          numberRouteParam(req, 'settlementDebtId'),
+          true,
+        );
 
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
 
 mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-unsettled/:byUser/:settlementDebtId',
-logRequestMiddleware(),
-async (
-  req: TypedRequestBody<null>,
-  res,
-  next,
-) => {
-  try {
-    await getOwnerFromToken(req);
+  logRequestMiddleware(),
+  async (
+    req: TypedRequestBody<null>,
+    res,
+    next,
+  ) => {
+    try {
+      await getOwnerFromToken(req);
 
-    const result = await SETTLE_SERVICE
-      .setDebtIsSettled(
-        numberRouteParam(req, 'byUser'),
-        numberRouteParam(req, 'settlementDebtId'),
-        false,
-      );
+      const result = await SETTLE_SERVICE
+        .setDebtIsSettled(
+          numberRouteParam(req, 'byUser'),
+          numberRouteParam(req, 'settlementDebtId'),
+          false,
+        );
 
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
 
 mainRouter.post('/login',
   logRequestMiddleware(),
@@ -402,7 +402,7 @@ mainRouter.post('/login',
     try {
 
       const token = await login
-        (req.body.username, req.body.password);
+      (req.body.username, req.body.password);
 
       res.json({ token });
     } catch (error) {
@@ -419,7 +419,7 @@ mainRouter.post('/register',
   ) => {
     try {
       const owner = await OWNER_SERVICE.createOwner(
-        req.body
+        req.body,
       );
 
       res.json(owner);
@@ -435,10 +435,10 @@ mainRouter.get('/invitation/:invitationKey',
     res,
     next,
   ) => {
-    try {      
+    try {
       const invitation = await INVITATION_SERVICE.getInvitationViewData(
-        req.params['invitationKey'] as string
-      )
+        req.params['invitationKey'] as string,
+      );
       res.json(invitation);
     } catch (error) {
       next(error);
@@ -491,25 +491,25 @@ mainRouter.post('/invitation/:invitationKey/accept',
 
 const multerStorage = multer.diskStorage({
   destination: (
-    req, file, cb
+    req, file, cb,
   ) => {
     cb(null, path.join(__dirname, 'assets'));
   },
   filename: function (req, file, cb) {
     console.log(file);
-    const uniqueSuffix 
-      = Date.now() 
+    const uniqueSuffix
+      = Date.now()
         + '-' + Math.round(Math.random() * 1E9);
     console.log(
       file.originalname.split('.')[1],
     );
     cb(
-      null, 
+      null,
       uniqueSuffix + '.' +
       file.originalname.split('.')[1],
     );
-  }
-})
+  },
+});
 const upload = multer({
   storage: multerStorage,
 });
@@ -540,7 +540,7 @@ async function getOwnerFromToken (
     SELECT * FROM \`Owner\`
     WHERE \`key\` = "${decoded.key}"
     `))[0];
-    return owner;    
+    return owner;
   } catch (error) {
     throw Error(ERROR_CODE.UNAUTHORIZED);
   }
