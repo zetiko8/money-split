@@ -6,5 +6,9 @@
     "cSpell.words": [
         "benefitor",
         "benefitors"
-    ]
+    ],
+    "files.eol": "\n",
+    "editor.detectIndentation": false,
+    "editor.indentSize": "tabSize",
+    "editor.tabSize": 2
 }

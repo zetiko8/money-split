@@ -2,6 +2,7 @@ import { Request, Router } from 'express';
 import { TypedRequestBody } from './types';
 import { logRequestMiddleware } from './request/service';
 import { ERROR_CODE } from '@angular-monorepo/entities';
+import { ApiDefinition } from '@angular-monorepo/api-interface';
 
 export function getControler <B, T>(
   router: Router,
@@ -74,4 +75,36 @@ export function numberRouteParam (
 
 export function getRandomColor () {
   return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
+}
+
+export function registerRoute <
+    Payload,
+    Params,
+    ReturnType,
+  >(
+  requestDef: ApiDefinition<Payload, ReturnType>,
+  router: Router,
+  implementation: (payload: Payload) => Promise<ReturnType>,
+) {
+  if (requestDef.ajax.method === 'POST') {
+    router.post(
+      requestDef.ajax.endpoint,
+      logRequestMiddleware(`${requestDef.ajax.method} : ${requestDef.ajax.endpoint}`),
+      async (
+        req: TypedRequestBody<Payload>,
+        res,
+        next,
+      ) => {
+        try {
+          const response = await implementation(req.body);
+          res.json(response);
+        } catch (error) {
+          next(error);
+        }
+      },
+    );
+  }
+  if (requestDef.ajax.method === 'GET') {
+    //
+  }
 }

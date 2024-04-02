@@ -9,7 +9,8 @@
     "docker-build:frontend": "cd devops/frontend && docker build --tag money-split-frontend .",
     "docker-build:migration-manager": "cd devops/migration-manager && docker build --tag money-split-migration-manager .",
     "docker-compose:local-up": "cd devops && docker-compose up",
-    "docker-compose:local": "npx nx run-many -t build && npm run docker-build:admin-dashboard && npm run docker-build:data-provider && npm run docker-build:frontend && npm run docker-build:migration-manager && npm run docker-compose:local-up"
+    "docker-compose:local": "npx nx run-many -t build && npm run docker-build:admin-dashboard && npm run docker-build:data-provider && npm run docker-build:frontend && npm run docker-build:migration-manager && npm run docker-compose:local-up",
+    "test:data-provider": "npx nx run data-provider-e2e:e2e --configuration=development"
   },
   "private": true,
   "dependencies": {

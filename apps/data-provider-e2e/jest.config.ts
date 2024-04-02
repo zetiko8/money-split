@@ -16,4 +16,6 @@ export default {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/data-provider-e2e',
+  // watch: true,
+  maxWorkers: 1,
 };

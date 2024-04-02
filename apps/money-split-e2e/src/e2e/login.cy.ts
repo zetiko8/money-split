@@ -26,6 +26,6 @@ describe('Login', () => {
     cy
       .get('[data-cy="notification"]')
       .should('be.visible')
-      .and('contain', 'RESOURCE_NOT_FOUND');
+      .and('contain', 'UNAUTHORIZED');
   });
 });

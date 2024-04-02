@@ -10,6 +10,11 @@
       "options": {
         "jestConfig": "apps/data-provider-e2e/jest.config.ts",
         "passWithNoTests": true
+      },
+      "configurations": {
+        "development": {
+          "watch": true
+        }
       }
     },
     "lint": {

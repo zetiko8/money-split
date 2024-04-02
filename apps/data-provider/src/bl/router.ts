@@ -1,7 +1,7 @@
 import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
-import { decodeJwt, login } from './service';
+import { decodeJwt } from './service';
 import { query } from '../connection/connection';
 import { CreateNamespacePayload, ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
@@ -11,10 +11,12 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
-import { asyncMap, numberRouteParam } from '../helpers';
+import { asyncMap, numberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
+import { loginApi } from '@angular-monorepo/api-interface';
+import { AUTH_SERVICE } from '../modules/auth/auth';
 
 export const mainRouter = Router();
 
@@ -389,26 +391,19 @@ mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-unsettled/:byUs
     }
   });
 
-mainRouter.post('/login',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<{
-      username: string,
-      password: string,
-    }>,
-    res,
-    next,
-  ) => {
-    try {
+registerRoute(
+  loginApi(),
+  mainRouter,
+  async (payload) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.username) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.password) throw Error(ERROR_CODE.INVALID_REQUEST);
 
-      const token = await login
-      (req.body.username, req.body.password);
-
-      res.json({ token });
-    } catch (error) {
-      next(error);
-    }
-  });
+    const token =
+        await AUTH_SERVICE.login(payload.username, payload.password);
+    return { token };
+  },
+);
 
 mainRouter.post('/register',
   logRequestMiddleware(),

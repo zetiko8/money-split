@@ -7,6 +7,7 @@ import { INVITATION_SERVICE } from '../invitation';
 import { CYBACKDOOR_SERVICE } from './cybackdoor.service';
 import { getRandomColor, stringRouteParam } from '../../helpers';
 import { RecordDataCy } from '@angular-monorepo/entities';
+import { query } from '../../connection/connection';
 
 export const cyBackdoorRouter = Router();
 
@@ -198,6 +199,24 @@ cyBackdoorRouter.post('/settle/:namespaceName/:byUsername',
           req.body.records,
           new Date(req.body.settledOn),
         );
+
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+cyBackdoorRouter.post('/sql',
+  logRequestMiddleware('CYBACKDOOR - sql'),
+  async (
+    req: TypedRequestBody<{
+      sql: string,
+    }>,
+    res,
+    next,
+  ) => {
+    try {
+      const result = await query(req.body.sql);
 
       res.json(result);
     } catch (error) {
