@@ -1,7 +1,6 @@
 import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
-import { decodeJwt } from './service';
 import { query } from '../connection/connection';
 import { CreateNamespacePayload, ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
@@ -530,7 +529,7 @@ async function getOwnerFromToken (
 ): Promise<Owner> {
   try {
     const token = req.headers.authorization.split('Bearer ')[1];
-    const decoded = decodeJwt(token);
+    const decoded = AUTH_SERVICE.decodeJwt(token);
     const owner = (await query<Owner>(`
     SELECT * FROM \`Owner\`
     WHERE \`key\` = "${decoded.key}"
