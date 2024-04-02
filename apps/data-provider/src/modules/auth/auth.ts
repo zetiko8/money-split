@@ -2,6 +2,7 @@ import { query } from '../../connection/connection';
 import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { ENVIRONMENT } from '../config';
 
 async function login (
   username: string,
@@ -35,7 +36,7 @@ function jwtSign (data: unknown) {
   return new Promise<string>((resolve, reject) => {
     jwt.sign(
       data,
-      'myprivatekey',
+      ENVIRONMENT.secret,
       function(err, token) {
         if (err) return reject(err);
         else return resolve(token as string);
@@ -47,7 +48,7 @@ function jwtSign (data: unknown) {
 function decodeJwt (token: string) {
   return jwt.verify(
     token,
-    'myprivatekey',
+    ENVIRONMENT.secret,
   ) as {
     key: string,
     id: number,
