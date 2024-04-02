@@ -1,12 +1,12 @@
-import { Router } from "express";
-import { logRequestMiddleware } from "../../request/service";
-import { TypedRequestBody } from "../../types";
-import { OWNER_SERVICE } from "../owners";
-import { NAMESPACE_SERVICE } from "../namespace";
-import { INVITATION_SERVICE } from "../invitation";
-import { CYBACKDOOR_SERVICE } from "./cybackdoor.service";
-import { getRandomColor, stringRouteParam } from "../../helpers";
-import { RecordDataCy } from "@angular-monorepo/entities";
+import { Router } from 'express';
+import { logRequestMiddleware } from '../../request/service';
+import { TypedRequestBody } from '../../types';
+import { OWNER_SERVICE } from '../owners';
+import { NAMESPACE_SERVICE } from '../namespace';
+import { INVITATION_SERVICE } from '../invitation';
+import { CYBACKDOOR_SERVICE } from './cybackdoor.service';
+import { getRandomColor, stringRouteParam } from '../../helpers';
+import { RecordDataCy } from '@angular-monorepo/entities';
 
 export const cyBackdoorRouter = Router();
 
@@ -18,8 +18,8 @@ cyBackdoorRouter.delete('/owner/:username',
     next,
   ) => {
     try {
-      
-        await CYBACKDOOR_SERVICE.deleteOwner(req.params['username'] as string);
+
+      await CYBACKDOOR_SERVICE.deleteOwner(req.params['username'] as string);
 
       res.json({ success: true });
     } catch (error) {
@@ -35,9 +35,9 @@ cyBackdoorRouter.delete('/user/:username',
     next,
   ) => {
     try {
-      
-        await CYBACKDOOR_SERVICE
-          .deleteUser(req.params['username'] as string);
+
+      await CYBACKDOOR_SERVICE
+        .deleteUser(req.params['username'] as string);
 
       res.json({ success: true });
     } catch (error) {
@@ -53,10 +53,10 @@ cyBackdoorRouter.delete('/namespace/:namespaceId',
     next,
   ) => {
     try {
-      
-        await NAMESPACE_SERVICE
-          .deleteNamespace(
-            Number(req.params['namespaceId'] as string));
+
+      await NAMESPACE_SERVICE
+        .deleteNamespace(
+          Number(req.params['namespaceId'] as string));
 
       res.json({ success: true });
     } catch (error) {
@@ -72,9 +72,9 @@ cyBackdoorRouter.delete('/namespaceName/:namespaceName',
     next,
   ) => {
     try {
-      
-        await CYBACKDOOR_SERVICE
-          .deleteNamespaceByName(
+
+      await CYBACKDOOR_SERVICE
+        .deleteNamespaceByName(
             req.params['namespaceName'] as string);
 
       res.json({ success: true });
@@ -91,9 +91,9 @@ cyBackdoorRouter.delete('/invitation/:email',
     next,
   ) => {
     try {
-      
-        await CYBACKDOOR_SERVICE
-          .deleteInvitationByEmail(
+
+      await CYBACKDOOR_SERVICE
+        .deleteInvitationByEmail(
             req.params['email'] as string);
 
       res.json({ success: true });
@@ -112,7 +112,7 @@ cyBackdoorRouter.post('/:ownerKey/namespace',
     try {
       const owner = await OWNER_SERVICE
         .getOwnerByKey(
-          req.params['ownerKey'] as string
+          req.params['ownerKey'] as string,
         );
       const mNamaespace = await NAMESPACE_SERVICE.createNamespace(
         {
@@ -129,17 +129,17 @@ cyBackdoorRouter.post('/:ownerKey/namespace',
 cyBackdoorRouter.post('/invitation/accept',
   logRequestMiddleware('CYBACKDOOR - acceptInvitation'),
   async (
-    req: TypedRequestBody<{ 
+    req: TypedRequestBody<{
       name: string,
       email: string,
-      ownerUsername: string, 
+      ownerUsername: string,
     }>,
     res,
     next,
   ) => {
     try {
 
-      const owner 
+      const owner
         = await CYBACKDOOR_SERVICE.getOwnerByUsername(req.body.ownerUsername);
       const invitation
         = await CYBACKDOOR_SERVICE.getInvitationByEmail(req.body.email);
@@ -197,7 +197,7 @@ cyBackdoorRouter.post('/settle/:namespaceName/:byUsername',
           stringRouteParam(req, 'namespaceName'),
           req.body.records,
           new Date(req.body.settledOn),
-          );
+        );
 
       res.json(result);
     } catch (error) {
