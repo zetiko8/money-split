@@ -43,7 +43,7 @@ export async function asyncMap<T, R> (
 export function stringRouteParam (
   request: Request,
   paramName: string,
-  options = { 
+  options = {
     required: true,
   },
 ): string {
@@ -57,7 +57,7 @@ export function stringRouteParam (
 export function numberRouteParam (
   request: Request,
   paramName: string,
-  options = { 
+  options = {
     required: true,
   },
 ): number {
@@ -73,5 +73,5 @@ export function numberRouteParam (
 }
 
 export function getRandomColor () {
-  return "#000000".replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
+  return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
 }
