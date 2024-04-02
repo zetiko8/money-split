@@ -188,10 +188,8 @@ export const RECORD_LIST = {
           .should('contain.text', value);
       },
       isSettledOn (date: Date) {
-        if (moment(date).month() !== 2)
-          throw Error('Not implemented jet');
         const string
-                    = `Mar ${moment(date).date()}, ${moment(date).year()}`;
+                    = `${getMonthString(date)} ${moment(date).date()}, ${moment(date).year()}`;
         $el().find('[data-test="settled-on-label"]')
           .contains(string);
       },
@@ -286,10 +284,8 @@ export const RECORD_LIST = {
         $el().click();
       },
       isSettledOn (date: Date) {
-        if (moment(date).month() !== 2)
-          throw Error('Not implemented jet');
         const string
-                    = `Mar ${moment(date).date()}, ${moment(date).year()}`;
+                    = `${getMonthString(date)} ${moment(date).date()}, ${moment(date).year()}`;
         $el().find('[data-test="settled-on-label"]')
           .contains(string);
       },
@@ -488,3 +484,11 @@ export const RECORD_FORM = {
     cy.get('[data-test="add-expense-confirm-btn"]').click();
   },
 };
+
+function getMonthString (date: Date) {
+  if (moment(date).month() === 2)
+    return 'Mar';
+  if (moment(date).month() === 3)
+    return 'Apr';
+  throw Error('Not implemented jet');
+}
