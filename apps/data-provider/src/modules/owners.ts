@@ -1,13 +1,13 @@
-import { ERROR_CODE, Owner, RegisterOwnerPayload } from "@angular-monorepo/entities";
-import { lastInsertId, query } from "../connection/connection";
+import { ERROR_CODE, Owner, RegisterOwnerPayload } from '@angular-monorepo/entities';
+import { lastInsertId, query } from '../connection/connection';
 import bcrypt from 'bcrypt';
-import { insertSql } from "../connection/helper";
-import { OwnerEntity } from "../types";
-import { randomUUID } from "crypto";
-import { AVATAR_SERVICE } from "./avatar";
+import { insertSql } from '../connection/helper';
+import { OwnerEntity } from '../types';
+import { randomUUID } from 'crypto';
+import { AVATAR_SERVICE } from './avatar';
 
 async function getOwnerById (
-  id: number
+  id: number,
 ) {
   const owner = await query<Owner[]>(`
   SELECT * FROM \`Owner\`
@@ -23,7 +23,7 @@ async function getOwnerById (
 }
 
 async function getOwnerByKey (
-  key: string
+  key: string,
 ) {
   const owner = await query<Owner[]>(`
   SELECT * FROM \`Owner\`
@@ -57,12 +57,12 @@ async function createOwner (
   await query(insertSql(
     'Owner',
     OwnerEntity,
-    { 
+    {
       key: randomUUID(),
       hash,
       username: data.username,
       avatarId: avatar.id,
-    }
+    },
   ));
 
   const id = await lastInsertId();
@@ -71,6 +71,7 @@ async function createOwner (
     SELECT * FROM \`Owner\`
     WHERE \`id\` = ${id}`);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (owner[0] as any).hash;
 
   return owner[0];
@@ -89,8 +90,8 @@ async function updateOwnerAvatar(
 }
 
 export const OWNER_SERVICE = {
-    getOwnerById,
-    getOwnerByKey,
-    createOwner,
-    updateOwnerAvatar,
-}
+  getOwnerById,
+  getOwnerByKey,
+  createOwner,
+  updateOwnerAvatar,
+};
