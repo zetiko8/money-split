@@ -39,7 +39,7 @@ export interface User {
     ownerId: number,
     name: string,
     avatarId: number,
-}   
+}
 
 export interface Invitation {
     id: number,
@@ -205,6 +205,6 @@ export interface SettlementRecord {
     settled: boolean,
     settledOn: Date,
     settledBy: User | null,
-}  
+}
 
 export * from './error';

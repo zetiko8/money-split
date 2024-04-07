@@ -1,7 +1,7 @@
 import { ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, User } from '@angular-monorepo/entities';
 import { lastInsertId, query } from '../../connection/connection';
 import { insertSql, mysqlDate, selectOneWhereSql } from '../../connection/helper';
-import { EntityPropertyType, InvitationEntity, RecordEntity } from '../../types';
+import { EntityPropertyType, InvitationEntity, MNamespaceEntity, RecordEntity } from '../../types';
 import { RECORD_SERVICE } from '../record';
 import { asyncMap } from '../../helpers';
 import { SETTLE_SERVICE } from '../settle';
@@ -24,6 +24,22 @@ export const CYBACKDOOR_SERVICE = {
   deleteNamespaceByName: async (
     namespaceName: string,
   ) => {
+    try {
+      const namespace = await selectOneWhereSql<MNamespace>(
+        'Namespace',
+        'name',
+        EntityPropertyType.STRING,
+        namespaceName,
+        MNamespaceEntity,
+      );
+      await query(
+        `DELETE FROM \`User\`
+              WHERE namespaceId = "${namespace.id}"
+              `,
+      );
+    } catch (error) {
+      //
+    }
     await query(
       `DELETE FROM \`Namespace\`
             WHERE name = "${namespaceName}"

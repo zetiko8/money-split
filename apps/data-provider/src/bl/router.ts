@@ -14,7 +14,12 @@ import { asyncMap, numberRouteParam, parseNumberRouteParam, registerRoute } from
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
-import { createNamespaceApi, getNamespaceViewApi, loginApi } from '@angular-monorepo/api-interface';
+import {
+  createNamespaceApi,
+  getNamespaceViewApi,
+  getOwnerProfileApi,
+  loginApi,
+} from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
 
 export const mainRouter = Router();
@@ -35,25 +40,16 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
-mainRouter.get('/:ownerKey/profile',
-  logRequestMiddleware('GET profile'),
-  async (
-    req: TypedRequestBody<{ name: string }>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = await getOwnerFromToken(req);
-
-      const profile = await PROFILE_SERVICE.getProfile(
-        owner.id,
-      );
-
-      res.json(profile);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  getOwnerProfileApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    return await PROFILE_SERVICE.getProfile(
+      context.owner.id,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.post('/:ownerKey/profile',
   logRequestMiddleware('POST profile'),

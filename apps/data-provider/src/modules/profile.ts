@@ -3,28 +3,25 @@ import { OWNER_SERVICE } from './owners';
 import { AVATAR_SERVICE } from './avatar';
 import { USER_SERVICE } from './user';
 import { asyncMap } from '../helpers';
+import { query } from '../connection/connection';
 
 export const PROFILE_SERVICE = {
   getProfile: async (
     ownerId: number,
   ): Promise<OwnerProfileView> => {
-    const owner = await OWNER_SERVICE.getOwnerById(ownerId);
-    const avatar = await AVATAR_SERVICE.getById(owner.avatarId);
+    const result = await query(
+      `
+      call getOwnerProfile(${ownerId});
+      `,
+    );
 
-    const users = await USER_SERVICE.getOwnerUsers(ownerId);
-    const usersWithAvatar = await asyncMap(users, async (user) => {
-      const usersAvatar = await AVATAR_SERVICE.getById(user.avatarId);
-      return {
-        user,
-        avatar: usersAvatar,
-      };
-    });
+    const profile
+      = JSON.parse(result[0][0].jsonResult) as OwnerProfileView;
 
-    return {
-      avatar,
-      owner,
-      users: usersWithAvatar,
-    };
+    if (!profile.users)
+      profile.users = [];
+
+    return profile;
   },
   editProfile: async (
     ownerId: number,

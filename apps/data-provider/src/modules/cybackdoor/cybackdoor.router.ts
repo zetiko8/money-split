@@ -121,6 +121,7 @@ cyBackdoorRouter.post('/:ownerKey/namespace',
           avatarColor: getRandomColor(),
           avatarUrl: null,
         }, owner);
+
       res.json(mNamaespace);
     } catch (error) {
       next(error);
