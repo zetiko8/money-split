@@ -131,30 +131,6 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
-// mainRouter.get('/:ownerKey/namespace/:namespaceId',
-//   logRequestMiddleware('GET namespace'),
-//   async (
-//     req: TypedRequestBody<null>,
-//     res,
-//     next,
-//   ) => {
-//     try {
-//       const owner = (await query<Owner>(`
-//       SELECT * FROM \`Owner\`
-//       WHERE \`key\` = "${req.params['ownerKey'] as string}"
-//       `))[0];
-
-//       const mNamaespace = await NAMESPACE_SERVICE.getNamespaceViewForOwner(
-//         Number(req.params['namespaceId'] as string),
-//         owner.id,
-//       );
-
-//       res.json(mNamaespace);
-//     } catch (error) {
-//       next(error);
-//     }
-//   });
-
 mainRouter.get(
   '/:ownerKey/namespace/:namespaceId/edit/record/:recordId',
   logRequestMiddleware('GET edit record'),
