@@ -4,6 +4,7 @@ import * as cors from 'cors';
 import { mainRouter } from './bl/router';
 import { cyBackdoorRouter } from './modules/cybackdoor/cybackdoor.router';
 import { ERROR_CODE } from '@angular-monorepo/entities';
+import { AppError } from './types';
 
 const app = express();
 
@@ -16,6 +17,14 @@ app.use('/data-provider/app', mainRouter);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err.message);
+  if (err.originalError) {
+    const appError = err as AppError;
+    console.error(appError.originalError.message);
+    appError.appStack.forEach(stack => {
+      console.error(' - ' + stack);
+    });
+    console.error(appError.context);
+  }
   if (Object.values(ERROR_CODE).includes(err.message)) {
     res.status(400);
   } else {
@@ -23,7 +32,7 @@ app.use((err, req, res, next) => {
   }
 
   return res.json({
-    error: err.message
+    error: err.message,
   });
 });
 

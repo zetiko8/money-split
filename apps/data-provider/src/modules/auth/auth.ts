@@ -3,6 +3,8 @@ import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { ENVIRONMENT } from '../config';
+import { Request } from 'express';
+import { appError } from '../../helpers';
 
 async function login (
   username: string,
@@ -60,4 +62,36 @@ function decodeJwt (token: string) {
 export const AUTH_SERVICE = {
   login,
   decodeJwt,
+  getOwnerFromToken: async (token: string) => {
+    try {
+      const decoded = AUTH_SERVICE.decodeJwt(token);
+      const owner = (await query<Owner>(`
+      SELECT * FROM \`Owner\`
+      WHERE \`key\` = "${decoded.key}"
+      `))[0];
+      return owner;
+    } catch (error) {
+      throw Error(ERROR_CODE.UNAUTHORIZED);
+    }
+  },
+  auth: async (
+    request: Request,
+  ) => {
+    try {
+      const token = request.headers.authorization
+        .split('Bearer ')[1];
+      const decoded = AUTH_SERVICE.decodeJwt(token);
+      const owner = (await query<Owner>(`
+      SELECT * FROM \`Owner\`
+      WHERE \`key\` = "${decoded.key}"
+      `))[0];
+      return owner;
+    } catch (error) {
+      throw appError(
+        ERROR_CODE.UNAUTHORIZED,
+        'AUTH_SERVICE.auth',
+        error,
+      );
+    }
+  },
 };

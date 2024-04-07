@@ -1,38 +1,13 @@
-export interface AjaxI {
-  endpoint: string;
-  method: 'POST' | 'GET';
-}
+import { apiDefinition } from './helpers';
 
-export interface CallApi<Payload, ResponseType> {
-  (
-    implementation: (payload: Payload) => Promise<ResponseType>,
-    payload: Payload,
-  ): Promise<ResponseType>
-}
-
-export interface ApiDefinition<Payload, ResponseType> {
-  ajax: AjaxI,
-  callPromise: CallApi<Payload, ResponseType>
-}
-
-export function loginApi(
-
-): ApiDefinition<{
-  password: string,
-  username: string
-}, {
-  token: string
-}> {
-
-  const ajax: AjaxI = {
+export function loginApi() {
+  return apiDefinition<{
+    password: string,
+    username: string
+  }, {
+    token: string
+  }>({
     endpoint: '/login',
     method: 'POST',
-  };
-
-  return {
-    ajax,
-    async callPromise (implementation, payload) {
-      return await implementation(payload);
-    },
-  };
+  });
 }

@@ -1,3 +1,4 @@
+import { AjaxI } from '@angular-monorepo/api-interface';
 import { Request } from 'express';
 
 export interface TypedRequestBody<T> extends Request {
@@ -102,4 +103,15 @@ export const AvatarEntity: Entity = {
   id: EntityPropertyType.AUTO_ID,
   color: EntityPropertyType.STRING,
   url: EntityPropertyType.STRING,
+};
+
+export interface AppError {
+  message: string,
+  appStack: string[],
+  originalError: Error,
+  context: {
+    ajax: AjaxI,
+    payload: unknown,
+    params: unknown,
+  } | null,
 };

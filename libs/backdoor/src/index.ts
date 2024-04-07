@@ -6,6 +6,19 @@ export function getRandomColor () {
 }
 
 export const BACKDOOR_ACTIONS = {
+  query: async (
+    DATA_PROVIDER_URL: string,
+    sql: string,
+  ) => {
+    const res = await  axios.post<Owner>(
+      DATA_PROVIDER_URL + '/cybackdoor/sql',
+      {
+        sql,
+      },
+    );
+
+    return res.data;
+  },
   registerOwner: async (
     DATA_PROVIDER_URL: string,
     username: string,

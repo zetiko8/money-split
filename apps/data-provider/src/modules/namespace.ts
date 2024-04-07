@@ -14,12 +14,11 @@ import {
   User,
 } from '@angular-monorepo/entities';
 import { query } from '../connection/connection';
-import { insertSql, lastInsertId, selectOneWhereSql, selectWhereSql } from '../connection/helper';
+import { insertSql, selectOneWhereSql, selectWhereSql } from '../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity, SettlementEntity } from '../types';
 import { USER_SERVICE } from './user';
 import { RECORD_SERVICE } from './record';
-import { asyncMap } from '../helpers';
-import { AVATAR_SERVICE } from './avatar';
+import { appError, asyncMap } from '../helpers';
 import { SETTLE_SERVICE } from './settle';
 
 export async function getNamespacesForOwner (
@@ -65,39 +64,28 @@ async function createNamespace (
   owner: Owner,
 ): Promise<MNamespace> {
 
-  const namespaces = await query<MNamespace[]>
-  (`
-    SELECT * FROM NamespaceOwner no2 
-    INNER JOIN Namespace n 
-    ON n.id = no2.namespaceId
-    WHERE no2.ownerId = ${owner.id}
-    AND n.name = "${payload.namespaceName}"
-    `);
-
-  if (namespaces.length)
-    throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
-
-  const avatar = await AVATAR_SERVICE.createAvatar(
-    payload.avatarColor,
-    payload.avatarUrl,
+  const result = await query<unknown[]>(
+    `
+    call createNamespace1(
+      '${payload.namespaceName}',
+      ${owner.id},
+      '${payload.avatarColor}',
+      ${payload.avatarUrl ? `'${payload.avatarUrl}'` : 'NULL'},
+      '${owner.username}',
+      '${owner.avatarId}'
+    );
+    `,
   );
 
-  await query(insertSql(
-    'Namespace',
-    MNamespaceEntity,
-    { name: payload.namespaceName, avatarId: avatar.id },
-  ));
-
-  const namespaceId = await lastInsertId();
-
-  await addOwnerToNamespace(owner.id, namespaceId);
-  await USER_SERVICE.createUser(
-    owner.username,
-    namespaceId,
-    owner.id,
-  );
-
-  return await getNamespaceById(namespaceId);
+  if (result[result.length - 2][0].ERROR !== null) {
+    throw appError(
+      result[result.length - 2][0].ERROR,
+      'NAMESPACE_SERVICE.createNamespace',
+      Error('procedure expected error'),
+    );
+  } else {
+    return result[0][0] as MNamespace;
+  }
 }
 
 async function getNamespaceViewForOwner (

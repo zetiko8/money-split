@@ -1,4 +1,7 @@
+import { BACKDOOR_ACTIONS } from '@angular-monorepo/backdoor';
 import { AxiosError, AxiosResponse } from 'axios';
+
+export const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
 
 export async function smoke (
   apiName: string,
@@ -68,4 +71,38 @@ export function fnCall (
       }
     },
   };
+}
+export function expectEqual (
+  expected: unknown,
+  actual: unknown,
+) {
+  Object.keys(expected).forEach((key) => {
+    if (expected[key] === '_ignore_') {
+      expect(actual).toHaveProperty(key);
+    }
+    else if (expected[key] === '_type_number_') {
+      expect(actual).toHaveProperty(key);
+      expect(typeof actual[key]).toEqual('number');
+    }
+    else {
+      try {
+        expect(actual[key]).toEqual(expected[key]);
+      } catch (error) {
+        console.log(key);
+        throw error;
+      }
+    }
+  });
+}
+
+export async function queryDb (sql: string) {
+  try {
+    const response = await BACKDOOR_ACTIONS.query(
+      DATA_PROVIDER_URL,
+      sql,
+    );
+    return response;
+  } catch (error) {
+    throw Error('queryDb error - ' + error.message);
+  }
 }

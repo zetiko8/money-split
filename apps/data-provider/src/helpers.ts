@@ -1,7 +1,7 @@
 import { Request, Router } from 'express';
-import { TypedRequestBody } from './types';
+import { AppError, TypedRequestBody } from './types';
 import { logRequestMiddleware } from './request/service';
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import { ApiDefinition } from '@angular-monorepo/api-interface';
 
 export function getControler <B, T>(
@@ -79,12 +79,19 @@ export function getRandomColor () {
 
 export function registerRoute <
     Payload,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     Params,
     ReturnType,
   >(
   requestDef: ApiDefinition<Payload, ReturnType>,
   router: Router,
-  implementation: (payload: Payload) => Promise<ReturnType>,
+  implementation: (
+    payload: Payload,
+    context: {
+      owner: Owner | null,
+    },
+  ) => Promise<ReturnType>,
+  auth?: ((request: Request) => Promise<Owner>),
 ) {
   if (requestDef.ajax.method === 'POST') {
     router.post(
@@ -96,9 +103,29 @@ export function registerRoute <
         next,
       ) => {
         try {
-          const response = await implementation(req.body);
-          res.json(response);
+          if (auth) {
+            const owner = await auth(req);
+            const response = await implementation(
+              req.body,
+              { owner },
+            );
+            res.json(response);
+          } else {
+            const response = await implementation(
+              req.body,
+              { owner: null },
+            );
+            res.json(response);
+          }
         } catch (error) {
+          const err = error as AppError;
+          if (err.appStack) {
+            err.context = {
+              ajax: requestDef.ajax,
+              params: req.params,
+              payload: req.body,
+            };
+          }
           next(error);
         }
       },
@@ -107,4 +134,27 @@ export function registerRoute <
   if (requestDef.ajax.method === 'GET') {
     //
   }
+}
+
+export function errorAppStack (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  error: Error | any,
+  stack: string,
+) {
+  if (!error.appStack)
+    error.appStack = [];
+  error.appStack.push(stack);
+}
+
+export function appError (
+  message: string,
+  stack: string,
+  originalError: Error,
+): AppError {
+  return {
+    message,
+    appStack: [stack],
+    originalError,
+    context: null,
+  };
 }

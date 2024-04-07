@@ -2,7 +2,7 @@ import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { query } from '../connection/connection';
-import { CreateNamespacePayload, ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload, SettlePayload } from '@angular-monorepo/entities';
+import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
@@ -14,29 +14,26 @@ import { asyncMap, numberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
-import { loginApi } from '@angular-monorepo/api-interface';
+import { createNamespaceApi, loginApi } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
 
 export const mainRouter = Router();
 
-mainRouter.post('/:ownerKey/namespace',
-  logRequestMiddleware('POST namespace'),
-  async (
-    req: TypedRequestBody<CreateNamespacePayload>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = await getOwnerFromToken(req);
+registerRoute(
+  createNamespaceApi(),
+  mainRouter,
+  async (payload, context) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (
+      !payload.avatarColor && !payload.avatarUrl
+    ) throw Error(ERROR_CODE.INVALID_REQUEST);
 
-      const mNamaespace = await NAMESPACE_SERVICE.createNamespace(
-        req.body, owner);
-
-      res.json(mNamaespace);
-    } catch (error) {
-      next(error);
-    }
-  });
+    return await NAMESPACE_SERVICE.createNamespace(
+      payload, context.owner);
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.get('/:ownerKey/profile',
   logRequestMiddleware('GET profile'),
