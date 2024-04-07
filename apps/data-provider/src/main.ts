@@ -23,7 +23,9 @@ app.use((err, req, res, next) => {
     appError.appStack.forEach(stack => {
       console.error(' - ' + stack);
     });
-    console.error(appError.context);
+  }
+  if (err.context) {
+    console.error(err.context);
   }
   if (Object.values(ERROR_CODE).includes(err.message)) {
     res.status(400);

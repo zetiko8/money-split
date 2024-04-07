@@ -73,6 +73,23 @@ export function numberRouteParam (
   return numberParam;
 }
 
+export function parseNumberRouteParam (
+  value: string,
+  options = {
+    required: true,
+  },
+): number {
+  const param = Number(value);
+  if (options.required && param === undefined) throw Error(
+    ERROR_CODE.INVALID_REQUEST);
+
+  const numberParam = Number(param);
+  if (Number.isNaN(numberParam)) throw Error(
+    ERROR_CODE.INVALID_REQUEST);
+
+  return numberParam;
+}
+
 export function getRandomColor () {
   return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
 }
@@ -83,10 +100,11 @@ export function registerRoute <
     Params,
     ReturnType,
   >(
-  requestDef: ApiDefinition<Payload, ReturnType>,
+  requestDef: ApiDefinition<Payload, Params, ReturnType>,
   router: Router,
   implementation: (
     payload: Payload,
+    params: Params,
     context: {
       owner: Owner | null,
     },
@@ -105,34 +123,77 @@ export function registerRoute <
         try {
           if (auth) {
             const owner = await auth(req);
+            if (
+              req.params['ownerKey']
+              && req.params['ownerKey'] !== owner.key
+            ) throw Error(ERROR_CODE.UNAUTHORIZED);
             const response = await implementation(
               req.body,
+              req.params as Params,
               { owner },
             );
             res.json(response);
           } else {
             const response = await implementation(
               req.body,
+              req.params as Params,
               { owner: null },
             );
             res.json(response);
           }
         } catch (error) {
           const err = error as AppError;
-          if (err.appStack) {
-            err.context = {
-              ajax: requestDef.ajax,
-              params: req.params,
-              payload: req.body,
-            };
-          }
+          err.context = {
+            ajax: requestDef.ajax,
+            params: req.params,
+            payload: req.body,
+          };
           next(error);
         }
       },
     );
   }
   if (requestDef.ajax.method === 'GET') {
-    //
+    router.get(
+      requestDef.ajax.endpoint,
+      logRequestMiddleware(`${requestDef.ajax.method} : ${requestDef.ajax.endpoint}`),
+      async (
+        req: TypedRequestBody<Payload>,
+        res,
+        next,
+      ) => {
+        try {
+          if (auth) {
+            const owner = await auth(req);
+            if (
+              req.params['ownerKey']
+              && req.params['ownerKey'] !== owner.key
+            ) throw Error(ERROR_CODE.UNAUTHORIZED);
+            const response = await implementation(
+              req.body,
+              req.params as Params,
+              { owner },
+            );
+            res.json(response);
+          } else {
+            const response = await implementation(
+              req.body,
+              req.params as Params,
+              { owner: null },
+            );
+            res.json(response);
+          }
+        } catch (error) {
+          const err = error as AppError;
+          err.context = {
+            ajax: requestDef.ajax,
+            params: req.params,
+            payload: req.body,
+          };
+          next(err);
+        }
+      },
+    );
   }
 }
 

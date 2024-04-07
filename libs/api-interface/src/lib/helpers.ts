@@ -17,6 +17,7 @@ export interface CallApi<Payload, ResponseType> {
 
 export interface ApiDefinition<
   Payload,
+  Params,
   ResponseType,
 > {
   ajax: AjaxI,
@@ -39,9 +40,9 @@ export function replaceUrlParams (
   return replaced;
 }
 
-export function apiDefinition<Payload, ReturnValue>(
+export function apiDefinition<Payload, Params, ReturnValue>(
   ajax: AjaxI,
-): ApiDefinition<Payload, ReturnValue> {
+): ApiDefinition<Payload, Params, ReturnValue> {
   return {
     ajax,
     async callPromise (implementation, params, payload) {

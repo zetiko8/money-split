@@ -10,11 +10,11 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
-import { asyncMap, numberRouteParam, registerRoute } from '../helpers';
+import { asyncMap, numberRouteParam, parseNumberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
-import { createNamespaceApi, loginApi } from '@angular-monorepo/api-interface';
+import { createNamespaceApi, getNamespaceViewApi, loginApi } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
 
 export const mainRouter = Router();
@@ -22,7 +22,7 @@ export const mainRouter = Router();
 registerRoute(
   createNamespaceApi(),
   mainRouter,
-  async (payload, context) => {
+  async (payload, params, context) => {
     if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (
@@ -118,29 +118,42 @@ mainRouter.get('/avatar',
     }
   });
 
-mainRouter.get('/:ownerKey/namespace/:namespaceId',
-  logRequestMiddleware('GET namespace'),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = (await query<Owner>(`
-      SELECT * FROM \`Owner\`
-      WHERE \`key\` = "${req.params['ownerKey'] as string}"
-      `))[0];
+registerRoute(
+  getNamespaceViewApi(),
+  mainRouter,
+  async (payload, params, context) => {
 
-      const mNamaespace = await NAMESPACE_SERVICE.getNamespaceViewForOwner(
-        Number(req.params['namespaceId'] as string),
-        owner.id,
-      );
+    return await NAMESPACE_SERVICE.getNamespaceViewForOwner(
+      parseNumberRouteParam(params.namespaceId),
+      context.owner.id,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
-      res.json(mNamaespace);
-    } catch (error) {
-      next(error);
-    }
-  });
+// mainRouter.get('/:ownerKey/namespace/:namespaceId',
+//   logRequestMiddleware('GET namespace'),
+//   async (
+//     req: TypedRequestBody<null>,
+//     res,
+//     next,
+//   ) => {
+//     try {
+//       const owner = (await query<Owner>(`
+//       SELECT * FROM \`Owner\`
+//       WHERE \`key\` = "${req.params['ownerKey'] as string}"
+//       `))[0];
+
+//       const mNamaespace = await NAMESPACE_SERVICE.getNamespaceViewForOwner(
+//         Number(req.params['namespaceId'] as string),
+//         owner.id,
+//       );
+
+//       res.json(mNamaespace);
+//     } catch (error) {
+//       next(error);
+//     }
+//   });
 
 mainRouter.get(
   '/:ownerKey/namespace/:namespaceId/edit/record/:recordId',
