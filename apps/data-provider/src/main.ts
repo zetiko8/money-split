@@ -27,6 +27,11 @@ app.use((err, req, res, next) => {
   if (err.context) {
     console.error(err.context);
   }
+
+  if (!err.originalError && !err.context) {
+    console.error(`FROM: ${req.method} ${req.url}`);
+    console.error(err.stack);
+  }
   if (Object.values(ERROR_CODE).includes(err.message)) {
     res.status(400);
   } else {
