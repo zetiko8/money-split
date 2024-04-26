@@ -155,6 +155,17 @@ export const BACKDOOR_ACTIONS = {
 
     return res.data;
   },
+  deleteNamespaceInvitations: async (
+    DATA_PROVIDER_URL: string,
+    namespaceId: number,
+  ) => {
+    await BACKDOOR_ACTIONS.query(
+      DATA_PROVIDER_URL,
+      `
+      DELETE  FROM Invitation WHERE namespaceId=${namespaceId}
+      `,
+    );
+  },
 };
 
 export class NamespaceTestResource {
