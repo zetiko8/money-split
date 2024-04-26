@@ -15,6 +15,7 @@ import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
 import {
+  createInvitationApi,
   createNamespaceApi,
   getNamespaceViewApi,
   getOwnerProfileApi,
@@ -235,30 +236,21 @@ mainRouter.post('/:ownerKey/namespace/:namespaceId/user',
     }
   });
 
-mainRouter.post('/:ownerKey/namespace/:namespaceId/invite',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<{ email: string }>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = (await query<Owner>(`
-    SELECT * FROM \`Owner\`
-    WHERE \`key\` = "${req.params['ownerKey'] as string}"
-    `))[0];
-
-      const mNamaespace = await INVITATION_SERVICE.inviteToNamespace(
-        req.body.email,
-        Number(req.params['namespaceId'] as string),
-        owner.id,
-      );
-
-      res.json(mNamaespace);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  createInvitationApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.email) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (typeof payload.email !== 'string') throw Error(ERROR_CODE.INVALID_REQUEST);
+    return await INVITATION_SERVICE.inviteToNamespace(
+      payload.email,
+      Number(params.namespaceId),
+      context.owner.id,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.post('/:ownerKey/namespace/:namespaceId/:userId/add',
   logRequestMiddleware(),

@@ -1,4 +1,4 @@
-import { CreateNamespacePayload, MNamespace, NamespaceView, OwnerProfileView } from '@angular-monorepo/entities';
+import { CreateNamespacePayload, Invitation, MNamespace, NamespaceView, OwnerProfileView } from '@angular-monorepo/entities';
 import { apiDefinition } from './helpers';
 
 export function createNamespaceApi() {
@@ -39,3 +39,15 @@ export function getOwnerProfileApi() {
   });
 }
 
+export function createInvitationApi() {
+  return apiDefinition<
+  { email: string },
+  {
+    ownerKey: string,
+    namespaceId: number,
+  },
+  Invitation>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/invite',
+    method: 'POST',
+  });
+}
