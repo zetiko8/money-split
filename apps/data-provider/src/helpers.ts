@@ -224,3 +224,24 @@ export function appError (
 export function isAppError (error: unknown): boolean {
   return !!((error as AppError).isAppError);
 }
+
+export const VALIDATE = {
+  requiredString (value: unknown) {
+    if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.string(value);
+  },
+  requiredPayload (value: unknown) {
+    if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  string (value: unknown) {
+    if (value === null && value == undefined) return;
+    if (typeof value !== 'string')
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  anyOf (...values) {
+    values.forEach((value: unknown) => {
+      if (values === null || value === undefined)
+        throw Error(ERROR_CODE.INVALID_REQUEST);
+    });
+  },
+};
