@@ -30,7 +30,7 @@ export const BACKDOOR_ACTIONS = {
         username,
         password,
         avatarColor: getRandomColor(),
-        avatarImage: null,
+        avatarUrl: null,
       },
     );
 

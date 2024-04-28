@@ -133,7 +133,7 @@ describe(API_NAME, () => {
           avatar: {
             id: expect.any(Number),
             color: expect.any(String),
-            url: 'undefined',
+            url: 'null',
           },
           owner: {
             key: ownerKey,
@@ -153,7 +153,7 @@ describe(API_NAME, () => {
               avatar: {
                 id: expect.any(Number),
                 color: expect.any(String),
-                url: 'undefined',
+                url: 'null',
               },
             },
           ],
