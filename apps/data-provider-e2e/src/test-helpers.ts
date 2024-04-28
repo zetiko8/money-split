@@ -61,6 +61,9 @@ export function fnCall (
         if (err.message === 'Request failed with status code 404')
           throw Error(`${apiName} 404`);
 
+        if (err.response?.status === 500)
+          throw Error(`${apiName} 500 - ${err.response?.statusText}`);
+
         if (err.response?.data) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((err.response.data as any).error)
