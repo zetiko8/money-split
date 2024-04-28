@@ -114,4 +114,5 @@ export interface AppError {
     payload: unknown,
     params: unknown,
   } | null,
+  isAppError: true,
 };

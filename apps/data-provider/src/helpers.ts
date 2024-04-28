@@ -217,5 +217,10 @@ export function appError (
     appStack: [stack],
     originalError,
     context: null,
+    isAppError: true,
   };
+}
+
+export function isAppError (error: unknown): boolean {
+  return !!((error as AppError).isAppError);
 }
