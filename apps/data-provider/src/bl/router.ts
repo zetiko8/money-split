@@ -2,7 +2,7 @@ import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { query } from '../connection/connection';
-import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, RegisterOwnerPayload, SettlePayload } from '@angular-monorepo/entities';
+import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
@@ -10,7 +10,7 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
-import { asyncMap, numberRouteParam, parseNumberRouteParam, registerRoute } from '../helpers';
+import { VALIDATE, asyncMap, numberRouteParam, parseNumberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
@@ -20,6 +20,7 @@ import {
   getNamespaceViewApi,
   getOwnerProfileApi,
   loginApi,
+  registerApi,
 } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
 
@@ -378,23 +379,20 @@ registerRoute(
   },
 );
 
-mainRouter.post('/register',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<RegisterOwnerPayload>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = await OWNER_SERVICE.createOwner(
-        req.body,
-      );
+registerRoute(
+  registerApi(),
+  mainRouter,
+  async (payload) => {
+    VALIDATE.requiredPayload(payload);
+    VALIDATE.requiredString(payload.username);
+    VALIDATE.requiredString(payload.password);
+    VALIDATE.string(payload.avatarColor);
+    VALIDATE.string(payload.avatarUrl);
+    VALIDATE.anyOf(payload.avatarColor, payload.avatarUrl);
 
-      res.json(owner);
-    } catch (error) {
-      next(error);
-    }
-  });
+    return await OWNER_SERVICE.createOwner(payload);
+  },
+);
 
 mainRouter.get('/invitation/:invitationKey',
   logRequestMiddleware(),
