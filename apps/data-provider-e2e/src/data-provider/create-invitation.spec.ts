@@ -106,8 +106,8 @@ describe(API_NAME, () => {
       .result((result => {
         expect(result).toEqual({
           namespaceId: namespaceId,
-          accepted: 0,
-          rejected: 0,
+          accepted: false,
+          rejected: false,
           id: expect.any(Number),
           email: 'test.email@test.com',
           created: expect.any(String),

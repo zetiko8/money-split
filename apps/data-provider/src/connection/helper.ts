@@ -269,3 +269,15 @@ function createSelectWhereClause (
 
   return sql;
 }
+
+export async function errorFirstProcedure <T>(
+  sql: string,
+) {
+  const result = await query<unknown[]>(sql);
+
+  if (result[0][0].ERROR !== null) {
+    throw Error(result[0][0].ERROR);
+  } else {
+    return result[1][0] as T;
+  }
+}

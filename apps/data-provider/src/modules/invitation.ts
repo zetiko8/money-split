@@ -1,11 +1,12 @@
-import { ERROR_CODE, Invitation, InvitationViewData, MNamespace, Owner } from '@angular-monorepo/entities';
-import { lastInsertId, query } from '../connection/connection';
-import { insertSql, selectOneWhereSql } from '../connection/helper';
+import { Invitation, InvitationViewData, MNamespace, Owner } from '@angular-monorepo/entities';
+import { query } from '../connection/connection';
+import { errorFirstProcedure, selectOneWhereSql } from '../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity } from '../types';
 import { addOwnerToNamespace } from './namespace';
 import { createUser } from './user';
 import { randomUUID } from 'crypto';
 import { sendMail } from './email';
+import { appError } from '../helpers';
 
 async function getInvitationByKey (
   invitationKey: string,
@@ -63,54 +64,43 @@ export async function inviteToNamespace (
   namespaceId: number,
   ownerId: number,
 ): Promise<Invitation> {
+  try {
+    const invitation = await errorFirstProcedure<Invitation>(
+      `
+      call createInvitation(
+        '${email}',
+        ${ownerId},
+        '${randomUUID()}',
+        '${namespaceId}'
+      );
+      `,
+    );
 
-  const sameEmail = await query<Invitation[]>(`
-  SELECT * FROM \`Invitation\`
-  WHERE \`email\` = "${email}"
-  AND \`namespaceId\` = ${namespaceId}`);
+    invitation.accepted = !!(invitation.accepted);
+    invitation.rejected = !!(invitation.rejected);
 
-  if (sameEmail.length)
-    throw Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
+    await sendMail({
+      subject: 'Invitation to Money Split Group',
+      text: `
+        <h1>
+          Your friend has invited you to join a group.
+        </h1>
+        <p>
+          Follow the link bellow to join.
+        </p>
+        <a href="http://localhost:4200/invitation/${invitation.invitationKey}/join">Link</a>
+      `,
+      to: email,
+    });
 
-  await query(insertSql(
-    'Invitation',
-    InvitationEntity,
-    {
-      email,
-      namespaceId,
-      created: new Date(),
-      edited: new Date(),
-      createdBy: ownerId,
-      editedBy: ownerId,
-      invitationKey: randomUUID(),
-      accepted: false,
-      rejected: false,
-    },
-  ));
-
-  const id = await lastInsertId();
-
-  const invitations = await query<Invitation[]>(`
-    SELECT * FROM \`Invitation\`
-    WHERE \`id\` = ${id}`);
-
-  const invitation = invitations[0];
-
-  await sendMail({
-    subject: 'Invitation to Money Split Group',
-    text: `
-      <h1>
-        Your friend has invited you to join a group.
-      </h1>
-      <p>
-        Follow the link bellow to join.
-      </p>
-      <a href="http://localhost:4200/invitation/${invitation.invitationKey}/join">Link</a>
-    `,
-    to: email,
-  });
-
-  return invitation;
+    return invitation;
+  } catch (error) {
+    throw appError(
+      error.message,
+      'INVITATION_SERVICE.inviteToNamespace',
+      error,
+    );
+  }
 }
 
 export const INVITATION_SERVICE = {
