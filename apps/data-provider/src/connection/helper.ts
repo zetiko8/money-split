@@ -33,7 +33,7 @@ export function insertSql(
         values += ', ';
       };
       columns += '`' + column + '`';
-  
+
       values += addValue(type, column, data);
       index++;
     }
@@ -80,7 +80,7 @@ export function insertMultipleSql(
         if (index3 !== 0) {
           values += ', ';
         };
-  
+
         values += addValue(type, column, dataPoint);
         index3++;
       }
@@ -134,7 +134,7 @@ function addValue (
 }
 
 export function mysqlDate (
-  dataPoint: Date
+  dataPoint: Date,
 ) {
   return dataPoint.toISOString().slice(0, 19).replace('T', ' ');
 }
