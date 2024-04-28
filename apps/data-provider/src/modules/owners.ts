@@ -1,10 +1,9 @@
 import { ERROR_CODE, Owner, RegisterOwnerPayload } from '@angular-monorepo/entities';
-import { lastInsertId, query } from '../connection/connection';
+import { query } from '../connection/connection';
 import bcrypt from 'bcrypt';
-import { insertSql } from '../connection/helper';
-import { OwnerEntity } from '../types';
+import { errorSecondProcedure } from '../connection/helper';
 import { randomUUID } from 'crypto';
-import { AVATAR_SERVICE } from './avatar';
+import { appErrorWrap } from '../helpers';
 
 async function getOwnerById (
   id: number,
@@ -41,40 +40,21 @@ async function getOwnerByKey (
 async function createOwner (
   data: RegisterOwnerPayload,
 ): Promise<Owner> {
-  const sameName = await query<Owner[]>(`
-  SELECT * FROM \`Owner\`
-  WHERE \`username\` = "${data.username}"`);
-
-  if (sameName.length)
-    throw Error(ERROR_CODE.OWNER_USERNAME_ALREADY_EXISTS);
-
-  const avatar = await AVATAR_SERVICE.createAvatar(
-    data.avatarColor, data.avatarUrl,
-  );
-
-  const hash = await bcrypt.hash(data.password, 10);
-
-  await query(insertSql(
-    'Owner',
-    OwnerEntity,
-    {
-      key: randomUUID(),
-      hash,
-      username: data.username,
-      avatarId: avatar.id,
-    },
-  ));
-
-  const id = await lastInsertId();
-
-  const owner = await query<Owner[]>(`
-    SELECT * FROM \`Owner\`
-    WHERE \`id\` = ${id}`);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  delete (owner[0] as any).hash;
-
-  return owner[0];
+  return await appErrorWrap('OWNER_SERVICE.createOwner', async () => {
+    const hash = await bcrypt.hash(data.password, 10);
+    const owner = await errorSecondProcedure<Owner>(
+      `
+        call createOwner(
+          '${data.username}',
+          '${hash}',
+          '${data.avatarColor}',
+          '${data.avatarUrl}',
+          '${randomUUID()}'
+        );
+        `,
+    );
+    return owner;
+  });
 }
 
 async function updateOwnerAvatar(

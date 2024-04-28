@@ -225,6 +225,21 @@ export function isAppError (error: unknown): boolean {
   return !!((error as AppError).isAppError);
 }
 
+export async function appErrorWrap <T>(
+  logName: string,
+  fn: () => Promise<T>,
+) {
+  try {
+    return await fn();
+  } catch (error) {
+    throw appError (
+      error.message,
+      logName,
+      error,
+    );
+  }
+}
+
 export const VALIDATE = {
   requiredString (value: unknown) {
     if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);

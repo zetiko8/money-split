@@ -281,3 +281,15 @@ export async function errorFirstProcedure <T>(
     return result[1][0] as T;
   }
 }
+
+export async function errorSecondProcedure <T>(
+  sql: string,
+) {
+  const result = await query<unknown[]>(sql);
+
+  if (result[result.length - 2][0].ERROR !== null) {
+    throw Error(result[result.length - 2][0].ERROR);
+  } else {
+    return result[0][0] as T;
+  }
+}
