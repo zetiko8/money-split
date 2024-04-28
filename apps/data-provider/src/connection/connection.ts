@@ -31,7 +31,7 @@ export async function lastInsertId(): Promise<number> {
   const d = await query<{
     'LAST_INSERT_ID()': number
   }[]>('SELECT LAST_INSERT_ID()');
-  
+
   return d[0]['LAST_INSERT_ID()'];
 }
 
