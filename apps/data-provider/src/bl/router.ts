@@ -20,6 +20,7 @@ import {
   createNamespaceApi,
   getInvitationViewApi,
   getNamespaceViewApi,
+  getOwnerNamespacesApi,
   getOwnerProfileApi,
   loginApi,
   registerApi,
@@ -193,28 +194,16 @@ mainRouter.post(
     }
   });
 
-mainRouter.get('/:ownerKey/namespace',
-  logRequestMiddleware('GET namespaces'),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = (await query<Owner>(`
-      SELECT * FROM \`Owner\`
-      WHERE \`key\` = "${req.params['ownerKey'] as string}"
-      `))[0];
-
-      const mNamaespaces = await NAMESPACE_SERVICE.getNamespacesForOwner(
-        owner.id,
-      );
-
-      res.json(mNamaespaces);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  getOwnerNamespacesApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    return await NAMESPACE_SERVICE.getNamespacesForOwner(
+      context.owner.id,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.post('/:ownerKey/namespace/:namespaceId/user',
   logRequestMiddleware(),

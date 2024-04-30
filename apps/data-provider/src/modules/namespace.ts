@@ -14,26 +14,25 @@ import {
   User,
 } from '@angular-monorepo/entities';
 import { query } from '../connection/connection';
-import { insertSql, selectOneWhereSql, selectWhereSql } from '../connection/helper';
+import { insertSql, jsonProcedure, selectOneWhereSql, selectWhereSql } from '../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity, SettlementEntity } from '../types';
 import { USER_SERVICE } from './user';
 import { RECORD_SERVICE } from './record';
-import { appError, asyncMap } from '../helpers';
+import { appError, appErrorWrap, asyncMap } from '../helpers';
 import { SETTLE_SERVICE } from './settle';
 
 export async function getNamespacesForOwner (
   ownerId: number,
 ): Promise<MNamespace[]> {
-
-  const namespaces = await query<MNamespace[]>
-  (`
-      SELECT * FROM NamespaceOwner no2 
-      INNER JOIN Namespace n 
-      ON n.id = no2.namespaceId
-      WHERE no2.ownerId = ${ownerId}
-      `);
-
-  return namespaces;
+  return await appErrorWrap('getNamespacesForOwner', async () => {
+    return await jsonProcedure<MNamespace[]>(
+      `
+      call getOwnerNamespaces(
+        '${ownerId}'
+      );
+      `,
+    );
+  });
 }
 
 async function getNamespaceById (

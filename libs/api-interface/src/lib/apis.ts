@@ -94,3 +94,15 @@ export function getInvitationViewApi() {
     method: 'GET',
   });
 }
+
+export function getOwnerNamespacesApi() {
+  return apiDefinition<
+  null,
+  {
+    ownerKey: string,
+  },
+  MNamespace[]>({
+    endpoint: '/:ownerKey/namespace',
+    method: 'GET',
+  });
+}
