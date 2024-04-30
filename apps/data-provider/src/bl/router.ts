@@ -205,6 +205,7 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
+// TODO - check if it is used
 mainRouter.post('/:ownerKey/namespace/:namespaceId/user',
   logRequestMiddleware(),
   async (
