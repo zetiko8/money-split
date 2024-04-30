@@ -1,6 +1,7 @@
 import {
   CreateNamespacePayload,
   Invitation,
+  InvitationViewData,
   MNamespace,
   NamespaceView,
   Owner,
@@ -79,5 +80,17 @@ export function acceptInvitationApi() {
   Invitation>({
     endpoint: '/invitation/:invitationKey/accept',
     method: 'POST',
+  });
+}
+
+export function getInvitationViewApi() {
+  return apiDefinition<
+  null,
+  {
+    invitationKey: string,
+  },
+  InvitationViewData>({
+    endpoint: '/invitation/:invitationKey',
+    method: 'GET',
   });
 }

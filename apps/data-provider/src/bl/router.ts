@@ -18,6 +18,7 @@ import {
   acceptInvitationApi,
   createInvitationApi,
   createNamespaceApi,
+  getInvitationViewApi,
   getNamespaceViewApi,
   getOwnerProfileApi,
   loginApi,
@@ -395,22 +396,16 @@ registerRoute(
   },
 );
 
-mainRouter.get('/invitation/:invitationKey',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      const invitation = await INVITATION_SERVICE.getInvitationViewData(
-        req.params['invitationKey'] as string,
-      );
-      res.json(invitation);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  getInvitationViewApi(),
+  mainRouter,
+  async (payload, params) => {
+    return await INVITATION_SERVICE.getInvitationViewData(
+      params.invitationKey,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 registerRoute(
   acceptInvitationApi(),

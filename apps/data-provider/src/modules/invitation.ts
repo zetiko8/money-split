@@ -20,17 +20,15 @@ async function getInvitationByKey (
 async function getInvitationViewData (
   invitationKey: string,
 ): Promise<InvitationViewData> {
-  const invitation = await getInvitationByKey(invitationKey);
-
-  const mNamespace = await selectOneWhereSql<MNamespace>(
-    'Namespace',
-    'id',
-    EntityPropertyType.ID,
-    invitation.namespaceId,
-    MNamespaceEntity,
-  );
-
-  return Object.assign(invitation, { namespace: mNamespace });
+  return await appErrorWrap('getInvitationViewData', async () => {
+    return await jsonProcedure<InvitationViewData>(
+      `
+      call getInvitationView(
+        '${invitationKey}'
+      );
+      `,
+    );
+  });
 }
 
 async function acceptInvitation (
