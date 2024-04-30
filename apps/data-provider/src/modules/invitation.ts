@@ -1,6 +1,6 @@
-import { Invitation, InvitationViewData, MNamespace, Owner } from '@angular-monorepo/entities';
+import { Invitation, InvitationViewData, Owner } from '@angular-monorepo/entities';
 import { errorFirstProcedure, jsonProcedure, selectOneWhereSql } from '../connection/helper';
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity } from '../types';
+import { EntityPropertyType, InvitationEntity } from '../types';
 import { randomUUID } from 'crypto';
 import { sendMail } from './email';
 import { appError, appErrorWrap } from '../helpers';
