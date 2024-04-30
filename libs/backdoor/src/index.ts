@@ -102,6 +102,7 @@ export const BACKDOOR_ACTIONS = {
   },
   invite: async (
     DATA_PROVIDER_URL: string,
+    token: string,
     ownerKey: string,
     namespaceId: number,
     email: string,
@@ -110,6 +111,11 @@ export const BACKDOOR_ACTIONS = {
       `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/invite`,
       {
         email,
+      },
+      {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+        },
       },
     );
 

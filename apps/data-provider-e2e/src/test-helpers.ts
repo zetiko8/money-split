@@ -175,6 +175,10 @@ export class TestContext {
   namespaces: {
     namespaceId: number,
     namespaceName: string,
+    invitations: {
+      invitationKey: string,
+      ownerTestContext: TestContext,
+    }[]
   }[] = [];
 
   async deleteOwner(ownerUsername?: string) {
@@ -206,6 +210,7 @@ export class TestContext {
     this.namespaces.push({
       namespaceId: mNamespace.id,
       namespaceName: mNamespace.name,
+      invitations: [],
     });
 
     return this;
@@ -232,6 +237,26 @@ export class TestContext {
         namespace.namespaceId,
       );
     }
+  }
+
+  async inviteOwnerToNamespace (
+    namespaceIndex: number,
+    email: string,
+  ) {
+    await this.login();
+    const namespace = this.namespaces[namespaceIndex];
+    const invitation = await BACKDOOR_ACTIONS.invite(
+      DATA_PROVIDER_URL,
+      this.token,
+      this.ownerKey,
+      namespace.namespaceId,
+      email,
+    );
+
+    namespace.invitations.push({
+      invitationKey: invitation.invitationKey,
+      ownerTestContext: new TestContext(),
+    });
   }
 
   authHeaders () {

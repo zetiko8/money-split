@@ -69,3 +69,15 @@ export function registerApi() {
     method: 'POST',
   });
 }
+
+export function acceptInvitationApi() {
+  return apiDefinition<
+  { name: string },
+  {
+    invitationKey: string,
+  },
+  Invitation>({
+    endpoint: '/invitation/:invitationKey/accept',
+    method: 'POST',
+  });
+}

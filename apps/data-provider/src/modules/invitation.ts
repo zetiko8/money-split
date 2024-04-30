@@ -1,12 +1,9 @@
 import { Invitation, InvitationViewData, MNamespace, Owner } from '@angular-monorepo/entities';
-import { query } from '../connection/connection';
-import { errorFirstProcedure, selectOneWhereSql } from '../connection/helper';
+import { errorFirstProcedure, jsonProcedure, selectOneWhereSql } from '../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity } from '../types';
-import { addOwnerToNamespace } from './namespace';
-import { createUser } from './user';
 import { randomUUID } from 'crypto';
 import { sendMail } from './email';
-import { appError } from '../helpers';
+import { appError, appErrorWrap } from '../helpers';
 
 async function getInvitationByKey (
   invitationKey: string,
@@ -41,22 +38,17 @@ async function acceptInvitation (
   owner: Owner,
   name: string,
 ): Promise<Invitation> {
-
-  const updateSql = `
-        UPDATE \`Invitation\`
-        SET accepted = 1
-        WHERE invitationKey = "${invitationKey}"
-    `;
-  await query(updateSql);
-
-  const invitation = await getInvitationByKey(invitationKey);
-  await addOwnerToNamespace(owner.id, invitation.namespaceId);
-
-  await createUser(
-    name, invitation.namespaceId, owner.id,
-  );
-
-  return invitation;
+  return await appErrorWrap('acceptInvitation', async () => {
+    return await jsonProcedure<Invitation>(
+      `
+      call acceptInvitation(
+        '${invitationKey}',
+        ${owner.id},
+        '${name}'
+      );
+      `,
+    );
+  });
 }
 
 export async function inviteToNamespace (

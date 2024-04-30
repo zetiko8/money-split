@@ -15,6 +15,7 @@ import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
 import {
+  acceptInvitationApi,
   createInvitationApi,
   createNamespaceApi,
   getNamespaceViewApi,
@@ -411,49 +412,21 @@ mainRouter.get('/invitation/:invitationKey',
     }
   });
 
-mainRouter.post('/invitation/:invitationKey/accept',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<{ name: string }>,
-    res,
-    next,
-  ) => {
-    try {
+registerRoute(
+  acceptInvitationApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    VALIDATE.requiredPayload(payload);
+    VALIDATE.requiredString(payload.name);
 
-      const owner = await getOwnerFromToken(req);
-      const invitation = await INVITATION_SERVICE.acceptInvitation(
-        req.params['invitationKey'] as string,
-        owner,
-        req.body.name,
-      );
-
-      res.json(invitation);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-mainRouter.post('/invitation/:invitationKey/accept',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<{ name: string }>,
-    res,
-    next,
-  ) => {
-    try {
-
-      const owner = await getOwnerFromToken(req);
-      const invitation = await INVITATION_SERVICE.acceptInvitation(
-        req.params['invitationKey'] as string,
-        owner,
-        req.body.name,
-      );
-
-      res.json(invitation);
-    } catch (error) {
-      next(error);
-    }
-  });
+    return await INVITATION_SERVICE.acceptInvitation(
+      params.invitationKey,
+      context.owner,
+      payload.name,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 const multerStorage = multer.diskStorage({
   destination: (

@@ -293,3 +293,32 @@ export async function errorSecondProcedure <T>(
     return result[0][0] as T;
   }
 }
+
+export async function jsonProcedure <T>(
+  sql: string,
+) {
+  const result = await query<unknown[]>(sql);
+
+  try {
+    if (!result) throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    if (!result[0]) throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    if (!result[0][0]) throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    if (result[0][0].procedureError) {
+      const procedureError = JSON
+        .parse(result[0][0].procedureError)
+        .procedureError;
+      throw Error(procedureError);
+    }
+    if (!result[1]) throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    if (!result[1][0]) throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    if (!result[1][0].jsonResult) throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    try {
+      return JSON.parse(result[1][0].jsonResult) as T;
+    } catch (error) {
+      throw Error(ERROR_CODE.PROCEDURE_ERROR);
+    }
+  } catch (error) {
+    console.log('Result', result);
+    throw error;
+  }
+}
