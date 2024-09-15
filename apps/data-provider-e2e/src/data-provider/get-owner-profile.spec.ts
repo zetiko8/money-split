@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { BACKDOOR_ACTIONS, NamespaceTestResource } from '@angular-monorepo/backdoor';
+import { TestOwner } from '@angular-monorepo/backdoor';
 import { getOwnerProfileApi } from '@angular-monorepo/api-interface';
 
 const api = getOwnerProfileApi();
@@ -11,84 +11,35 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
   let ownerKey!: string;
   let ownerKeyOtherOwner!: string;
-  let ownerId!: number;
-  let token!: string;
-  const namespace1 = new NamespaceTestResource(
-    DATA_PROVIDER_URL, 'testnamespace');
-  beforeAll(async () => {
-    try {
-      await BACKDOOR_ACTIONS.deleteOwner(
-        DATA_PROVIDER_URL,
-        'testusername',
-      );
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-
-    try {
-      await BACKDOOR_ACTIONS.deleteOwner(
-        DATA_PROVIDER_URL,
-        'otherowner',
-      );
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-
-    try {
-      const owner = await BACKDOOR_ACTIONS.registerOwner(
-        DATA_PROVIDER_URL,
-        'testusername',
-        'testpassword',
-      );
-
-      ownerKey = owner.key;
-      ownerId = owner.id;
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-
-    try {
-      const owner = await BACKDOOR_ACTIONS.registerOwner(
-        DATA_PROVIDER_URL,
-        'otherowner',
-        'testpassword',
-      );
-
-      ownerKeyOtherOwner = owner.key;
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-
-    try {
-      const response = await axios.post(
-        `${DATA_PROVIDER_URL}/app/login`,
-        {
-          username: 'testusername',
-          password: 'testpassword',
-        },
-      );
-
-      token = response.data.token;
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-  });
-
+  let testOwner!: TestOwner;
+  let otherOwner!: TestOwner;
+  let namespaceId!: number;
   beforeEach(async () => {
-    await namespace1.dispose();
-    await namespace1.setup(ownerKey);
+    testOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'testowner',
+      'testpassword',
+    );
+    await testOwner.dispose();
+    await testOwner.register();
+    otherOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'otherOwner',
+      'testpassword',
+    );
+    await otherOwner.dispose();
+    await otherOwner.register();
+    const namespace = await testOwner.createNamespace('testnamespace');
+    namespaceId = namespace.id;
+    ownerKey = testOwner.owner.key;
+    ownerKeyOtherOwner = otherOwner.owner.key;
   });
 
-  it.only('smoke', async () => {
+  it('smoke', async () => {
     await smoke(API_NAME, async () => await axios.get(
       `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`));
   });
-  it.only('throws 401 with invalid token', async () => {
+  it('throws 401 with invalid token', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
@@ -106,27 +57,19 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it.only('throws 401 with invalid ownerKey', async () => {
+  it('throws 401 with invalid ownerKey', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/profile`,
-        {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          },
-        },
+        testOwner.authHeaders(),
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it.only('returns an owner profile view', async () => {
+  it('returns an owner profile view', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
-        {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          },
-        },
+        testOwner.authHeaders(),
       ))
       .result((result => {
         expect(result).toEqual({
@@ -137,17 +80,17 @@ describe(API_NAME, () => {
           },
           owner: {
             key: ownerKey,
-            id: ownerId,
-            username: 'testusername',
+            id: testOwner.owner.id,
+            username: testOwner.owner.username,
             avatarId: expect.any(Number),
           },
           users: [
             {
               user: {
                 id: expect.any(Number),
-                name: 'testusername',
-                namespaceId: namespace1.namespaceId,
-                ownerId: ownerId,
+                name: testOwner.owner.username,
+                namespaceId: namespaceId,
+                ownerId: testOwner.owner.id,
                 avatarId: expect.any(Number),
               },
               avatar: {
