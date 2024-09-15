@@ -15,8 +15,8 @@ async function createOwner (
         call createOwner(
           '${data.username}',
           '${hash}',
-          '${data.avatarColor}',
-          '${data.avatarUrl}',
+          ${data.avatarColor ? `'${data.avatarColor}'` : 'NULL'},
+          ${data.avatarUrl ? `'${data.avatarUrl}'` : 'NULL'},
           '${randomUUID()}'
         );
         `,

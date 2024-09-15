@@ -1,5 +1,6 @@
 import {
   CreateNamespacePayload,
+  EditProfileData,
   Invitation,
   InvitationViewData,
   MNamespace,
@@ -161,9 +162,22 @@ export function addRecordApi() {
   });
 }
 
+export function editOwnerProfileApi() {
+  return apiDefinition<
+  EditProfileData,
+  {
+    ownerKey: string,
+  },
+  OwnerProfileView>({
+    endpoint: '/:ownerKey/profile',
+    method: 'POST',
+  });
+}
+
 export const DATA_PROVIDER_API = {
   getNamespaceApi: new ApiDefinitionObj(getOwnerNamespacesApi()),
   createInvitationApi: new ApiDefinitionObj(createInvitationApi()),
   acceptInvitationApi: new ApiDefinitionObj(acceptInvitationApi()),
   getNamespaceViewApi: new ApiDefinitionObj(getNamespaceViewApi()),
+  editOwnerProfileApi: new ApiDefinitionObj(editOwnerProfileApi()),
 };

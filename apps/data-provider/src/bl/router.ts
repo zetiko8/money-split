@@ -2,7 +2,7 @@ import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { query } from '../connection/connection';
-import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, SettlePayload } from '@angular-monorepo/entities';
+import { ERROR_CODE, MNamespace, Owner, RecordData, RecordView, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { RECORD_SERVICE } from '../modules/record';
 import { NAMESPACE_SERVICE } from '../modules/namespace';
@@ -18,6 +18,7 @@ import {
   addRecordApi,
   createInvitationApi,
   createNamespaceApi,
+  editOwnerProfileApi,
   getInvitationViewApi,
   getNamespaceViewApi,
   getOwnerNamespacesApi,
@@ -56,26 +57,17 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
-mainRouter.post('/:ownerKey/profile',
-  logRequestMiddleware('POST profile'),
-  async (
-    req: TypedRequestBody<EditProfileData>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = await getOwnerFromToken(req);
-
-      const profile = await PROFILE_SERVICE.editProfile(
-        owner.id,
-        req.body,
-      );
-
-      res.json(profile);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  editOwnerProfileApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    return await PROFILE_SERVICE.editProfile(
+      context.owner.id,
+      payload,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.get('/avatar/:avatarId',
   logRequestMiddleware('GET avatar'),

@@ -9,3 +9,7 @@ export function randomHtmlName(length = 10) {
   }
   return result;
 }
+
+export function getRandomColor () {
+  return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
+}
