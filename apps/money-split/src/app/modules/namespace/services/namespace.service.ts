@@ -1,230 +1,230 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable, inject } from "@angular/core";
-import { ConfigService } from "../../../services/config.service";
-import { Observable, catchError, combineLatest, mergeMap, throwError } from "rxjs";
-import { CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, NamespaceView, Record, RecordView, SettlePayload, SettlementPreview } from "@angular-monorepo/entities";
-import { RoutingService } from "../../../services/routing/routing.service";
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { ConfigService } from '../../../services/config.service';
+import { Observable, catchError, combineLatest, mergeMap, throwError } from 'rxjs';
+import { CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, NamespaceView, Record, RecordView, SettlePayload, SettlementPreview } from '@angular-monorepo/entities';
+import { RoutingService } from '../../../services/routing/routing.service';
 
 @Injectable()
 export class NamespaceService {
 
-    private readonly http = inject(HttpClient);
-    private readonly config = inject(ConfigService);
-    private readonly routingService = inject(RoutingService);
+  private readonly http = inject(HttpClient);
+  private readonly config = inject(ConfigService);
+  private readonly routingService = inject(RoutingService);
 
-    public getNamespace (): Observable<NamespaceView> {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-        .pipe(
-            mergeMap(([ownerKey, namespaceId]) => this.http.get<NamespaceView>(
-                    this.config.getConfig().middlewareUrl 
+  public getNamespace (): Observable<NamespaceView> {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this.http.get<NamespaceView>(
+          this.config.getConfig().middlewareUrl
                     + '/'
                     + ownerKey
-                    + "/namespace/"
+                    + '/namespace/'
                     + namespaceId,
-                )
-            )
-        )
-    }
+        ),
+        ),
+      );
+  }
 
-    public getEditRecordView (
-        recordId: number,
-    ): Observable<{
+  public getEditRecordView (
+    recordId: number,
+  ): Observable<{
         namespace: NamespaceView,
         record: RecordView,
     }> {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-        .pipe(
-            mergeMap(([ownerKey, namespaceId]) => this.http.get<{
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this.http.get<{
                 namespace: NamespaceView,
                 record: RecordView,
             }>(
-                    this.config.getConfig().middlewareUrl 
+              this.config.getConfig().middlewareUrl
                     + '/'
                     + ownerKey
-                    + "/namespace/"
+                    + '/namespace/'
                     + namespaceId
                     + '/edit/record/'
-                    + recordId
-                )
-            )
-        )
-    }
+                    + recordId,
+            ),
+        ),
+      );
+  }
 
-    public inviteOwner (
-        email: string
-    ): Observable<MNamespace> {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
-                        this.config.getConfig().middlewareUrl 
+  public inviteOwner (
+    email: string,
+  ): Observable<MNamespace> {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
+          this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
-                        + "/invite",
-                        { email }
-                    )
-                ),
-                catchError(
-                    err => {
-                      if (
-                        err.error 
-                        && 
-                        err.error.error 
-                        === 
+                        + '/invite',
+          { email },
+        ),
+        ),
+        catchError(
+          err => {
+            if (
+              err.error
+                        &&
+                        err.error.error
+                        ===
                         ERROR_CODE.RESOURCE_ALREADY_EXISTS
-                      ) {
-                        return throwError(() => Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS));
-                      } else {
-                        return throwError(() => err);
-                      }
-                    }
-                  )
-            )
-    }
+            ) {
+              return throwError(() => Error(ERROR_CODE.RESOURCE_ALREADY_EXISTS));
+            } else {
+              return throwError(() => err);
+            }
+          },
+        ),
+      );
+  }
 
-    public addRecord (recordData: CreateRecordData) {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
-                        this.config.getConfig().middlewareUrl 
+  public addRecord (recordData: CreateRecordData) {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
+          this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
                         + '/'
                         + recordData.createdBy
-                        + "/add",
-                        recordData
-                    )
-                )
-            )
-    }
+                        + '/add',
+          recordData,
+        ),
+        ),
+      );
+  }
 
-    public editRecord (recordData: EditRecordData) {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this.http.post<Record>(
-                        this.config.getConfig().middlewareUrl 
+  public editRecord (recordData: EditRecordData) {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this.http.post<Record>(
+          this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
                         + '/'
                         + recordData.createdBy
                         + '/edit/record/'
                         + recordData.recordId,
-                        recordData,
-                    ),
-                )
-            );
-    }
+          recordData,
+        ),
+        ),
+      );
+  }
 
-    public settlePreview () {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this
-                    .http.get<SettlementPreview>(
-                        this.config.getConfig().middlewareUrl 
+  public settlePreview () {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this
+          .http.get<SettlementPreview>(
+            this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
-                        + '/settle/preview'
-                    ),
-                )
-            );
-    }
+                        + '/settle/preview',
+          ),
+        ),
+      );
+  }
 
-    public settle (
-        byUser: number,
-        payload: SettlePayload,    
-    ) {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this
-                    .http.post<SettlementPreview>(
-                        this.config.getConfig().middlewareUrl 
+  public settle (
+    byUser: number,
+    payload: SettlePayload,
+  ) {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this
+          .http.post<SettlementPreview>(
+            this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
                         + '/settle/confirm/'
                         + byUser,
-                        payload,
-                    ),
-                )
-            );
-    }
+            payload,
+          ),
+        ),
+      );
+  }
 
-    public markAsSettled (
-        settlementDebtId: number,    
-        byUser: number,
-    ) {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this
-                    .http.get<void>(
-                        this.config.getConfig().middlewareUrl 
+  public markAsSettled (
+    settlementDebtId: number,
+    byUser: number,
+  ) {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this
+          .http.get<void>(
+            this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
                         + '/settle/mark-as-settled/'
                         + byUser
                         + '/'
-                        + settlementDebtId
-                    ),
-                )
-            );
-    }
+                        + settlementDebtId,
+          ),
+        ),
+      );
+  }
 
-    public markAsUnSettled (
-        settlementDebtId: number,    
-        byUser: number,
-    ) {
-        return combineLatest([
-            this.routingService.getOwnerKey(),
-            this.routingService.getNamespaceId()
-        ])
-            .pipe(
-                mergeMap(([ownerKey, namespaceId]) => this
-                    .http.get<void>(
-                        this.config.getConfig().middlewareUrl 
+  public markAsUnSettled (
+    settlementDebtId: number,
+    byUser: number,
+  ) {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => this
+          .http.get<void>(
+            this.config.getConfig().middlewareUrl
                         + '/'
                         + ownerKey
-                        + "/namespace/"
+                        + '/namespace/'
                         + namespaceId
                         + '/settle/mark-as-unsettled/'
                         + byUser
                         + '/'
-                        + settlementDebtId
-                    ),
-                )
-            );
-    }
+                        + settlementDebtId,
+          ),
+        ),
+      );
+  }
 }
