@@ -149,6 +149,24 @@ export const MOCK_FNS = {
 
     return mNamespace;
   },
+  acceptInvitation: async (
+    invitationKey: string,
+    owenrId: number,
+    username: string,
+  ) => {
+    const mNamespace = await BACKDOOR_ACTIONS.query(
+      DATA_PROVIDER_URL,
+      `
+    call acceptInvitation(
+      '${invitationKey}',
+      ${owenrId},
+      '${username}'
+    );
+    `,
+    );
+
+    return mNamespace;
+  },
   login: async (
     ownerUsername: string,
     ownerPassword: string,

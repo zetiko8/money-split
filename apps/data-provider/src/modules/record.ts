@@ -1,32 +1,32 @@
 import { Record, RecordData } from '@angular-monorepo/entities';
-import { insertSql, mysqlDate, selectOneWhereSql, selectWhereSql } from '../connection/helper';
+import { jsonProcedure, mysqlDate, selectOneWhereSql, selectWhereSql } from '../connection/helper';
 import { EntityPropertyType, RecordEntity } from '../types';
-import { lastInsertId, query } from '../connection/connection';
-import { asyncMap } from '../helpers';
+import { query } from '../connection/connection';
+import { appErrorWrap, asyncMap } from '../helpers';
 
 export const RECORD_SERVICE = {
   addRecord: async (
     namespaceId: number,
     userId: number,
     data: RecordData,
-  ) => {
-    await query(insertSql(
-      'Record',
-      RecordEntity,
-      {
-        created: new Date(),
-        edited: new Date(),
-        createdBy: userId,
-        editedBy: userId,
-        data,
-        namespaceId,
-        settlementId: null,
-      },
-    ));
+    ownerId: number,
+  ): Promise<Record> => {
+    return await appErrorWrap('acceptInvitation', async () => {
+      const res = await jsonProcedure<Record>(
+        `
+        call addRecord(
+          '${namespaceId}',
+          ${ownerId},
+          ${userId},
+          '${JSON.stringify(data)}'
+        );
+        `,
+      );
 
-    const recordId = await lastInsertId();
+      res.data = JSON.parse(res.data as unknown as string);
 
-    return RECORD_SERVICE.getRecordById(recordId);
+      return res;
+    });
   },
   editRecord: async (
     userId: number,

@@ -10,12 +10,13 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
-import { VALIDATE, asyncMap, numberRouteParam, parseNumberRouteParam, registerRoute } from '../helpers';
+import { VALIDATE, asyncMap, numberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
 import {
   acceptInvitationApi,
+  addRecordApi,
   createInvitationApi,
   createNamespaceApi,
   getInvitationViewApi,
@@ -125,7 +126,7 @@ registerRoute(
   async (payload, params, context) => {
 
     return await NAMESPACE_SERVICE.getNamespaceViewForOwner(
-      parseNumberRouteParam(params.namespaceId),
+      Number(params.namespaceId),
       context.owner.id,
     );
   },
@@ -245,26 +246,36 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
-mainRouter.post('/:ownerKey/namespace/:namespaceId/:userId/add',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<RecordData>,
-    res,
-    next,
-  ) => {
-    try {
-      await getOwnerFromToken(req);
-      const record = await RECORD_SERVICE.addRecord(
-        Number(req.params['namespaceId'] as string),
-        Number(req.params['userId']),
-        req.body,
-      );
-
-      res.json(record);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  addRecordApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.benefitors) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.benefitors.length)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.benefitors.every(b => Number.isInteger(b)))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.paidBy) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.paidBy.length) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.paidBy.every(b => Number.isInteger(b)))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.cost) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (typeof payload.cost !== 'number')
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.currency)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (typeof payload.currency !== 'string')
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    return await await RECORD_SERVICE.addRecord(
+      Number(params.namespaceId),
+      Number(params.userId),
+      payload,
+      context.owner.id,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
   logRequestMiddleware(),
