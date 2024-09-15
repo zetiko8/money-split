@@ -221,6 +221,8 @@ cyBackdoorRouter.post('/sql',
 
       res.json(result);
     } catch (error) {
+      console.log('FAILED BACKDOOR QUERY');
+      console.log(req.body.sql);
       next(error);
     }
   });
