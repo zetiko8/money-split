@@ -431,13 +431,9 @@ const multerStorage = multer.diskStorage({
     cb(null, path.join(__dirname, 'assets'));
   },
   filename: function (req, file, cb) {
-    console.log(file);
     const uniqueSuffix
       = Date.now()
         + '-' + Math.round(Math.random() * 1E9);
-    console.log(
-      file.originalname.split('.')[1],
-    );
     cb(
       null,
       uniqueSuffix + '.' +
