@@ -1,21 +1,8 @@
 import { Invitation, InvitationViewData, Owner } from '@angular-monorepo/entities';
-import { errorFirstProcedure, jsonProcedure, selectOneWhereSql } from '../connection/helper';
-import { EntityPropertyType, InvitationEntity } from '../types';
+import { errorFirstProcedure, jsonProcedure } from '../connection/helper';
 import { randomUUID } from 'crypto';
 import { sendMail } from './email';
 import { appError, appErrorWrap } from '../helpers';
-
-async function getInvitationByKey (
-  invitationKey: string,
-) {
-  return await selectOneWhereSql<Invitation>(
-    'Invitation',
-    'invitationKey',
-    EntityPropertyType.NON_EMPTY_STRING,
-    invitationKey,
-    InvitationEntity,
-  );
-}
 
 async function getInvitationViewData (
   invitationKey: string,
@@ -96,6 +83,5 @@ export async function inviteToNamespace (
 export const INVITATION_SERVICE = {
   acceptInvitation,
   getInvitationViewData,
-  getInvitationByKey,
   inviteToNamespace,
 };

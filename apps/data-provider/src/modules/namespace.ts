@@ -14,8 +14,8 @@ import {
   User,
 } from '@angular-monorepo/entities';
 import { query } from '../connection/connection';
-import { insertSql, jsonProcedure, selectOneWhereSql, selectWhereSql } from '../connection/helper';
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity, NamespaceOwnerEntity, SettlementEntity } from '../types';
+import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../connection/helper';
+import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../types';
 import { USER_SERVICE } from './user';
 import { RECORD_SERVICE } from './record';
 import { appError, appErrorWrap, asyncMap } from '../helpers';
@@ -45,17 +45,6 @@ async function getNamespaceById (
     id,
     MNamespaceEntity,
   );
-}
-
-export async function addOwnerToNamespace (
-  ownerId: number,
-  namespaceId: number,
-) {
-  await query(insertSql(
-    'NamespaceOwner',
-    NamespaceOwnerEntity,
-    { ownerId, namespaceId },
-  ));
 }
 
 async function createNamespace (
@@ -252,7 +241,6 @@ export const NAMESPACE_SERVICE = {
     );
   },
   createNamespace,
-  addOwnerToNamespace,
   getNamespaceViewForOwner,
   getNamespaceById,
   getNamespacesForOwner,

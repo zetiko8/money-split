@@ -1,29 +1,7 @@
 import { User } from '@angular-monorepo/entities';
-import { lastInsertId, query } from '../connection/connection';
-import { insertSql, selectOneWhereSql } from '../connection/helper';
+import { query } from '../connection/connection';
+import { selectOneWhereSql } from '../connection/helper';
 import { EntityPropertyType, UserEntity } from '../types';
-import { OWNER_SERVICE } from './owners';
-
-export async function createUser (
-  name: string,
-  namespaceId: number,
-  ownerId: number,
-): Promise<User> {
-
-  const owner = await OWNER_SERVICE.getOwnerById(ownerId);
-
-  await query(insertSql(
-    'User',
-    UserEntity,
-    { name, ownerId, namespaceId, avatarId: owner.avatarId },
-  ));
-
-  const id = await lastInsertId();
-
-  const user = await getUserById(id);
-
-  return user;
-}
 
 async function getUserById (
   id: number,
@@ -50,7 +28,6 @@ async function updateUserAvatar(
 }
 
 export const USER_SERVICE = {
-  createUser,
   getNamespaceOwnerUsers: async (
     ownerId: number,
     namespaceId: number,

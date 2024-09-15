@@ -4,7 +4,6 @@ import { TypedRequestBody } from '../types';
 import { query } from '../connection/connection';
 import { ERROR_CODE, EditProfileData, MNamespace, Owner, RecordData, RecordView, SettlePayload } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
-import { createUser } from '../modules/user';
 import { RECORD_SERVICE } from '../modules/record';
 import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
@@ -205,30 +204,6 @@ registerRoute(
   },
   AUTH_SERVICE.auth,
 );
-
-// TODO - check if it is used
-mainRouter.post('/:ownerKey/namespace/:namespaceId/user',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<{ name: string }>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = (await query<Owner>(`
-    SELECT * FROM \`Owner\`
-    WHERE \`key\` = "${req.params['ownerKey'] as string}"
-    `))[0];
-      const mNamaespace = await createUser(
-        req.body.name,
-        Number(req.params['namespaceId'] as string),
-        owner.id,
-      );
-      res.json(mNamaespace);
-    } catch (error) {
-      next(error);
-    }
-  });
 
 registerRoute(
   createInvitationApi(),
