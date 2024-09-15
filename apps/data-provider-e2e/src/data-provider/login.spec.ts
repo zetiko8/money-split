@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { BACKDOOR_ACTIONS } from '@angular-monorepo/backdoor';
+import { TestOwner } from '@angular-monorepo/backdoor';
 
 const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
 const API_NAME = '/login';
@@ -9,38 +9,13 @@ const API_NAME = '/login';
 describe(API_NAME, () => {
 
   beforeAll(async () => {
-    try {
-      await BACKDOOR_ACTIONS.deleteOwner(
-        DATA_PROVIDER_URL,
-        'testusername',
-      );
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-
-    try {
-      await BACKDOOR_ACTIONS.registerOwner(
-        DATA_PROVIDER_URL,
-        'testusername',
-        'testpassword',
-      );
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-  });
-
-  afterAll(async () => {
-    try {
-      await BACKDOOR_ACTIONS.deleteOwner(
-        DATA_PROVIDER_URL,
-        'testusername',
-      );
-
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
+    const testOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'testusername',
+      'testpassword',
+    );
+    await testOwner.dispose();
+    await testOwner.register();
   });
 
   it('smoke', async () => {

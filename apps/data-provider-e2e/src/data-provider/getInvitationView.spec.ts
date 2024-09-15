@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, TestContext, fnCall, smoke } from '../test-helpers';
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { ERROR_CODE, Invitation } from '@angular-monorepo/entities';
 import { getInvitationViewApi } from '@angular-monorepo/api-interface';
+import { TestOwner } from '@angular-monorepo/backdoor';
 
 const api = getInvitationViewApi();
 const API_NAME = api.ajax.method
@@ -9,65 +10,56 @@ const API_NAME = api.ajax.method
 
 describe(API_NAME, () => {
   let namespaceId!: number;
-  let invitationKey!: string;
-  let inviterTestContext: TestContext;
-  let invitedTestContext: TestContext;
+  let testOwner!: TestOwner;
+  let creatorOwner!: TestOwner;
+  let invitation!: Invitation;
   beforeEach(async () => {
     try {
-      inviterTestContext = new TestContext();
-      await inviterTestContext
-        .deleteOwner('testowner');
-      await inviterTestContext
-        .deleteOwner('invitedowner');
-      await inviterTestContext
-        .registerOwner('testowner', 'testpassword');
-      await inviterTestContext
-        .createNamespace('testnamespace');
-      await inviterTestContext
-        .inviteOwnerToNamespace(0, 'test@email.com');
-
-      const invitation = inviterTestContext.namespaces[0].invitations[0];
-      invitedTestContext = invitation.ownerTestContext;
-      await invitedTestContext
-        .registerOwner('invitedowner', 'testpassword');
-      await invitedTestContext.login();
-
-      namespaceId = inviterTestContext.namespaces[0].namespaceId;
-      invitationKey = invitation.invitationKey;
+      creatorOwner = new TestOwner(
+        DATA_PROVIDER_URL,
+        'creator',
+        'testpassword',
+      );
+      await creatorOwner.dispose();
+      await creatorOwner.register();
+      const namespace = await creatorOwner.createNamespace('testnamespace');
+      namespaceId = namespace.id;
+      invitation =
+        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+      testOwner = new TestOwner(
+        DATA_PROVIDER_URL,
+        'invitedowner',
+        'testpassword,',
+      );
+      await testOwner.dispose();
+      await testOwner.register();
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
     }
   });
 
-  afterEach(async () => {
-    try {
-      await inviterTestContext.deleteNamespaces();
-    } catch (error) {
-      throw Error('afterEach error: ' + error.message);
-    }
-  });
-
   it('smoke', async () => {
     await smoke(API_NAME, async () => await axios.get(
-      `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}`,
+      `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
     ));
   });
   it('not found invitation key', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}`,
-        invitedTestContext.authHeaders()))
+        testOwner.authHeaders(),
+      ))
       .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
   });
   it('throws 401 with invalid token', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}`,
+        `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}`,
+        `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
         {
           headers: {
             'Authorization': 'Bearer invalid',
@@ -79,8 +71,9 @@ describe(API_NAME, () => {
   it('returns an invitationView', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}`,
-        invitedTestContext.authHeaders()))
+        `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
+        testOwner.authHeaders()),
+    )
       .result((result => {
         expect(result).toEqual({
           accepted: false,
@@ -89,9 +82,9 @@ describe(API_NAME, () => {
           email: 'test@email.com',
           created: expect.any(String),
           edited: expect.any(String),
-          createdBy: inviterTestContext.ownerId,
-          editedBy: inviterTestContext.ownerId,
-          invitationKey: invitationKey,
+          createdBy: creatorOwner.owner.id,
+          editedBy: creatorOwner.owner.id,
+          invitationKey: invitation.invitationKey,
           namespace: {
             id: namespaceId,
             name: 'testnamespace',

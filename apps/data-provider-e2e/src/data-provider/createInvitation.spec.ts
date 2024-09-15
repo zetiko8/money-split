@@ -1,42 +1,38 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, TestContext, fnCall, queryDb, smoke } from '../test-helpers';
+import { DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { createInvitationApi } from '@angular-monorepo/api-interface';
+import { TestOwner } from '@angular-monorepo/backdoor';
 
 const api = createInvitationApi();
 const API_NAME = api.ajax.method
   + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
+  let testOwner!: TestOwner;
+  let otherOwner!: TestOwner;
+  let namespaceId!: number;
   let ownerKey!: string;
   let ownerId!: number;
-  let token!: string;
-  let namespaceId!: number;
-  let testContext: TestContext;
-  beforeAll(async () => {
-    try {
-      testContext = new TestContext();
-      await testContext.deleteOwner('testowner');
-      await testContext
-        .registerOwner('testowner', 'testpassword');
-      await testContext.createNamespace('testnamespace');
-      await testContext.login();
-
-      ownerKey = testContext.ownerKey;
-      ownerId = testContext.ownerId;
-      token = testContext.token;
-      namespaceId = testContext.namespaces[0].namespaceId;
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-  });
-
   beforeEach(async () => {
-    try {
-      await testContext.deleteNamespaces();
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
+    testOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'testowner',
+      'testpassword',
+    );
+    await testOwner.dispose();
+    await testOwner.register();
+    otherOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'otherOwner',
+      'testpassword',
+    );
+    await otherOwner.dispose();
+    await otherOwner.register();
+    const namespace = await testOwner.createNamespace('testnamespace1');
+    namespaceId = namespace.id;
+    ownerKey = testOwner.owner.key;
+    ownerId = testOwner.owner.id;
   });
 
   it('smoke', async () => {
@@ -49,11 +45,7 @@ describe(API_NAME, () => {
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/invite`,
         {},
-        {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          },
-        }))
+        testOwner.authHeaders()))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   it('requires email to be a string', async () => {
@@ -63,11 +55,7 @@ describe(API_NAME, () => {
         {
           email: 2,
         },
-        {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          },
-        }))
+        testOwner.authHeaders()))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   it.todo('requires email to be a valid email');
@@ -97,11 +85,7 @@ describe(API_NAME, () => {
         {
           email: 'test.email@test.com',
         },
-        {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-          },
-        },
+        testOwner.authHeaders(),
       ))
       .result((result => {
         expect(result).toEqual({
@@ -125,7 +109,7 @@ describe(API_NAME, () => {
         {
           email: 'test.email@test.com',
         },
-        testContext.authHeaders(),
+        testOwner.authHeaders(),
       ))
       .result((() => {}));
     await fnCall(API_NAME,
@@ -134,7 +118,7 @@ describe(API_NAME, () => {
         {
           email: 'test.email@test.com',
         },
-        testContext.authHeaders(),
+        testOwner.authHeaders(),
       )).throwsError('RESOURCE_ALREADY_EXISTS');
   });
   it.todo('sends an invitation email');
@@ -147,7 +131,7 @@ describe(API_NAME, () => {
           {
             email: 'test.email@test.com',
           },
-          testContext.authHeaders(),
+          testOwner.authHeaders(),
         ))
         .result((async res => {
           invitationId = res.id;

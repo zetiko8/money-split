@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, TestContext, fnCall, queryDb, smoke } from '../test-helpers';
+import { DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { acceptInvitationApi } from '@angular-monorepo/api-interface';
+import { TestOwner } from '@angular-monorepo/backdoor';
 
 const api = acceptInvitationApi();
 const API_NAME = api.ajax.method
@@ -9,41 +10,32 @@ const API_NAME = api.ajax.method
 
 describe(API_NAME, () => {
   let namespaceId!: number;
+  let testOwner!: TestOwner;
+  let creatorOwner!: TestOwner;
   let invitationKey!: string;
-  let inviterTestContext: TestContext;
-  let invitedTestContext: TestContext;
   beforeEach(async () => {
     try {
-      inviterTestContext = new TestContext();
-      await inviterTestContext
-        .deleteOwner('testowner');
-      await inviterTestContext
-        .deleteOwner('invitedowner');
-      await inviterTestContext
-        .registerOwner('testowner', 'testpassword');
-      await inviterTestContext
-        .createNamespace('testnamespace');
-      await inviterTestContext
-        .inviteOwnerToNamespace(0, 'test@email.com');
-
-      const invitation = inviterTestContext.namespaces[0].invitations[0];
-      invitedTestContext = invitation.ownerTestContext;
-      await invitedTestContext
-        .registerOwner('invitedowner', 'testpassword');
-      await invitedTestContext.login();
-
-      namespaceId = inviterTestContext.namespaces[0].namespaceId;
+      creatorOwner = new TestOwner(
+        DATA_PROVIDER_URL,
+        'creator',
+        'testpassword',
+      );
+      await creatorOwner.dispose();
+      await creatorOwner.register();
+      const namespace = await creatorOwner.createNamespace('testnamespace');
+      namespaceId = namespace.id;
+      const invitation =
+        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
       invitationKey = invitation.invitationKey;
+      testOwner = new TestOwner(
+        DATA_PROVIDER_URL,
+        'invitedowner',
+        'testpassword,',
+      );
+      await testOwner.dispose();
+      await testOwner.register();
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
-    }
-  });
-
-  afterEach(async () => {
-    try {
-      await inviterTestContext.deleteNamespaces();
-    } catch (error) {
-      throw Error('afterEach error: ' + error.message);
     }
   });
 
@@ -57,7 +49,7 @@ describe(API_NAME, () => {
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
         {},
-        invitedTestContext.authHeaders()))
+        testOwner.authHeaders()))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   it('requires name to be a string', async () => {
@@ -65,7 +57,7 @@ describe(API_NAME, () => {
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
         { name: 3 },
-        invitedTestContext.authHeaders()))
+        testOwner.authHeaders()))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   it('not found invitation key', async () => {
@@ -73,7 +65,7 @@ describe(API_NAME, () => {
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}/accept`,
         { name: 'invitedowner' },
-        invitedTestContext.authHeaders()))
+        testOwner.authHeaders()))
       .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
   });
   it('throws 401 with invalid token', async () => {
@@ -100,7 +92,7 @@ describe(API_NAME, () => {
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
         { name: 'invitedowner' },
-        invitedTestContext.authHeaders()))
+        testOwner.authHeaders()))
       .result((result => {
         expect(result).toEqual({
           namespaceId: namespaceId,
@@ -110,8 +102,8 @@ describe(API_NAME, () => {
           email: 'test@email.com',
           created: expect.any(String),
           edited: expect.any(String),
-          createdBy: inviterTestContext.ownerId,
-          editedBy: invitedTestContext.ownerId,
+          createdBy: creatorOwner.owner.id,
+          editedBy: testOwner.owner.id,
           invitationKey: invitationKey,
         });
       }));
@@ -125,7 +117,7 @@ describe(API_NAME, () => {
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
           { name: 'inviteduser' },
-          invitedTestContext.authHeaders()))
+          testOwner.authHeaders()))
         .result((async res => {
           invitationId = res.id;
         }));
@@ -145,8 +137,8 @@ describe(API_NAME, () => {
         email: 'test@email.com',
         created: expect.any(String),
         edited: expect.any(String),
-        createdBy: inviterTestContext.ownerId,
-        editedBy: invitedTestContext.ownerId,
+        createdBy: creatorOwner.owner.id,
+        editedBy: testOwner.owner.id,
         invitationKey: expect.any(String),
       });
       expect(response).toHaveLength(1);
@@ -156,12 +148,12 @@ describe(API_NAME, () => {
         `
         SELECT * FROM NamespaceOwner
         WHERE namespaceId = ${namespaceId}
-        AND ownerId = ${invitedTestContext.ownerId}
+        AND ownerId = ${testOwner.owner.id}
         `,
       );
       expect(response[0]).toEqual({
         namespaceId: namespaceId,
-        ownerId: invitedTestContext.ownerId,
+        ownerId: testOwner.owner.id,
       });
       expect(response).toHaveLength(1);
     });
@@ -170,12 +162,12 @@ describe(API_NAME, () => {
         `
         SELECT * FROM \`User\`
         WHERE namespaceId = ${namespaceId}
-        AND ownerId = ${invitedTestContext.ownerId}
+        AND ownerId = ${testOwner.owner.id}
         `,
       );
       expect(response[0]).toEqual({
         namespaceId: namespaceId,
-        ownerId: invitedTestContext.ownerId,
+        ownerId: testOwner.owner.id,
         avatarId: expect.any(Number),
         id: expect.any(Number),
         name: 'inviteduser',
