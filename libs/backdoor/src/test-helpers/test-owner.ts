@@ -143,7 +143,7 @@ export class TestOwner {
 
   async dispose () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const owner: any = await BACKDOOR_ACTIONS.query(
+    const ownerArr: any = await BACKDOOR_ACTIONS.query(
       this.DATA_PROVIDER_URL,
       `
       SELECT * FROM \`Owner\`
@@ -151,10 +151,10 @@ export class TestOwner {
       `,
     );
 
-    if (!owner || !owner.length) return;
+    if (!ownerArr || !ownerArr.length) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ownerId = (owner as any)[0].id as number;
+    const owner = (ownerArr as unknown as Owner[])[0] as Owner;
+    const ownerId = owner.id;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const namespaces: any = await BACKDOOR_ACTIONS.query(
@@ -215,6 +215,14 @@ export class TestOwner {
           `
           DELETE FROM \`User\`
           WHERE \`namespaceId\` = ${ns.namespaceId}
+          `,
+        );
+
+        await BACKDOOR_ACTIONS.query(
+          this.DATA_PROVIDER_URL,
+          `
+          DELETE FROM \`Avatar\`
+          WHERE \`id\` = ${owner.avatarId}
           `,
         );
 
