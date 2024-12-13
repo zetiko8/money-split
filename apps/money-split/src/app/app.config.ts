@@ -38,7 +38,7 @@ export const appConfig: ApplicationConfig = {
       deps: [PlatformLocation],
     },
     importProvidersFrom(
-      InternationalizationModule.forRoot(),      
+      InternationalizationModule.forRoot(),
     ),
     {
       provide: ErrorHandler,
