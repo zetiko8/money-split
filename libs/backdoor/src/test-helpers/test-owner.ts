@@ -156,92 +156,13 @@ export class TestOwner {
     const owner = (ownerArr as unknown as Owner[])[0] as Owner;
     const ownerId = owner.id;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const namespaces: any = await BACKDOOR_ACTIONS.query(
-      this.DATA_PROVIDER_URL,
-      `
-      SELECT * FROM \`NamespaceOwner\`
-      WHERE \`ownerId\` = ${ownerId} 
-      `,
-    );
-
-    if (namespaces && namespaces.length) {
-      for (const ns of namespaces) {
-
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`NamespaceOwner\`
-          WHERE \`ownerId\` = ${ownerId}
-          OR \`namespaceId\` = ${ns.namespaceId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`Invitation\`
-          WHERE \`namespaceId\` = ${ns.namespaceId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`Record\`
-          WHERE \`namespaceId\` = ${ns.namespaceId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`Settlement\`
-          WHERE \`namespaceId\` = ${ns.namespaceId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`SettlementDebt\`
-          WHERE \`namespaceId\` = ${ns.namespaceId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`User\`
-          WHERE \`namespaceId\` = ${ns.namespaceId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`Avatar\`
-          WHERE \`id\` = ${owner.avatarId}
-          `,
-        );
-
-        await BACKDOOR_ACTIONS.query(
-          this.DATA_PROVIDER_URL,
-          `
-          DELETE FROM \`Namespace\`
-          WHERE \`id\` = ${ns.namespaceId}
-          `,
-        );
-      }
-    };
-
     await BACKDOOR_ACTIONS.query(
       this.DATA_PROVIDER_URL,
       `
-      DELETE FROM \`Owner\`
-      WHERE \`id\` = ${ownerId}
+      call testDispose(${ownerId})
       `,
     );
+
+    return;
   }
 }
