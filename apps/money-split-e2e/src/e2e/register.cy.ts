@@ -1,10 +1,17 @@
-import { ACTIONS } from '../support/actions';
+import { TestOwner } from '@angular-monorepo/backdoor';
 import { APP, REGISTER_FORM } from '../support/app.po';
+
+const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
 
 describe('Register Component', () => {
 
-  beforeEach(() => {
-    ACTIONS.deleteOwner('testuser');
+  beforeEach(async () => {
+    const testOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'testuser',
+      'testpassword',
+    );
+    await testOwner.dispose();
   });
 
   it('displays the register form', () => {
@@ -34,9 +41,6 @@ describe('Register Component', () => {
     REGISTER_FORM.register('testuser', 'testpassword');
     cy.url()
       .should('contain', 'login');
-
-    ACTIONS.deleteOwner('testuser');
-
   });
 
   it('does not register a user with an username that already exists', () => {
