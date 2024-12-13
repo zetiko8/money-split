@@ -34,14 +34,14 @@ export class InvitationView {
   public readonly userService = inject(UserService);
 
   public readonly loadProcess = new ImprovedProcess(
-    () => this.invitationService.getInvitationView() 
-  )
+    () => this.invitationService.getInvitationView(),
+  );
   public readonly acceptProcess = new ImprovedProcess(
-    (name: string) => this.invitationService.acceptInvitation(name) 
-  )
+    (name: string) => this.invitationService.acceptInvitation(name),
+  );
   public readonly rejectProcess = new ImprovedProcess(
-    () => this.invitationService.rejectInvitation() 
-  )
+    () => this.invitationService.rejectInvitation(),
+  );
 
   public readonly isLoading = combineLoaders([
     this.loadProcess.inProgress$,
@@ -49,18 +49,18 @@ export class InvitationView {
     this.rejectProcess.inProgress$,
   ]);
 
-  public readonly notification$: Observable<Notification> 
+  public readonly notification$: Observable<Notification>
     = merge(
       this.loadProcess.error$,
       this.acceptProcess.error$,
       this.rejectProcess.error$,
-    ) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+    )
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   public readonly form = new FormGroup({
     name: new FormControl<string>('', Validators.required),
