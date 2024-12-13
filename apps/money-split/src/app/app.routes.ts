@@ -16,78 +16,78 @@ import { HomeView } from './modules/home/home.view';
 import { HomeGuard } from './services/guards/HomeGuard';
 
 export const appRoutes: Route[] = [
-    {
-        path: '',
-        component: HomeView,
-        canActivate: [
-            HomeGuard,
-        ],
-    },
-    {
-        path: 'login',
-        component: LoginView,
-    },
-    {
-        path: 'register',
-        component: RegisterView,
-    },
-    {
-        path: 'invitation',
+  {
+    path: '',
+    component: HomeView,
+    canActivate: [
+      HomeGuard,
+    ],
+  },
+  {
+    path: 'login',
+    component: LoginView,
+  },
+  {
+    path: 'register',
+    component: RegisterView,
+  },
+  {
+    path: 'invitation',
+    children: [
+      {
+        path: ':invitationKey',
         children: [
-            {
-                path: ':invitationKey',
-                children: [
-                    {
-                        path: 'join',
-                        component: InvitationView,
-                    },
-                    {
-                        path: 'login',
-                        component: InvitationLoginView,
-                    },
-                    {
-                        path: 'register',
-                        component: InvitationRegisterView,
-                    },
-                ]
-            }
-        ]
-    },
-    {
-        path: ':ownerKey',
-        children: [
-            {
-                path: 'new',
-                component: NewNamespaceView,
-            },
-            {
-                path: 'realm',
-                component: OwnerRealmView,
-            },
-            {
-                path: 'namespace/:namespaceId',
-                component: NamespaceView,
-            },
-            {
-                path: 'namespace/:namespaceId/add',
-                component: AddExpenseView,
-            },
-            {
-                path: 'namespace/:namespaceId/invite',
-                component: InviteView,
-            },
-            {
-                path: 'namespace/:namespaceId/settle',
-                component: SettleView,
-            },
-            {
-                path: 'namespace/:namespaceId/edit/:recordId',
-                component: EditRecordView,
-            },
-            {
-                path: 'profile',
-                component: EditProfileView,
-            },
+          {
+            path: 'join',
+            component: InvitationView,
+          },
+          {
+            path: 'login',
+            component: InvitationLoginView,
+          },
+          {
+            path: 'register',
+            component: InvitationRegisterView,
+          },
         ],
-    },
+      },
+    ],
+  },
+  {
+    path: ':ownerKey',
+    children: [
+      {
+        path: 'new',
+        component: NewNamespaceView,
+      },
+      {
+        path: 'realm',
+        component: OwnerRealmView,
+      },
+      {
+        path: 'namespace/:namespaceId',
+        component: NamespaceView,
+      },
+      {
+        path: 'namespace/:namespaceId/add',
+        component: AddExpenseView,
+      },
+      {
+        path: 'namespace/:namespaceId/invite',
+        component: InviteView,
+      },
+      {
+        path: 'namespace/:namespaceId/settle',
+        component: SettleView,
+      },
+      {
+        path: 'namespace/:namespaceId/edit/:recordId',
+        component: EditRecordView,
+      },
+      {
+        path: 'profile',
+        component: EditProfileView,
+      },
+    ],
+  },
 ];

@@ -8,7 +8,7 @@ import { RoutingService } from '../routing/routing.service';
 @Injectable()
 export class HomeGuard implements CanActivate, CanActivateChild {
   constructor(
-    public auth: AuthService, 
+    public auth: AuthService,
     public router: Router,
     private routingService: RoutingService,
   ) {}
