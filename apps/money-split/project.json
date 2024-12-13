@@ -56,7 +56,8 @@
           "buildTarget": "money-split:build:production"
         },
         "development": {
-          "buildTarget": "money-split:build:development"
+          "buildTarget": "money-split:build:development",
+          "host": "127.0.0.1"
         }
       },
       "defaultConfiguration": "development"
