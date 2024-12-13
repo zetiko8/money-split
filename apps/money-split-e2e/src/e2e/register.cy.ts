@@ -1,7 +1,7 @@
 import { TestOwner } from '@angular-monorepo/backdoor';
 import { APP, REGISTER_FORM } from '../support/app.po';
 
-const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
+const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
 
 describe('Register Component', () => {
 
