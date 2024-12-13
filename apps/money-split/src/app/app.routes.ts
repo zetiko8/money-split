@@ -14,6 +14,7 @@ import { EditRecordView } from './modules/namespace/views/edit-record/edit-recor
 import { SettleView } from './modules/namespace/views/settle/settle.view';
 import { HomeView } from './modules/home/home.view';
 import { HomeGuard } from './services/guards/HomeGuard';
+import { AuthGuard } from './services/guards/AuthGuard';
 
 export const appRoutes: Route[] = [
   {
@@ -55,6 +56,8 @@ export const appRoutes: Route[] = [
   },
   {
     path: ':ownerKey',
+    canActivate: [ AuthGuard ],
+    canActivateChild: [ AuthGuard],
     children: [
       {
         path: 'new',

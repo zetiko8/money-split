@@ -14,6 +14,7 @@ import { DisplayErrorService, GlobalErrorHandlerService } from './services/globa
 import { RoutingService } from './services/routing/routing.service';
 import { AvatarService } from './services/avatar.service';
 import { HomeGuard } from './services/guards/HomeGuard';
+import { AuthGuard } from './services/guards/AuthGuard';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -55,6 +56,7 @@ export const appConfig: ApplicationConfig = {
     RoutingService,
     AvatarService,
     HomeGuard,
+    AuthGuard,
   ],
 };
 
