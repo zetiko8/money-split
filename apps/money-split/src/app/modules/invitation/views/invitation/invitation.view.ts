@@ -9,7 +9,7 @@ import { RoutingService } from '../../../../services/routing/routing.service';
 import { InvitationService } from '../../services/invitation.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ImprovedProcess, combineLoaders } from '../../../../../helpers';
-import { UserService } from 'apps/money-split/src/app/services/auth/token/auth.token.user.service';
+import { UserService } from '../../../../services/auth/token/auth.token.user.service';
 
 @Component({
   standalone: true,
