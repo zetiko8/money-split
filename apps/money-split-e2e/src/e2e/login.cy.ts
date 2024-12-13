@@ -1,11 +1,18 @@
-import { ACTIONS } from '../support/actions';
+import { TestOwner } from '@angular-monorepo/backdoor';
 import { LOGIN_FORM } from '../support/app.po';
 
+const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+
 describe('Login', () => {
-  beforeEach(() => {
-    ACTIONS.deleteOwner('testuser');
-    cy.visit('/login'); // replace with the actual path to your login page
-    ACTIONS.registerOwner('testuser', 'testpassword');
+  beforeEach(async () => {
+    const testOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'testuser',
+      'testpassword',
+    );
+    await testOwner.dispose();
+    await testOwner.register();
+    cy.visit('/login');
   });
 
   it('should login with valid credentials', () => {
