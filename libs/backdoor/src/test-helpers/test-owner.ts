@@ -40,6 +40,8 @@ export class TestOwner {
     );
 
     this.token = res.data.token;
+
+    return this.token;
   }
 
   async createNamespace (

@@ -1,3 +1,4 @@
+import { TestOwner } from '@angular-monorepo/backdoor';
 import { Invitation, MNamespace, Owner, Record, RecordDataCy } from '@angular-monorepo/entities';
 
 export function getRandomColor () {
@@ -55,6 +56,14 @@ export const ACTIONS = {
       cy.window().then(win => {
         win.localStorage.setItem('token', res.body.token);
       });
+    });
+  },
+  loginTestOwner: async (
+    testOwner: TestOwner,
+  ) => {
+    const token = await testOwner.login();
+    cy.window().then(win => {
+      win.localStorage.setItem('token', token);
     });
   },
   logout () {
