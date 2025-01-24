@@ -1,33 +1,27 @@
-import { Owner } from '@angular-monorepo/entities';
-import { prepareRealm } from '../support/prepare';
 import { CREATE_NAMESPACE_FORM, NAMESPACE_SCREEN, REALM_SCREEN } from '../support/app.po';
 import { ACTIONS } from '../support/actions';
+import { TestOwner } from '@angular-monorepo/backdoor';
+
+const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
 
 describe('Create a namespace', () => {
 
   describe('create a namespace',() => {
-    let owner!: Owner;
+    let testOwner!: TestOwner;
 
-    const scenario = prepareRealm(
-      {  username: 'testuser'},
-    );
-
-    before(() => {
-      ACTIONS.deleteNamespaceByName('testnamespace');
-      scenario
-        .before()
-        .then(data => {
-          owner = data.owner;
-        });
-    });
-
-    after(() => {
-      scenario.after();
-      ACTIONS.deleteNamespaceByName('testnamespace');
+    before(async () => {
+      testOwner = new TestOwner(
+        DATA_PROVIDER_URL,
+        'testowner',
+        'testpassword',
+      );
+      await testOwner.dispose();
+      await testOwner.register();
+      await ACTIONS.loginTestOwner(testOwner);
     });
 
     it('can create a namespace', () => {
-      REALM_SCREEN.visit(owner.key);
+      REALM_SCREEN.visit(testOwner.owner.key);
       REALM_SCREEN.goToCreateANamespace();
       CREATE_NAMESPACE_FORM.setName('testnamespace');
       CREATE_NAMESPACE_FORM.submit();
