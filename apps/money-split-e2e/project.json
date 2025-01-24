@@ -29,14 +29,18 @@
           "watch": true,
           "baseUrl": "http://localhost:4200/money-split",
           "env": {
-            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider"
+            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider",
+            "BACKDOOR_USERNAME": "admin",
+            "BACKDOOR_PASSWORD": "testadmin"
           }
         },
         "development": {
           "devServerTarget": "money-split:serve:development",
           "baseUrl": "http://localhost:4200/money-split",
           "env": {
-            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider"
+            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider",
+            "BACKDOOR_USERNAME": "admin",
+            "BACKDOOR_PASSWORD": "testadmin"
           }
         }
       }

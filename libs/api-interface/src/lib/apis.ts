@@ -9,6 +9,7 @@ import {
   OwnerProfileView,
   Record,
   RecordData,
+  RecordDataBackdoor,
   RegisterOwnerPayload,
 } from '@angular-monorepo/entities';
 import { ApiDefinition, apiDefinition } from './helpers';
@@ -162,6 +163,18 @@ export function addRecordApi() {
   });
 }
 
+export function addRecordApiBackdoor() {
+  return apiDefinition<
+  RecordDataBackdoor,
+  {
+    namespaceId: number,
+  },
+  Record>({
+    endpoint: '/backdoor/:ownerKey/namespace/:namespaceId/:userId/add',
+    method: 'POST',
+  });
+}
+
 export function editOwnerProfileApi() {
   return apiDefinition<
   EditProfileData,
@@ -180,4 +193,5 @@ export const DATA_PROVIDER_API = {
   acceptInvitationApi: new ApiDefinitionObj(acceptInvitationApi()),
   getNamespaceViewApi: new ApiDefinitionObj(getNamespaceViewApi()),
   editOwnerProfileApi: new ApiDefinitionObj(editOwnerProfileApi()),
+  addRecordApiBackdoor: new ApiDefinitionObj(addRecordApiBackdoor()),
 };

@@ -87,6 +87,17 @@ export interface RecordDataCy {
     edited: Date,
 }
 
+export interface RecordDataBackdoor {
+    benefitors: number[],
+    cost: number,
+    currency: string,
+    paidBy: number[],
+    created: Date,
+    edited: Date,
+    addingOwnerId: number,
+    addingUserId: number,
+}
+
 export interface RecordDataView {
     benefitors: User[],
     cost: number,
@@ -205,6 +216,17 @@ export interface SettlementRecord {
     settled: boolean,
     settledOn: Date,
     settledBy: User | null,
+}
+
+export enum OwnerRole {
+  'USER' = 'USER',
+  'ADMIN' = 'ADMIN',
+}
+
+export interface OwnerRoleDb {
+  id: number,
+  ownerId: number,
+  role: OwnerRole,
 }
 
 export * from './error';

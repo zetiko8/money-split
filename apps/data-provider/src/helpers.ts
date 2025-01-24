@@ -123,10 +123,6 @@ export function registerRoute <
         try {
           if (auth) {
             const owner = await auth(req);
-            if (
-              req.params['ownerKey']
-              && req.params['ownerKey'] !== owner.key
-            ) throw Error(ERROR_CODE.UNAUTHORIZED);
             const response = await implementation(
               req.body,
               req.params as Params,

@@ -1,4 +1,4 @@
-import { Record, RecordData } from '@angular-monorepo/entities';
+import { Record, RecordData, RecordDataBackdoor } from '@angular-monorepo/entities';
 import { jsonProcedure, mysqlDate, selectOneWhereSql, selectWhereSql } from '../connection/helper';
 import { EntityPropertyType, RecordEntity } from '../types';
 import { query } from '../connection/connection';
@@ -11,7 +11,7 @@ export const RECORD_SERVICE = {
     data: RecordData,
     ownerId: number,
   ): Promise<Record> => {
-    return await appErrorWrap('acceptInvitation', async () => {
+    return await appErrorWrap('addRecord', async () => {
       const res = await jsonProcedure<Record>(
         `
         call addRecord(
@@ -25,6 +25,28 @@ export const RECORD_SERVICE = {
 
       res.data = JSON.parse(res.data as unknown as string);
 
+      return res;
+    });
+  },
+  addRecordBackdoor: async (
+    namespaceId: number,
+    data: RecordDataBackdoor,
+  ): Promise<Record> => {
+    return await appErrorWrap('addRecordBackdoor', async () => {
+      const res = await jsonProcedure<Record>(
+        `
+        call addRecordBackdoor(
+          '${namespaceId}',
+          ${data.addingOwnerId},
+          ${data.addingUserId},
+          '${mysqlDate(new Date(data.created))}',
+          '${mysqlDate(new Date(data.edited))}',
+          '${JSON.stringify(data)}'
+        );
+        `,
+      );
+
+      res.data = JSON.parse(res.data as unknown as string);
       return res;
     });
   },

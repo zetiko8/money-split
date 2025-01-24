@@ -1,5 +1,5 @@
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
-import { Invitation, MNamespace, NamespaceView, Owner } from '@angular-monorepo/entities';
+import { Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataBackdoor } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { BACKDOOR_ACTIONS, getRandomColor } from './backdoor-actions';
 
@@ -7,6 +7,7 @@ export class TestOwner {
 
   public owner!: Owner;
   public token!: string;
+  public backdoorToken!: string;
   public invitations: Invitation[] = [];
 
   constructor (
@@ -42,6 +43,23 @@ export class TestOwner {
     this.token = res.data.token;
 
     return this.token;
+  }
+
+  async backdoorLogin (credentials: {
+    username: string;
+    password: string;
+  }) {
+    const res = await  axios.post<{ token: string }>(
+      this.DATA_PROVIDER_URL + '/app/login',
+      {
+        username: credentials.username,
+        password: credentials.password,
+      },
+    );
+
+    this.backdoorToken = res.data.token;
+
+    return this.backdoorToken;
   }
 
   async createNamespace (
@@ -141,6 +159,59 @@ export class TestOwner {
         'Authorization': 'Bearer ' + this.token,
       },
     };
+  }
+
+  backdoorAuthHeaders () {
+    return {
+      headers: {
+        'Authorization': 'Bearer ' + this.backdoorToken,
+      },
+    };
+  }
+
+  async addOwnerToNamespace (
+    namespaceId: number,
+    ownerToAddData: {
+      email?: string,
+      name: string,
+      password?: string,
+    },
+  ) {
+    const email = ownerToAddData.email || (ownerToAddData.name + '@test.com');
+    const pwd = ownerToAddData.password || 'testpassword';
+    const invitation =
+    await this.inviteToNamespace(email, namespaceId);
+    const owner = new TestOwner(
+      this.DATA_PROVIDER_URL,
+      ownerToAddData.name,
+      pwd,
+    );
+    await owner.dispose();
+    await owner.register();
+    await owner.acceptInvitation(ownerToAddData.name, invitation.invitationKey);
+
+    return owner;
+  }
+
+  async addRecordToNamespace (
+    namespaceId: number,
+    record: RecordDataBackdoor,
+  ) {
+    const result
+    = await DATA_PROVIDER_API.addRecordApiBackdoor.callPromise(
+      record,
+      { namespaceId },
+      async (endpoint, method, payload) => {
+        const res = await axios.post<Record>(
+          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+          payload,
+          this.backdoorAuthHeaders(),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
   }
 
   async dispose () {

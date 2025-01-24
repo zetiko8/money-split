@@ -1,5 +1,5 @@
 import { query } from '../../connection/connection';
-import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner, OwnerRole, OwnerRoleDb } from '@angular-monorepo/entities';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { ENVIRONMENT } from '../config';
@@ -34,6 +34,28 @@ async function login (
   return token;
 }
 
+export async function getOwnerRoles (
+  ownerId: number,
+): Promise<OwnerRole[]> {
+  const roles = await query<OwnerRoleDb[]>(`
+  SELECT * FROM \`OwnerRole\`
+  WHERE \`ownerId\` = ${ownerId}`);
+
+  if (!roles || !roles.length)
+    return [ OwnerRole.USER ];
+
+  return roles.map(r => r.role);
+}
+
+export async function isOwnerAdmin (
+  ownerId: number,
+): Promise<boolean> {
+
+  const roles = await getOwnerRoles(ownerId);
+
+  return roles.includes(OwnerRole.ADMIN);
+}
+
 function jwtSign (data: unknown) {
   return new Promise<string>((resolve, reject) => {
     jwt.sign(
@@ -59,6 +81,19 @@ function decodeJwt (token: string) {
   };
 }
 
+async function getOwnerFromRequest (
+  request: Request,
+) {
+  const token = request.headers.authorization
+    .split('Bearer ')[1];
+  const decoded = AUTH_SERVICE.decodeJwt(token);
+  const owner = (await query<Owner[]>(`
+  SELECT * FROM \`Owner\`
+  WHERE \`key\` = "${decoded.key}"
+  `))[0];
+  return owner;
+}
+
 export const AUTH_SERVICE = {
   login,
   decodeJwt,
@@ -78,18 +113,32 @@ export const AUTH_SERVICE = {
     request: Request,
   ) => {
     try {
-      const token = request.headers.authorization
-        .split('Bearer ')[1];
-      const decoded = AUTH_SERVICE.decodeJwt(token);
-      const owner = (await query<Owner>(`
-      SELECT * FROM \`Owner\`
-      WHERE \`key\` = "${decoded.key}"
-      `))[0];
+      const owner = await getOwnerFromRequest(request);
+      if (
+        request.params['ownerKey']
+        && request.params['ownerKey'] !== owner.key
+      ) throw Error(ERROR_CODE.UNAUTHORIZED);
       return owner;
     } catch (error) {
       throw appError(
         ERROR_CODE.UNAUTHORIZED,
         'AUTH_SERVICE.auth',
+        error,
+      );
+    }
+  },
+  backdoorAuth: async (
+    request: Request,
+  ) => {
+    try {
+      const owner = await getOwnerFromRequest(request);
+      const isAdmin = await isOwnerAdmin(owner.id);
+      if (!isAdmin) throw Error(ERROR_CODE.UNAUTHORIZED);
+      return owner;
+    } catch (error) {
+      throw appError(
+        ERROR_CODE.UNAUTHORIZED,
+        'AUTH_SERVICE.backdoorAuth',
         error,
       );
     }
@@ -103,18 +152,11 @@ export const AUTH_SERVICE = {
      */
     try {
       if (!request.headers.authorization) return;
-      const token = request.headers.authorization
-        .split('Bearer ')[1];
-      const decoded = AUTH_SERVICE.decodeJwt(token);
-      const owner = (await query<Owner>(`
-      SELECT * FROM \`Owner\`
-      WHERE \`key\` = "${decoded.key}"
-      `))[0];
-      return owner;
+      return await getOwnerFromRequest(request);
     } catch (error) {
       throw appError(
         ERROR_CODE.UNAUTHORIZED,
-        'AUTH_SERVICE.auth',
+        'AUTH_SERVICE.noAuth',
         error,
       );
     }

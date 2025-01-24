@@ -16,6 +16,7 @@ import path from 'path';
 import {
   acceptInvitationApi,
   addRecordApi,
+  addRecordApiBackdoor,
   createInvitationApi,
   createNamespaceApi,
   editOwnerProfileApi,
@@ -242,6 +243,35 @@ registerRoute(
     );
   },
   AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  addRecordApiBackdoor(),
+  mainRouter,
+  async (payload, params) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.benefitors) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.benefitors.length)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.benefitors.every(b => Number.isInteger(b)))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.paidBy) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.paidBy.length) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.paidBy.every(b => Number.isInteger(b)))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.cost) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (typeof payload.cost !== 'number')
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.currency)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (typeof payload.currency !== 'string')
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    return await RECORD_SERVICE.addRecordBackdoor(
+      Number(params.namespaceId),
+      payload,
+    );
+  },
+  AUTH_SERVICE.backdoorAuth,
 );
 
 mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
