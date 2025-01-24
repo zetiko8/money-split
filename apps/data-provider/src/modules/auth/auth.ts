@@ -94,4 +94,29 @@ export const AUTH_SERVICE = {
       );
     }
   },
+  noAuth: async (
+    request: Request,
+  ) => {
+    /**
+     * This function will still parse the token if it exists,
+     * but will not throw error if there is not token
+     */
+    try {
+      if (!request.headers.authorization) return;
+      const token = request.headers.authorization
+        .split('Bearer ')[1];
+      const decoded = AUTH_SERVICE.decodeJwt(token);
+      const owner = (await query<Owner>(`
+      SELECT * FROM \`Owner\`
+      WHERE \`key\` = "${decoded.key}"
+      `))[0];
+      return owner;
+    } catch (error) {
+      throw appError(
+        ERROR_CODE.UNAUTHORIZED,
+        'AUTH_SERVICE.auth',
+        error,
+      );
+    }
+  },
 };

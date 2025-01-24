@@ -51,6 +51,13 @@ export function fnCall (
 
       expect(errorCode).toBe(error);
     },
+    async throwsNoError () {
+      try {
+        await apiCall();
+      } catch (error) {
+        throw Error('Expected no error to have been thrown');
+      }
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async result (callback: (result: any) => void) {
       try {

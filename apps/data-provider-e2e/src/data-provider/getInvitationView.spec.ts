@@ -55,11 +55,6 @@ describe(API_NAME, () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
-      ))
-      .throwsError(ERROR_CODE.UNAUTHORIZED);
-    await fnCall(API_NAME,
-      async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
         {
           headers: {
             'Authorization': 'Bearer invalid',
@@ -67,6 +62,13 @@ describe(API_NAME, () => {
         },
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
+  });
+  it('allow unauthenticated access', async () => {
+    await fnCall(API_NAME,
+      async () => await axios.get(
+        `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
+      ))
+      .throwsNoError();
   });
   it('returns an invitationView', async () => {
     await fnCall(API_NAME,

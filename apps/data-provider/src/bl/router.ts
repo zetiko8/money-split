@@ -372,7 +372,7 @@ registerRoute(
       params.invitationKey,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_SERVICE.noAuth,
 );
 
 registerRoute(
