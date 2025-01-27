@@ -1,4 +1,4 @@
-import { settle } from ".";
+import { settle } from '.';
 
 describe('settle', () => {
   it('development case', () => {
@@ -224,7 +224,7 @@ describe('settle', () => {
     expect(debts).toEqual([
       { creditor: 1, debtor: 3, value: 6 },
       { creditor: 2, debtor: 4, value: 2 },
-      { creditor: 3, debtor: 4, value: 2 }
+      { creditor: 3, debtor: 4, value: 2 },
     ]);
   });
 });
