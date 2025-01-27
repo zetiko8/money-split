@@ -38,13 +38,13 @@ describe('settle', () => {
     expect(debts).toHaveLength(3);
     expect(debts[0].creditor).toBe(4);
     expect(debts[0].debtor).toBe(1);
-    expect(debts[0].value).toBe(0.33333333333333326);
+    expect(debts[0].value).toBe(0.33);
     expect(debts[1].creditor).toBe(4);
     expect(debts[1].debtor).toBe(2);
-    expect(debts[1].value).toBe(3.3333333333333335);
+    expect(debts[1].value).toBe(3.33);
     expect(debts[2].creditor).toBe(4);
     expect(debts[2].debtor).toBe(3);
-    expect(debts[2].value).toBe(4.833333333333334);
+    expect(debts[2].value).toBe(4.83);
   });
   it ('simple', () => {
     const debts = settle([
