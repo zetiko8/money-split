@@ -2,14 +2,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { RecordView, SettlementListView } from '@angular-monorepo/entities';
-import { AvatarComponent } from '../../../../components/avatar.component';
 import moment from 'moment';
 import { RecordItemComponent } from '../record-item/record-item.component';
 import { SettlementItemComponent } from '../settlement-item/settlement-item.component';
 
 interface DateItem {
   date: Date,
-  contents: ({ 
+  contents: ({
     isRecord: true,
     data: RecordView,
   } | {
@@ -23,7 +22,6 @@ interface DateItem {
   imports: [
     CommonModule,
     TranslateModule,
-    AvatarComponent,
     RecordItemComponent,
     SettlementItemComponent,
   ],
@@ -31,12 +29,12 @@ interface DateItem {
   templateUrl: './records-list.component.html',
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
   host: {
-    class: 'app-section'
-  }
+    class: 'app-section',
+  },
 })
 export class RecordsListComponent {
-  @Input() 
-  set records (data: { 
+  @Input()
+  set records (data: {
     records: RecordView[],
     settlements: SettlementListView[],
   }) {
@@ -82,7 +80,7 @@ function dateAlreadyExist (
         moment(date).isSame(item.date, 'month')
         &&
         moment(date).isSame(item.date, 'year')
-      )
+      );
     },
   );
 }
@@ -95,8 +93,8 @@ function getDateItem (
   if (
     item === undefined
   ) {
-    const newItem = { 
-      date, 
+    const newItem = {
+      date,
       contents: [],
     };
     items.push(newItem);
