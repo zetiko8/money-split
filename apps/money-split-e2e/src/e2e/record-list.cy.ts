@@ -7,7 +7,7 @@ const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
 
 describe('Record list', () => {
 
-  describe.only('date displaying',() => {
+  describe('date displaying',() => {
     const firstDate = moment().set({
       year: 2024,
       month: 2,

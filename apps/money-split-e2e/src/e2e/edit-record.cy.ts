@@ -7,7 +7,7 @@ const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
 
 describe('Add expense', () => {
 
-  describe.only('edit a record',() => {
+  describe('edit a record',() => {
     const firstDate = moment().set({
       year: 2024,
       month: 2,
