@@ -22,6 +22,7 @@ export interface TestScenarioNamespace {
   allUsers: TestNamespaceUserData[],
   addedRecords: Record[],
   namespaceId: number,
+  namespace: MNamespace,
 }
 
 export async function prepareNamespace (
@@ -112,6 +113,7 @@ export async function prepareNamespace (
     allUsers,
     addedRecords,
     namespaceId,
+    namespace,
   };
 }
 

@@ -486,9 +486,21 @@ export const RECORD_FORM = {
 };
 
 function getMonthString (date: Date) {
+  if (moment(date).month() === 0)
+    return 'Jan';
+  if (moment(date).month() === 1)
+    return 'Feb';
   if (moment(date).month() === 2)
     return 'Mar';
   if (moment(date).month() === 3)
     return 'Apr';
+  if (moment(date).month() === 4)
+    return 'Maj';
+  if (moment(date).month() === 5)
+    return 'Jun';
+  if (moment(date).month() === 6)
+    return 'Jul';
+  if (moment(date).month() === 7)
+    return 'Avg';
   throw Error('Not implemented jet');
 }
