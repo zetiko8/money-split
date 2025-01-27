@@ -1,62 +1,79 @@
-import { MNamespace, Owner } from '@angular-monorepo/entities';
-import { prepareNamespace } from '../support/prepare';
 import { NAMESPACE_SCREEN, RECORD_FORM, RECORD_LIST } from '../support/app.po';
 import * as moment from 'moment';
+import { TestOwner } from '@angular-monorepo/backdoor';
+import { ACTIONS } from '../support/actions';
+
+const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
 
 describe('Add expense', () => {
 
-  describe('edit a record',() => {
-    let owner!: Owner;
-    let namespace!: MNamespace;
-
+  describe.only('edit a record',() => {
     const firstDate = moment().set({
       year: 2024,
       month: 2,
       date: 15,
     }).toDate();
 
-    const scenario = prepareNamespace(
-      'testnamespace',
-      {  username: 'testuser'},
-      [
-        {  username: 'atestuser1'},
-        {  username: 'btestuser2'},
-        {  username: 'ctestuser3'},
-      ],
-      [
-        {
-          user: 'testuser',
-          record: {
-            benefitors: [
-              'atestuser1',
-              'btestuser2',
-              'ctestuser3',
-            ],
-            cost: 4,
-            currency: 'SIT',
-            paidBy: ['testuser'],
-            created: firstDate,
-            edited: firstDate,
+    let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+
+    before(async () => {
+      creatorOwner = new TestOwner(
+        DATA_PROVIDER_URL,
+        'testuser',
+        'testpassword',
+      );
+      await creatorOwner.dispose();
+      await creatorOwner.register();
+
+      const namespace = await creatorOwner.createNamespace('testnamespace');
+      namespaceId = namespace.id;
+
+      const creatorUser
+      = await creatorOwner.getUserForNamespace(namespaceId);
+
+      const benefitors = [
+        (await ((await creatorOwner.addOwnerToNamespace(
+          namespaceId,
+          {
+            name: 'atestuser1',
           },
-        },
-      ],
-    );
+        )).getUserForNamespace(namespaceId))).id,
+        (await ((await creatorOwner.addOwnerToNamespace(
+          namespaceId,
+          {
+            name: 'btestuser2',
+          },
+        )).getUserForNamespace(namespaceId))).id,
+        (await ((await creatorOwner.addOwnerToNamespace(
+          namespaceId,
+          {
+            name: 'ctestuser3',
+          },
+        )).getUserForNamespace(namespaceId))).id,
+      ];
 
-    before(() => {
-      scenario.before()
-        .then(data => {
-          owner = data.owner;
-          namespace = data.namespace;
-        });
+      await creatorOwner.backdoorLogin({
+        username: Cypress.env()['BACKDOOR_USERNAME'],
+        password: Cypress.env()['BACKDOOR_PASSWORD'],
+      });
+      await creatorOwner.addRecordToNamespace(namespaceId, {
+        benefitors,
+        cost: 4,
+        currency: 'SIT',
+        paidBy: [creatorUser.id],
+        created:firstDate,
+        edited:firstDate,
+        addingOwnerId: creatorOwner.owner.id,
+        addingUserId: creatorUser.id,
+      });
+
+      await ACTIONS.loginTestOwner(creatorOwner);
     });
 
-    after(() => {
-      scenario.after();
-    });
+    it('can edit an expense', () => {
 
-    it('can add an expense', () => {
-
-      NAMESPACE_SCREEN.visit(owner.key, namespace.id);
+      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
       RECORD_LIST.RECORD(0).goToEdit();
       RECORD_FORM.currencyIsSetTo('SIT');
       RECORD_FORM.costIsSetTo('4');
