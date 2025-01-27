@@ -28,19 +28,6 @@ export function getControler <B, T>(
     });
 }
 
-export async function asyncMap<T, R> (
-  array: T[],
-  cb: (t: T) => Promise<R>,
-) {
-  const result: R[] = [];
-  for (const item of array) {
-    const mapped = await cb(item);
-    result.push(mapped);
-  }
-
-  return result;
-}
-
 export function stringRouteParam (
   request: Request,
   paramName: string,

@@ -9,7 +9,7 @@ import { NAMESPACE_SERVICE } from '../modules/namespace';
 import { OWNER_SERVICE } from '../modules/owners';
 import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
-import { VALIDATE, asyncMap, numberRouteParam, registerRoute } from '../helpers';
+import { VALIDATE, numberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
 import multer from 'multer';
 import path from 'path';
@@ -28,6 +28,7 @@ import {
   registerApi,
 } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
+import { asyncMap } from '@angular-monorepo/utils';
 
 export const mainRouter = Router();
 

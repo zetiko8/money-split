@@ -1,8 +1,118 @@
-import { Invitation, MNamespace, Owner, Record, RecordDataCy } from '@angular-monorepo/entities';
+import { Invitation, MNamespace, Owner, Record, RecordDataCy, User } from '@angular-monorepo/entities';
 import axios from 'axios';
+import { TestOwner } from './test-owner';
+import { asyncMap } from '@angular-monorepo/utils';
 
 export function getRandomColor () {
   return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
+}
+
+export interface TestUser {
+  username: string,
+  password?: string,
+}
+
+interface TestNamespaceUserData {
+  user: User,
+  owner: TestOwner,
+}
+
+export interface TestScenarioNamespace {
+  creator: TestNamespaceUserData,
+  allUsers: TestNamespaceUserData[],
+  addedRecords: Record[],
+  namespaceId: number,
+}
+
+export async function prepareNamespace (
+  DATA_PROVIDER_URL: string,
+  BACKDOOR_USERNAME: string,
+  BACKDOOR_PASSWORD: string,
+  namespaceName: string,
+  creator: TestUser,
+  users: TestUser[],
+  records: { user: string, record: RecordDataCy }[] = [],
+): Promise<TestScenarioNamespace> {
+  const creatorOwner = new TestOwner(
+    DATA_PROVIDER_URL,
+    creator.username,
+    creator.password || 'testpassword',
+  );
+  await creatorOwner.dispose();
+  await creatorOwner.register();
+
+  const namespace = await creatorOwner.createNamespace(namespaceName);
+  const namespaceId = namespace.id;
+
+  const addedOwner: TestOwner[] = await asyncMap(users, async user => {
+    return await creatorOwner.addOwnerToNamespace(
+      namespaceId,
+      {
+        name: user.username,
+      },
+    );
+  });
+  const creatorUser
+    = await creatorOwner.getUserForNamespace(namespaceId);
+
+  const creatorNamespaceData: TestNamespaceUserData
+    = {
+      owner: creatorOwner,
+      user: creatorUser,
+    };
+
+  const addedUsers: TestNamespaceUserData[] = await asyncMap<TestOwner, TestNamespaceUserData>
+  (addedOwner, async owner => {
+    const user = await owner.getUserForNamespace(namespaceId);
+    return {
+      user,
+      owner,
+    };
+  });
+
+  await creatorOwner.backdoorLogin({
+    username: BACKDOOR_USERNAME,
+    password: BACKDOOR_PASSWORD,
+  });
+
+  const allUsers: TestNamespaceUserData[] = [
+    creatorNamespaceData,
+    ...addedUsers,
+  ];
+
+  const addedRecords = await asyncMap(records, async (rec) => {
+    const adder = allUsers.find(u => u.user.name === rec.user);
+
+    if (!adder) throw Error('Adder not found: ' + rec.user);
+
+    const res = await creatorOwner.addRecordToNamespace(namespaceId, {
+      benefitors: rec.record.benefitors.map(b => {
+        const found = allUsers.find(u => u.user.name = b);
+        if (!found) throw Error('Benefitor not found: ' + rec.user);
+        return found.user.id;
+      }),
+      cost: rec.record.cost,
+      currency: rec.record.currency,
+      paidBy: rec.record.paidBy.map(p => {
+        const found = allUsers.find(u => u.user.name = p);
+        if (!found) throw Error('Payer not found: ' + rec.user);
+        return found.user.id;
+      }),
+      created: rec.record.created,
+      edited: rec.record.edited,
+      addingOwnerId: adder.owner.owner.id,
+      addingUserId: adder.user.id,
+    });
+
+    return res;
+  });
+
+  return {
+    creator: creatorNamespaceData,
+    allUsers,
+    addedRecords,
+    namespaceId,
+  };
 }
 
 export const BACKDOOR_ACTIONS = {
@@ -171,5 +281,8 @@ export const BACKDOOR_ACTIONS = {
       DELETE  FROM Invitation WHERE namespaceId=${namespaceId}
       `,
     );
+  },
+  SCENARIO: {
+    prepareNamespace,
   },
 };

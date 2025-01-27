@@ -13,3 +13,16 @@ export function randomHtmlName(length = 10) {
 export function getRandomColor () {
   return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
 }
+
+export async function asyncMap<T, R> (
+  array: T[],
+  cb: (t: T) => Promise<R>,
+) {
+  const result: R[] = [];
+  for (const item of array) {
+    const mapped = await cb(item);
+    result.push(mapped);
+  }
+
+  return result;
+}

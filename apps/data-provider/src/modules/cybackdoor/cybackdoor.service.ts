@@ -3,8 +3,8 @@ import { lastInsertId, query } from '../../connection/connection';
 import { insertSql, mysqlDate, selectOneWhereSql } from '../../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, RecordEntity } from '../../types';
 import { RECORD_SERVICE } from '../record';
-import { asyncMap } from '../../helpers';
 import { SETTLE_SERVICE } from '../settle';
+import { asyncMap } from '@angular-monorepo/utils';
 
 export const CYBACKDOOR_SERVICE = {
   deleteOwner: async (

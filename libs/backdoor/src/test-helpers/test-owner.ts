@@ -12,8 +12,8 @@ export class TestOwner {
 
   constructor (
     private readonly DATA_PROVIDER_URL: string,
-    private readonly username: string,
-    private readonly password: string,
+    public readonly username: string,
+    public readonly password: string,
   ) {}
 
   async register () {

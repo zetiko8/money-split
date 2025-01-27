@@ -18,8 +18,9 @@ import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../connection/
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../types';
 import { USER_SERVICE } from './user';
 import { RECORD_SERVICE } from './record';
-import { appError, appErrorWrap, asyncMap } from '../helpers';
+import { appError, appErrorWrap } from '../helpers';
 import { SETTLE_SERVICE } from './settle';
+import { asyncMap } from '@angular-monorepo/utils';
 
 export async function getNamespacesForOwner (
   ownerId: number,
