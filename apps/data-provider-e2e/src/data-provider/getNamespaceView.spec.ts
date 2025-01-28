@@ -308,7 +308,6 @@ describe(API_NAME, () => {
     it('is settled', async () => {
 
       try {
-        console.log('HAPP');
         await creatorOwner.settleRecords(namespaceId, scenario.creator.user.id, scenario.addedRecords.map(r => r.id), firstDate);
       } catch (error) {
         throwBeforeEachError(error);
