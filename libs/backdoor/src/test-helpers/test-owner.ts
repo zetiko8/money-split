@@ -214,6 +214,32 @@ export class TestOwner {
     return result;
   }
 
+  async settleRecords (
+    namespaceId: number,
+    byUser: number,
+    records: number[],
+    settledOn: Date,
+  ) {
+    const result
+    = await DATA_PROVIDER_API.settleConfirmApiBackdoor.callPromise(
+      {
+        records,
+        settledOn,
+      },
+      { namespaceId, byUser, ownerKey: this.owner.key },
+      async (endpoint, method, payload) => {
+        const res = await axios.post<Record>(
+          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+          payload,
+          this.backdoorAuthHeaders(),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
+  }
+
   async dispose () {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ownerArr: any = await BACKDOOR_ACTIONS.query(

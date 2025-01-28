@@ -26,9 +26,12 @@ import {
   getOwnerProfileApi,
   loginApi,
   registerApi,
+  settleConfirmApi,
+  settleConfirmApiBackdoor,
 } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
 import { asyncMap } from '@angular-monorepo/utils';
+import { mysqlDate } from '../connection/helper';
 
 export const mainRouter = Router();
 
@@ -297,28 +300,53 @@ mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
     }
   });
 
-mainRouter.post('/:ownerKey/namespace/:namespaceId/settle/confirm/:byUser',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<SettlePayload>,
-    res,
-    next,
-  ) => {
-    try {
-      await getOwnerFromToken(req);
+registerRoute(
+  settleConfirmApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    VALIDATE.requiredPayload(payload);
+    if (!payload.records.length)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
 
-      const result = await SETTLE_SERVICE
-        .settle(
-          numberRouteParam(req, 'byUser'),
-          numberRouteParam(req, 'namespaceId'),
-          req.body.records,
-        );
+    const result = await SETTLE_SERVICE
+      .settle(
+        params.byUser,
+        params.namespaceId,
+        payload.records,
+      );
 
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
+    return result;
+  },
+  AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  settleConfirmApiBackdoor(),
+  mainRouter,
+  async (payload, params, context) => {
+    VALIDATE.requiredPayload(payload);
+    if (!payload.records.length)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+
+    const result = await SETTLE_SERVICE
+      .settle(
+        params.byUser,
+        params.namespaceId,
+        payload.records,
+      );
+
+    const updateSql = `
+    UPDATE \`Settlement\`
+    SET created = '${mysqlDate(new Date(payload.settledOn))}',
+        edited = '${mysqlDate(new Date(payload.settledOn))}'
+    WHERE id = ${result.id}
+  `;
+    await query(updateSql);
+
+    return result;
+  },
+  AUTH_SERVICE.backdoorAuth,
+);
 
 mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-settled/:byUser/:settlementDebtId',
   logRequestMiddleware(),

@@ -11,6 +11,8 @@ import {
   RecordData,
   RecordDataBackdoor,
   RegisterOwnerPayload,
+  Settlement,
+  SettlePayload,
 } from '@angular-monorepo/entities';
 import { ApiDefinition, apiDefinition } from './helpers';
 
@@ -187,6 +189,37 @@ export function editOwnerProfileApi() {
   });
 }
 
+export function settleConfirmApi() {
+  return apiDefinition<
+    SettlePayload,
+    {
+      ownerKey: string,
+      byUser: number,
+      namespaceId: number,
+    },
+    Settlement>({
+      endpoint: '/:ownerKey/namespace/:namespaceId/settle/confirm/:byUser',
+      method: 'POST',
+    });
+}
+
+export function settleConfirmApiBackdoor() {
+  return apiDefinition<
+    {
+      records: number[],
+      settledOn: Date,
+    },
+    {
+      ownerKey: string,
+      byUser: number,
+      namespaceId: number,
+    },
+    Settlement>({
+      endpoint: '/backdoor/:ownerKey/namespace/:namespaceId/settle/confirm/:byUser',
+      method: 'POST',
+    });
+}
+
 export const DATA_PROVIDER_API = {
   getNamespaceApi: new ApiDefinitionObj(getOwnerNamespacesApi()),
   createInvitationApi: new ApiDefinitionObj(createInvitationApi()),
@@ -194,4 +227,6 @@ export const DATA_PROVIDER_API = {
   getNamespaceViewApi: new ApiDefinitionObj(getNamespaceViewApi()),
   editOwnerProfileApi: new ApiDefinitionObj(editOwnerProfileApi()),
   addRecordApiBackdoor: new ApiDefinitionObj(addRecordApiBackdoor()),
+  settleConfirmApi: new ApiDefinitionObj(settleConfirmApi()),
+  settleConfirmApiBackdoor: new ApiDefinitionObj(settleConfirmApiBackdoor()),
 };

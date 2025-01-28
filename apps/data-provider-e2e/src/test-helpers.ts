@@ -4,6 +4,39 @@ import axios from 'axios';
 
 export const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
 
+export const BACKDOOR_USERNAME = 'admin';
+export const BACKDOOR_PASSWORD = 'testadmin';
+
+export function testEnv () {
+  return {
+    DATA_PROVIDER_URL,
+    BACKDOOR_USERNAME,
+    BACKDOOR_PASSWORD,
+  };
+}
+
+export function expectDate (dateString: string | Date) {
+  return new Date(dateString).toISOString();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function throwBeforeEachError (error: any) {
+  const begining = 'Before each error';
+  try {
+    if (!error) throw Error(`${begining}: Error object is empty`);
+    if (error.config) {
+      const err = error as AxiosError;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dataError = (err.response.data as any).error;
+      if (err.response) throw Error(`${begining}: ${err.message} : ${dataError}`);
+    }
+    if (error.message) throw Error(`${begining}: ${error.message}`);
+  } catch (error) {
+    if (error.message) throw Error(`${begining}: ${error.message}`);
+  }
+
+}
+
 export async function smoke (
   apiName: string,
   apiCall: () => Promise<AxiosResponse>,
