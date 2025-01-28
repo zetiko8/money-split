@@ -21,13 +21,13 @@ import { ConfigService } from '../services/config.service';
     >
         {{ name.substring(0, 1).toUpperCase() }}
     </div>
-    <div 
+    <div
         *ngIf="url !== null"
         class="avatar-image"
     >
         <img [src]="staticUrl + '/' + url" alt="">
     </div>
-    <div 
+    <div
         *ngIf="avatarUrl !== null"
         class="avatar-image"
     >
@@ -36,7 +36,7 @@ import { ConfigService } from '../services/config.service';
   `,
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
   host: { class: 'avatar' },
-  styles: [ '.avatar-image { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }' ]
+  styles: [ '.avatar-image { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }' ],
 })
 export class AvatarComponent implements OnDestroy {
 
@@ -52,29 +52,29 @@ export class AvatarComponent implements OnDestroy {
     @Input() avatarUrl: string | null = null;
 
     public url: string | null = null;
-    @Input() 
+    @Input()
     set avatarId (id: number | null) {
       if (id !== null) {
         this.avatarService.load(id)
-        .pipe(
-          takeUntil(this.destroy$),
-          take(1),  
-        )
-        .subscribe(
-          avatar => {
-            if (avatar.url) {
-              this.url = avatar.url;
-            } 
-            else {
-              this.backgroundColor = avatar.color;
-            }
-          }
-        );
+          .pipe(
+            takeUntil(this.destroy$),
+            take(1),
+          )
+          .subscribe(
+            avatar => {
+              if (avatar.url) {
+                this.url = avatar.url;
+              }
+              else {
+                this.backgroundColor = avatar.color;
+              }
+            },
+          );
       }
     };
 
-  ngOnDestroy(): void {
+    ngOnDestroy(): void {
       this.destroy$.next();
       this.destroy$.complete();
-  }
+    }
 }
