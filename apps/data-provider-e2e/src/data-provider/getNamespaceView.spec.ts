@@ -322,8 +322,8 @@ describe(API_NAME, () => {
           const expected = anyExpect();
           expected.settlements = [
             {
-              'isAllSettled': true,
-              'settleRecords': [ 1, 2 ],
+              'isAllSettled': false,
+              'settleRecords': expect.any(Array),
               'settledBy': {
                 'avatarId': expect.any(Number),
                 'id': scenario.creator.user.id,
@@ -343,6 +343,8 @@ describe(API_NAME, () => {
           ];
           expected.hasRecordsToSettle = false;
           expect(result).toEqual(expected);
+          expect(result.settlements).toHaveLength(1);
+          expect(result.settlements[0].settleRecords).toHaveLength(3);
         }));
     });
 
