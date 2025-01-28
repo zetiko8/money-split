@@ -105,7 +105,7 @@ describe(API_NAME, () => {
     });
   });
 
-  describe.only('dbState', () => {
+  describe('dbState', () => {
     let settlementId!: number;
     let namespaceId!: number;
     let creatorOwner!: TestOwner;

@@ -113,7 +113,7 @@ describe(API_NAME, () => {
     });
   });
 
-  describe.only('settled records', () => {
+  describe('settled records', () => {
     const firstDate = moment().set({
       year: 2024,
       month: 2,
