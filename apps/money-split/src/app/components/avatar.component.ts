@@ -21,18 +21,16 @@ import { ConfigService } from '../services/config.service';
     >
         {{ name.substring(0, 1).toUpperCase() }}
     </div>
-    <div
+    <img
         *ngIf="url !== null"
-        class="avatar-image"
+        [src]="staticUrl + '/' + url"
+        alt=""
     >
-        <img [src]="staticUrl + '/' + url" alt="">
-    </div>
-    <div
+    <img
         *ngIf="avatarUrl !== null"
-        class="avatar-image"
+        [src]="avatarUrl"
+        alt=""
     >
-        <img [src]="avatarUrl" alt="">
-    </div>
   `,
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
   host: { class: 'avatar' },
@@ -62,6 +60,8 @@ export class AvatarComponent implements OnDestroy {
           )
           .subscribe(
             avatar => {
+              console.log(id);
+              console.log(avatar);
               if (avatar.url) {
                 this.url = avatar.url;
               }

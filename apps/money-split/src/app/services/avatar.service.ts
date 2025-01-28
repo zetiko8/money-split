@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, debounceTime, map, of, takeWhile } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, debounceTime, filter, map, of, takeWhile } from 'rxjs';
 import { AvatarData } from '@angular-monorepo/entities';
 import { ConfigService } from './config.service';
 
@@ -47,13 +47,14 @@ export class AvatarService {
     return this.result$
       .pipe(
         takeWhile(result => !result[id], true),
+        filter(result => !!(result[id])),
         map(result => result[id]),
       );
   }
 
   constructor () {
     this.line$
-      .pipe(debounceTime(0))
+      .pipe(debounceTime(100))
       .subscribe(lines => {
         this.loadAvatars(lines).subscribe(result => {
           result.forEach(rp => {
