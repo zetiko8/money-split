@@ -88,14 +88,14 @@ export async function prepareNamespace (
 
     const res = await creatorOwner.addRecordToNamespace(namespaceId, {
       benefitors: rec.record.benefitors.map(b => {
-        const found = allUsers.find(u => u.user.name = b);
+        const found = allUsers.find(u => u.user.name === b);
         if (!found) throw Error('Benefitor not found: ' + rec.user);
         return found.user.id;
       }),
       cost: rec.record.cost,
       currency: rec.record.currency,
       paidBy: rec.record.paidBy.map(p => {
-        const found = allUsers.find(u => u.user.name = p);
+        const found = allUsers.find(u => u.user.name === p);
         if (!found) throw Error('Payer not found: ' + rec.user);
         return found.user.id;
       }),
@@ -286,5 +286,103 @@ export const BACKDOOR_ACTIONS = {
   },
   SCENARIO: {
     prepareNamespace,
+    scenarios: {
+      1: (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        moment: any,
+        DATA_PROVIDER_URL: string,
+        BACKDOOR_USERNAME: string,
+        BACKDOOR_PASSWORD: string,
+      ) => {
+
+        const firstDate = moment().set({
+          year: 2024,
+          month: 2,
+          date: 15,
+        }).toDate();
+
+        const secondDate = moment(firstDate)
+          .subtract(2, 'hours').toDate();
+        const thirdDate = moment(firstDate)
+          .subtract(1, 'day').toDate();
+        const fourthDate = moment(firstDate)
+          .subtract(2, 'day').toDate();
+
+        return BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          'testnamespace',
+          {  username: 'testuser'},
+          [
+            {  username: 'atestuser1'},
+            {  username: 'btestuser2'},
+            {  username: 'ctestuser3'},
+          ],
+          [
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 4,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: firstDate,
+                edited: firstDate,
+              },
+            },
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 10,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: secondDate,
+                edited: secondDate,
+              },
+            },
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 5.4,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: thirdDate,
+                edited: thirdDate,
+              },
+            },
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 3,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: fourthDate,
+                edited: fourthDate,
+              },
+            },
+          ],
+        );
+      },
+    },
   },
 };

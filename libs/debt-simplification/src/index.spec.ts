@@ -227,4 +227,38 @@ describe('settle', () => {
       { creditor: 3, debtor: 4, value: 2 },
     ]);
   });
+  it('cypress tests case', () => {
+    const debts = settle([
+      {
+        benefitors: [2, 3, 4],
+        cost: 4,
+        currency: 'SIT',
+        paidBy: [1],
+      },
+      {
+        benefitors: [2, 3, 4],
+        cost: 10,
+        currency: 'SIT',
+        paidBy: [1],
+      },
+      {
+        benefitors: [2, 3, 4],
+        cost: 5.4,
+        currency: 'SIT',
+        paidBy: [1],
+      },
+      {
+        benefitors: [2, 3, 4],
+        cost: 3,
+        currency: 'SIT',
+        paidBy: [1],
+      },
+    ]);
+
+    expect(debts).toEqual([
+      { creditor: 1, debtor: 2, value: 7.47 },
+      { creditor: 1, debtor: 3, value: 7.47 },
+      { creditor: 1, debtor: 4, value: 7.47 },
+    ]);
+  });
 });

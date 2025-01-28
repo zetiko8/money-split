@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, fnCall, smoke, testEnv, throwBeforeEachError } from '../test-helpers';
+import { DATA_PROVIDER_URL, fnCall, queryDb, smoke, testEnv, throwBeforeEachError } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { settleConfirmApi } from '@angular-monorepo/api-interface';
 import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
@@ -12,98 +12,18 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
 
   describe('basics', () => {
-    const firstDate = moment().set({
-      year: 2024,
-      month: 2,
-      date: 15,
-    }).toDate();
-
     let namespaceId!: number;
     let creatorOwner!: TestOwner;
     let scenario!: TestScenarioNamespace;
     let ownerKeyOtherOwner!: string;
-    const secondDate = moment(firstDate)
-      .subtract(2, 'hours').toDate();
-    const thirdDate = moment(firstDate)
-      .subtract(1, 'day').toDate();
-    const fourthDate = moment(firstDate)
-      .subtract(2, 'day').toDate();
 
     beforeEach(async () => {
       try {
-        scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+        scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
+          moment,
           testEnv().DATA_PROVIDER_URL,
           testEnv().BACKDOOR_USERNAME,
           testEnv().BACKDOOR_PASSWORD,
-          'testnamespace',
-          {  username: 'testuser'},
-          [
-            {  username: 'atestuser1'},
-            {  username: 'btestuser2'},
-            {  username: 'ctestuser3'},
-          ],
-          [
-            {
-              user: 'testuser',
-              record: {
-                benefitors: [
-                  'atestuser1',
-                  'btestuser2',
-                  'ctestuser3',
-                ],
-                cost: 4,
-                currency: 'SIT',
-                paidBy: ['testuser'],
-                created: firstDate,
-                edited: firstDate,
-              },
-            },
-            {
-              user: 'testuser',
-              record: {
-                benefitors: [
-                  'atestuser1',
-                  'btestuser2',
-                  'ctestuser3',
-                ],
-                cost: 10,
-                currency: 'SIT',
-                paidBy: ['testuser'],
-                created: secondDate,
-                edited: secondDate,
-              },
-            },
-            {
-              user: 'testuser',
-              record: {
-                benefitors: [
-                  'atestuser1',
-                  'btestuser2',
-                  'ctestuser3',
-                ],
-                cost: 5.4,
-                currency: 'SIT',
-                paidBy: ['testuser'],
-                created: thirdDate,
-                edited: thirdDate,
-              },
-            },
-            {
-              user: 'testuser',
-              record: {
-                benefitors: [
-                  'atestuser1',
-                  'btestuser2',
-                  'ctestuser3',
-                ],
-                cost: 3,
-                currency: 'SIT',
-                paidBy: ['testuser'],
-                created: fourthDate,
-                edited: fourthDate,
-              },
-            },
-          ],
         );
 
         creatorOwner = scenario.creator.owner;
@@ -182,6 +102,71 @@ describe(API_NAME, () => {
             namespaceId: namespaceId,
           });
         }));
+    });
+  });
+
+  describe.only('dbState', () => {
+    let settlementId!: number;
+    let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+    let scenario!: TestScenarioNamespace;
+
+    beforeEach(async () => {
+      try {
+        scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
+          moment,
+          testEnv().DATA_PROVIDER_URL,
+          testEnv().BACKDOOR_USERNAME,
+          testEnv().BACKDOOR_PASSWORD,
+        );
+
+        creatorOwner = scenario.creator.owner;
+        namespaceId = scenario.namespaceId;
+      } catch (error) {
+        throwBeforeEachError(error);
+      }
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}/settle/confirm/${scenario.creator.user.id}`,
+          {
+            records: scenario.addedRecords.map(r => r.id),
+          },
+          creatorOwner.authHeaders()))
+        .result((result => {
+          settlementId = result.id;
+        }));
+    });
+
+    it('saves SettlementDebts into db', async () => {
+      const response = await queryDb(
+        `
+        SELECT * FROM \`SettlementDebt\`
+        WHERE settlementId = ${settlementId}
+        `,
+      );
+      (response as { data: string }[]).forEach(item => {
+        expect(item).toEqual({
+          id: expect.any(Number),
+          created: expect.any(String),
+          edited: expect.any(String),
+          createdBy: scenario.creator.user.id,
+          editedBy: scenario.creator.user.id,
+          data: expect.any(String),
+          namespaceId: namespaceId,
+          settlementId: settlementId,
+          settled: 0,
+          settledOn: null,
+          settledBy: null,
+        });
+        expect(JSON.parse(item.data)).toEqual({
+          'benefitors': [expect.any(Number)],
+          'cost':7.47,
+          'currency':'SIT',
+          'paidBy':[scenario.creator.user.id],
+        });
+      });
+      expect(response).toHaveLength(3);
     });
   });
 });
