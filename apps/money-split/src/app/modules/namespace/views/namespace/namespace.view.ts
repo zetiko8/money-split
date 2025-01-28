@@ -2,17 +2,17 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AsyncProcess } from 'rombok';
 import { PageComponent } from '../../../../layout/page/page.component';
-import { 
-  BehaviorSubject, 
-  Observable, 
-  Subject, 
-  filter, 
-  map, 
-  merge, 
-  mergeMap, 
-  of, 
-  take, 
-  tap, 
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  filter,
+  map,
+  merge,
+  mergeMap,
+  of,
+  take,
+  tap,
 } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { RoutingService } from '../../../../services/routing/routing.service';
@@ -51,7 +51,7 @@ export class NamespaceView {
       of(''),
       this.reload$,
     ),
-    () => this.nameSpaceService.getNamespace() 
+    () => this.nameSpaceService.getNamespace(),
   );
   public readonly markAsSettledProcess = new AsyncProcess(
     (settlementDebtId: number) => this
@@ -76,9 +76,9 @@ export class NamespaceView {
     = this.loadProcess.share().pipe(
       tap(namespace => {
         this.activeTab$.next((
-          namespace.records.length === 0 
+          namespace.records.length === 0
           && namespace.users.length < 2
-        ) ? 'users' : 'recordsList')
+        ) ? 'users' : 'recordsList');
       }),
     );
 
@@ -86,18 +86,18 @@ export class NamespaceView {
     this.loadProcess.inProgress$,
   ]);
 
-  public readonly notification$: Observable<Notification> 
+  public readonly notification$: Observable<Notification>
     = merge(
       this.loadProcess.error$,
       this.markAsSettledProcess.error$,
       this.markAsUnsettledProcess.error$,
-    ) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+    )
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   public activeTab$ = new BehaviorSubject<string>('');
 }
