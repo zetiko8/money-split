@@ -432,14 +432,19 @@ export const SETTLE_PREVIEW_SCREEN = {
   },
 };
 
-export const RECORD_FORM = {
+const _RECORD_FORM = {
   setCurrency (
     currency: string,
   ) {
-    cy.get('[data-testid="currency-input" ]')
-      .clear();
-    cy.get('[data-testid="currency-input" ]')
-      .type(currency);
+    if (currency === '') {
+      cy.get('[data-testid="currency-input" ]')
+        .clear();
+    } else {
+      cy.get('[data-testid="currency-input" ]')
+        .clear();
+      cy.get('[data-testid="currency-input" ]')
+        .type(currency);
+    }
   },
   currencyIsSetTo (
     currency: string,
@@ -450,10 +455,15 @@ export const RECORD_FORM = {
   setCost (
     cost: string,
   ) {
-    cy.get('[data-testid="cost-input"]')
-      .clear();
-    cy.get('[data-testid="cost-input"]')
-      .type(cost);
+    if (cost === '') {
+      cy.get('[data-testid="cost-input"]')
+        .clear();
+    } else {
+      cy.get('[data-testid="cost-input"]')
+        .clear();
+      cy.get('[data-testid="cost-input"]')
+        .type(cost);
+    }
   },
   costIsSetTo (
     cost: string,
@@ -525,6 +535,84 @@ export const RECORD_FORM = {
   },
   confirm () {
     cy.get('[data-test="add-expense-confirm-btn"]').click();
+  },
+};
+
+export const RECORD_FORM = {
+  setCurrency: _RECORD_FORM.setCurrency,
+  currencyIsSetTo: _RECORD_FORM.currencyIsSetTo,
+  setCost: _RECORD_FORM.setCost,
+  costIsSetTo: _RECORD_FORM.costIsSetTo,
+  clickBenefitor: _RECORD_FORM.clickBenefitor,
+  BENEFITORS: {
+    ..._RECORD_FORM.BENEFITORS,
+    click: _RECORD_FORM.clickBenefitor,
+    shouldHaveError (message: string) {
+      cy.get('[data-testid="add-benefitor"]')
+        .find('.error')
+        .should('contain.text', message);
+    },
+    shouldNotHaveError () {
+      cy.get('[data-testid="add-benefitor"]')
+        .find('.error')
+        .should('not.exist');
+    },
+  },
+  clickPaidBy: _RECORD_FORM.clickPaidBy,
+  PAID_BY: {
+    ..._RECORD_FORM.PAID_BY,
+    click: _RECORD_FORM.clickPaidBy,
+    shouldHaveError (message: string) {
+      cy.get('[data-testid="add-paid-by"]')
+        .find('.error')
+        .should('contain.text', message);
+    },
+    shouldNotHaveError () {
+      cy.get('[data-testid="add-paid-by"]')
+        .find('.error')
+        .should('not.exist');
+    },
+  },
+  confirm: _RECORD_FORM.confirm,
+  CONFIRM_BUTTON: {
+    shouldBeDisabled () {
+      cy.get('[data-test="add-expense-confirm-btn"]')
+        .should('be.disabled');
+    },
+    shouldBeEnabled () {
+      cy.get('[data-test="add-expense-confirm-btn"]')
+        .should('be.enabled');
+    },
+  },
+  CURRENCY: {
+    set: _RECORD_FORM.setCurrency,
+    shouldHaveError (message: string) {
+      cy.get('[data-testid="currency-input"]')
+        .parent()
+        .find('.error')
+        .should('contain.text', message);
+    },
+    shouldNotHaveError () {
+      cy.get('[data-testid="currency-input"]')
+        .parent()
+        .find('.error')
+        .should('not.exist');
+    },
+  },
+  COST: {
+    set: _RECORD_FORM.setCost,
+    shouldHaveError (message: string) {
+      cy.get('[data-testid="cost-input"]')
+        .parent()
+        .find('.error')
+        .should('contain.text', message);
+    },
+    shouldNotHaveError () {
+      cy.get('[data-testid="cost-input"]')
+        .parent()
+        .find('.error')
+        .should('not.exist');
+    },
   },
 };
 

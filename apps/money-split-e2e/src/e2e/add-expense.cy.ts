@@ -1,7 +1,8 @@
 import { NAMESPACE_SCREEN, RECORD_FORM, RECORD_LIST } from '../support/app.po';
 import * as moment from 'moment';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { BACKDOOR_ACTIONS, TestOwner } from '@angular-monorepo/backdoor';
 import { ACTIONS } from '../support/actions';
+import { User } from '@angular-monorepo/entities';
 
 const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
 
@@ -146,6 +147,54 @@ describe('Add expense', () => {
       RECORD_FORM.confirm();
       RECORD_LIST.RECORD(0).shouldHaveCost('10');
       RECORD_LIST.RECORD(1).shouldHaveCost('5.4');
+    });
+  });
+
+  describe.only('form',() => {
+    let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+    let benefitor!: User;
+    let payer!: User;
+
+    before(async () => {
+      const scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[2](
+        moment,
+        DATA_PROVIDER_URL,
+        Cypress.env()['BACKDOOR_USERNAME'],
+        Cypress.env()['BACKDOOR_PASSWORD'],
+      );
+
+      creatorOwner = scenario.creator.owner;
+      namespaceId = scenario.namespaceId;
+      benefitor = scenario.nonCreatorUsers[0].user;
+      payer = scenario.creator.user;
+
+      await ACTIONS.loginTestOwner(creatorOwner);
+    });
+
+    it('error messages', () => {
+
+      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      NAMESPACE_SCREEN.goToAddRecord();
+
+      RECORD_FORM.CONFIRM_BUTTON.shouldBeDisabled();
+      RECORD_FORM.CURRENCY.set('');
+      RECORD_FORM.CURRENCY.shouldHaveError('Napačni vnos');
+      RECORD_FORM.CURRENCY.set('SIT');
+      RECORD_FORM.CURRENCY.shouldNotHaveError();
+      RECORD_FORM.CONFIRM_BUTTON.shouldBeDisabled();
+      RECORD_FORM.COST.shouldHaveError('Napačni vnos');
+      RECORD_FORM.COST.set('10');
+      RECORD_FORM.COST.shouldNotHaveError();
+      RECORD_FORM.CONFIRM_BUTTON.shouldBeDisabled();
+      RECORD_FORM.BENEFITORS.shouldHaveError('Izberite vsaj enega dolžnika');
+      RECORD_FORM.BENEFITORS.click(benefitor.name);
+      RECORD_FORM.BENEFITORS.shouldNotHaveError();
+      RECORD_FORM.CONFIRM_BUTTON.shouldBeDisabled();
+      RECORD_FORM.PAID_BY.shouldHaveError('Izberite vsaj enega plačnika');
+      RECORD_FORM.PAID_BY.click(payer.name);
+      RECORD_FORM.PAID_BY.shouldNotHaveError();
+      RECORD_FORM.CONFIRM_BUTTON.shouldBeEnabled();
     });
   });
 

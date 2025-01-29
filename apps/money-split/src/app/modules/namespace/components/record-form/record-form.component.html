@@ -39,24 +39,24 @@
         [formControl]="form.controls.benefitors"
         [options]="usersOptions"
         [label]="'addExpenseBenefitors' | translate"
-        [error]="form.controls.benefitors.errors 
-            ? 'addExpenseBenefitorsError' : '' | translate"
+        [error]="(form.controls.benefitors.errors 
+            ? 'addExpenseBenefitorsError' : '') | translate"
     ></checkbox-group>
     <checkbox-group
         data-testid="add-paid-by"
         [formControl]="form.controls.paidBy"
         [options]="usersOptions"
         [label]="'addExpensePaidBy' | translate "
-        [error]="form.controls.paidBy.errors 
-            ? 'addExpensePaidByError' : '' | translate"
+        [error]="(form.controls.paidBy.errors 
+            ? 'addExpensePaidByError' : '') | translate"
     ></checkbox-group>
     <checkbox-radio-group
         *ngIf="ownerUsersOptions.length > 1"
         [formControl]="form.controls.createdBy"
         [options]="ownerUsersOptions"
         [label]="'addExpenseCreatedBy' | translate "
-        [error]="form.controls.createdBy.errors 
-            ? 'addExpenseCreatedByError' : '' | translate"
+        [error]="(form.controls.createdBy.errors 
+            ? 'addExpenseCreatedByError' : '') | translate"
     ></checkbox-radio-group>
     <div class="input-group">
         <button

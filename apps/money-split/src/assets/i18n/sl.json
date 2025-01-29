@@ -29,6 +29,7 @@
   "avatarImageInputLabel": "Naložite sliko",
   "avatarColorInputLabel": "Izberite barvo avatarja",
   "addExpenseCostError": "Napačni vnos",
+  "addExpenseCurrencyError": "Napačni vnos",
   "addExpenseBenefitorsError": "Izberite vsaj enega dolžnika",
   "addExpensePaidByError": "Izberite vsaj enega plačnika",
   "addExpenseBenefitors": "Dolžniki",
