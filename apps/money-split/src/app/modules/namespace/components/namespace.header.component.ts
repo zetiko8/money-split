@@ -29,7 +29,7 @@ import { AvatarComponent } from '../../../components/avatar.component';
         ></avatar>
     </div>
   `,
-  styles: [ ':host { display: block; width: 100%; padding: var(--gap-normal); }' ]
+  styles: [ ':host { display: block; width: 100%; padding: var(--gap-normal); }' ],
 })
 export class NamespaceHeaderComponent {
     @Input() name = '';
