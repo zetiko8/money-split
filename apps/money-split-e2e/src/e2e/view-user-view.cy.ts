@@ -36,7 +36,7 @@ describe('Namespace user view', () => {
     });
   });
 
-  describe.only('navigation',() => {
+  describe('navigation', () => {
     let namespaceId!: number;
     let namespaceName!: string;
     let creatorOwner!: TestOwner;
