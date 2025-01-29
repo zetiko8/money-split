@@ -45,6 +45,11 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "development-ci": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
         }
       },
       "defaultConfiguration": "production"
@@ -58,6 +63,11 @@
         "development": {
           "buildTarget": "money-split:build:development",
           "host": "127.0.0.1"
+        },
+        "development-ci": {
+          "buildTarget": "money-split:build:development",
+          "host": "127.0.0.1",
+          "port": 4201
         }
       },
       "defaultConfiguration": "development"

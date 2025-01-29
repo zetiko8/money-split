@@ -35,8 +35,8 @@
           }
         },
         "development": {
-          "devServerTarget": "money-split:serve:development",
-          "baseUrl": "http://localhost:4200/money-split",
+          "devServerTarget": "money-split:serve:development-ci",
+          "baseUrl": "http://localhost:4201/money-split",
           "env": {
             "DATA_PROVIDER_URL": "http://localhost:3333/data-provider",
             "BACKDOOR_USERNAME": "admin",
