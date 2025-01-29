@@ -34,10 +34,13 @@
     <ul
         class="horizontal-list"
     >
+    <!-- TODO - check data-test-username for injections -->
         <li
             *ngFor="let user of users"
             data-test="namespace-user"
+            [attr.data-test-username]="'user-' + user.name"
             class="list-item"
+            (click)="routingService.goToViewUserView(user.id)"
         >
             <avatar
                 [name]="user.name"

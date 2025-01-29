@@ -23,6 +23,8 @@ export interface TestScenarioNamespace {
   addedRecords: Record[],
   namespaceId: number,
   namespace: MNamespace,
+  nonCreatorUsers: TestNamespaceUserData[],
+  user: { [key: string]: User },
 }
 
 export async function prepareNamespace (
@@ -81,6 +83,10 @@ export async function prepareNamespace (
     ...addedUsers,
   ];
 
+  const nonCreatorUsers: TestNamespaceUserData[] = [
+    ...addedUsers,
+  ];
+
   const addedRecords = await asyncMap(records, async (rec) => {
     const adder = allUsers.find(u => u.user.name === rec.user);
 
@@ -108,12 +114,19 @@ export async function prepareNamespace (
     return res;
   });
 
+  const userDict: { [key: string]: User } = {};
+  allUsers.forEach(u => {
+    userDict[u.user.name] = u.user;
+  });
+
   return {
     creator: creatorNamespaceData,
     allUsers,
     addedRecords,
     namespaceId,
     namespace,
+    nonCreatorUsers,
+    user: userDict,
   };
 }
 
@@ -380,6 +393,24 @@ export const BACKDOOR_ACTIONS = {
                 edited: fourthDate,
               },
             },
+          ],
+        );
+      },
+      2: (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        moment: any,
+        DATA_PROVIDER_URL: string,
+        BACKDOOR_USERNAME: string,
+        BACKDOOR_PASSWORD: string,
+      ) => {
+        return BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          'testnamespace',
+          {  username: 'testuser'},
+          [
+            {  username: 'Jože Testnik'},
           ],
         );
       },

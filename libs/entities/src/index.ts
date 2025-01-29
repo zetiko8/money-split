@@ -41,6 +41,11 @@ export interface User {
     avatarId: number,
 }
 
+export interface ViewUserViewData {
+  user: User,
+  namespace: MNamespace,
+}
+
 export interface Invitation {
     id: number,
     email: string,

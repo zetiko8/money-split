@@ -15,6 +15,7 @@ import { SettleView } from './modules/namespace/views/settle/settle.view';
 import { HomeView } from './modules/home/home.view';
 import { HomeGuard } from './services/guards/HomeGuard';
 import { AuthGuard } from './services/guards/AuthGuard';
+import { ViewUserView } from './modules/namespace/views/view-user/view-user.view';
 
 export const appRoutes: Route[] = [
   {
@@ -86,6 +87,10 @@ export const appRoutes: Route[] = [
       {
         path: 'namespace/:namespaceId/edit/:recordId',
         component: EditRecordView,
+      },
+      {
+        path: 'namespace/:namespaceId/user/:userId',
+        component: ViewUserView,
       },
       {
         path: 'profile',

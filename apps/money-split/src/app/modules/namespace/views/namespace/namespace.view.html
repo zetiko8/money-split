@@ -17,12 +17,12 @@
             { 
                 label: 'recordsList', 
                 icon: 'fa-solid fa-coins', 
-                id: 'recordsList' 
+                id: routingService.NAMESPACE_VIEW_TAB.recordsList
             },
             { 
                 label: 'users', 
                 icon: 'fa-solid fa-user', 
-                id: 'users'
+                id: routingService.NAMESPACE_VIEW_TAB.users
             },
         ]"
         [selectedTab]="activeTab$.value"
@@ -33,13 +33,13 @@
         *ngIf="namespace$ | async as namespace"
     >
         <namespace-records
-            *ngIf="activeTab$.value === 'recordsList'"
+            *ngIf="activeTab$.value === routingService.NAMESPACE_VIEW_TAB.recordsList"
             [namespace]="namespace"
             (markAsSettled)="markAsSettledProcess.load($event)"
             (markAsUnSettled)="markAsUnsettledProcess.load($event)"
         ></namespace-records>
         <namespace-members
-            *ngIf="activeTab$.value === 'users'"
+            *ngIf="activeTab$.value === routingService.NAMESPACE_VIEW_TAB.users"
             [namespace]="namespace"
         ></namespace-members>
     </ng-container>

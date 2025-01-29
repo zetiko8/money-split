@@ -1,0 +1,39 @@
+
+<page
+    [isLoading]="loadProcess.inProgress$"
+    [notifications$]="notification$"
+    class="with-page-header"
+    data-test="view-user-view"
+>
+    <namespace-header
+      page-header
+      *ngIf="data$ | async as data"
+      [name]="data.namespace.name"
+      [avatarId]="data.namespace.avatarId"
+      (backNavigation)="routingService.goToNamespaceViewTab(routingService.NAMESPACE_VIEW_TAB.users)"
+      ></namespace-header>
+    <section
+        *ngIf="data$ | async as data"
+    >
+        <avatar
+          class="x-large"
+          [avatarId]="data.user.avatarId"
+          [name]="data.user.name"
+        ></avatar>
+        <h5
+          data-test="view-user-username"
+        >
+            {{ data.user.name }}
+        </h5>
+        <div>
+            <span
+                style="font-weight: bold;"
+            >
+                {{ 'username' | translate }}:
+            </span>
+            <span>
+                {{ data.user.name }}
+            </span>
+        </div>
+    </section>
+</page>

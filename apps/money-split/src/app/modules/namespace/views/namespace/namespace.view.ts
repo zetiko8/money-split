@@ -22,6 +22,7 @@ import { TabsHeaderComponent } from '../../../../components/tabs-header.componen
 import { NamespaceRecordsComponent } from '../../components/namespace-records/namespace-records.component';
 import { NamespaceMembersComponent } from '../../components/namespace-members/namespace-members.component';
 import { NamespaceHeaderComponent } from '../../components/namespace.header.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -44,6 +45,7 @@ export class NamespaceView {
 
   private readonly nameSpaceService = inject(NamespaceService);
   public readonly routingService = inject(RoutingService);
+  public readonly route = inject(ActivatedRoute);
 
   private readonly reload$ = new Subject<void>();
   public readonly loadProcess = AsyncProcess.on(
@@ -74,12 +76,25 @@ export class NamespaceView {
 
   public readonly namespace$
     = this.loadProcess.share().pipe(
-      tap(namespace => {
-        this.activeTab$.next((
-          namespace.records.length === 0
-          && namespace.users.length < 2
-        ) ? 'users' : 'recordsList');
+      mergeMap(namespace => this.route.queryParams
+        .pipe(
+          map(params => ({
+            tab: params['tab'],
+            namespace,
+          })),
+        )),
+      tap(({ namespace, tab }) => {
+        if (tab) {
+          this.activeTab$.next(tab);
+        } else {
+          this.activeTab$.next((
+            namespace.records.length === 0
+            && namespace.users.length < 2
+          ) ? this.routingService.NAMESPACE_VIEW_TAB.users
+            : this.routingService.NAMESPACE_VIEW_TAB.recordsList);
+        }
       }),
+      map(({ namespace}) => namespace),
     );
 
   public readonly isLoading = combineLoaders([

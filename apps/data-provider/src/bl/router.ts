@@ -2,7 +2,7 @@ import { Router, Request } from 'express';
 import { logRequestMiddleware } from '../request/service';
 import { TypedRequestBody } from '../types';
 import { query } from '../connection/connection';
-import { ERROR_CODE, MNamespace, Owner, RecordData, RecordView, SettlePayload } from '@angular-monorepo/entities';
+import { ERROR_CODE, MNamespace, Owner, RecordData, RecordView } from '@angular-monorepo/entities';
 import { INVITATION_SERVICE } from '../modules/invitation';
 import { RECORD_SERVICE } from '../modules/record';
 import { NAMESPACE_SERVICE } from '../modules/namespace';
@@ -24,6 +24,7 @@ import {
   getNamespaceViewApi,
   getOwnerNamespacesApi,
   getOwnerProfileApi,
+  getViewUserApi,
   loginApi,
   registerApi,
   settleConfirmApi,
@@ -32,6 +33,7 @@ import {
 import { AUTH_SERVICE } from '../modules/auth/auth';
 import { asyncMap } from '@angular-monorepo/utils';
 import { mysqlDate } from '../connection/helper';
+import { USER_SERVICE } from '../modules/user';
 
 export const mainRouter = Router();
 
@@ -47,6 +49,22 @@ registerRoute(
 
     return await NAMESPACE_SERVICE.createNamespace(
       payload, context.owner);
+  },
+  AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  getViewUserApi(),
+  mainRouter,
+  async (payload, params) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!params.namespaceId) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!params.userId) throw Error(ERROR_CODE.INVALID_REQUEST);
+
+    const user = await USER_SERVICE.getUserById(params.userId);
+    const namespace = await NAMESPACE_SERVICE.getNamespaceById(params.namespaceId);
+
+    return { user, namespace };
   },
   AUTH_SERVICE.auth,
 );
@@ -303,7 +321,7 @@ mainRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
 registerRoute(
   settleConfirmApi(),
   mainRouter,
-  async (payload, params, context) => {
+  async (payload, params) => {
     VALIDATE.requiredPayload(payload);
     if (!payload.records.length)
       throw Error(ERROR_CODE.INVALID_REQUEST);
@@ -323,7 +341,7 @@ registerRoute(
 registerRoute(
   settleConfirmApiBackdoor(),
   mainRouter,
-  async (payload, params, context) => {
+  async (payload, params) => {
     VALIDATE.requiredPayload(payload);
     if (!payload.records.length)
       throw Error(ERROR_CODE.INVALID_REQUEST);

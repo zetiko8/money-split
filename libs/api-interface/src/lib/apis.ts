@@ -13,8 +13,10 @@ import {
   RegisterOwnerPayload,
   Settlement,
   SettlePayload,
+  ViewUserViewData,
 } from '@angular-monorepo/entities';
 import { ApiDefinition, apiDefinition } from './helpers';
+import { Observable } from 'rxjs';
 
 export class ApiDefinitionObj <Payload, Params, ReturnType> {
 
@@ -45,6 +47,22 @@ export class ApiDefinitionObj <Payload, Params, ReturnType> {
       payload: Payload,
     ) => Promise<ReturnType>,
   ): Promise<ReturnType> {
+    return implementation(
+      this.getEndpoint(params),
+      this.getMethod(),
+      payload,
+    );
+  }
+
+  callObservable (
+    payload: Payload,
+    params: Params,
+    implementation: (
+      url: string,
+      method: 'GET'|'POST',
+      payload: Payload,
+    ) => Observable<ReturnType>,
+  ): Observable<ReturnType> {
     return implementation(
       this.getEndpoint(params),
       this.getMethod(),
@@ -220,6 +238,20 @@ export function settleConfirmApiBackdoor() {
     });
 }
 
+export function getViewUserApi() {
+  return apiDefinition<
+  null,
+  {
+    ownerKey: string,
+    namespaceId: number,
+    userId: number,
+  },
+  ViewUserViewData>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/user/:userId',
+    method: 'GET',
+  });
+}
+
 export const DATA_PROVIDER_API = {
   getNamespaceApi: new ApiDefinitionObj(getOwnerNamespacesApi()),
   createInvitationApi: new ApiDefinitionObj(createInvitationApi()),
@@ -229,4 +261,5 @@ export const DATA_PROVIDER_API = {
   addRecordApiBackdoor: new ApiDefinitionObj(addRecordApiBackdoor()),
   settleConfirmApi: new ApiDefinitionObj(settleConfirmApi()),
   settleConfirmApiBackdoor: new ApiDefinitionObj(settleConfirmApiBackdoor()),
+  getViewUserApi: new ApiDefinitionObj(getViewUserApi()),
 };

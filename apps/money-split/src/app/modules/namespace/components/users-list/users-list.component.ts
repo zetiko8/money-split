@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { Invitation, User } from '@angular-monorepo/entities';
 import { AvatarComponent } from '../../../../components/avatar.component';
+import { RoutingService } from '../../../../services/routing/routing.service';
 
 @Component({
   standalone: true,
@@ -15,8 +16,8 @@ import { AvatarComponent } from '../../../../components/avatar.component';
   templateUrl: './users-list.component.html',
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
   host: {
-    class: 'app-section'
-  }
+    class: 'app-section',
+  },
 })
 export class UsersListComponent {
   @Input() isLoadingUsers: boolean = false;
@@ -28,4 +29,5 @@ export class UsersListComponent {
   @Output() invite = new EventEmitter<void>();
 
   public openInvitedList: boolean | null = null;
+  public routingService = inject(RoutingService);
 }

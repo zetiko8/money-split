@@ -59,6 +59,36 @@ export const CREATE_NAMESPACE_FORM = {
   },
 };
 
+const NAMESPACE_USER = (username: string) => ({
+  click () {
+    cy.get(`[data-test-username="user-${username}"]`)
+      .click();
+  },
+});
+
+export const MEMBERS_TAB = {
+  NAMESPACE_USER: {
+    byUsername (username: string) {
+      return NAMESPACE_USER(username);
+    },
+  },
+};
+
+export const VIEW_USER_VIEW = {
+  userIsOnPage (
+    username: string,
+  ) {
+    cy.get('[data-test="view-user-view"]')
+      .should('be.visible')
+      .find('[data-test="view-user-username"]')
+      .should('contain.text', username);
+  },
+  goBack () {
+    cy.get('[data-test="navigate-back-button"]')
+      .click();
+  },
+};
+
 export const NAMESPACE_SCREEN = {
   visit (
     ownerKey: string,
@@ -85,6 +115,19 @@ export const NAMESPACE_SCREEN = {
     cy.get('[role=tab][data-test=tab-users]')
       .should('be.visible');
   },
+  userIsOnTab (
+    tab: 'users' | 'records',
+  ) {
+    if (tab === 'users') {
+      cy.get('[data-test="tab-users"]')
+        .should('have.class', 'active');
+    }
+    if (tab === 'records') {
+      cy.get('[data-test="tab-recordsList"]')
+        .should('have.class', 'active');
+    }
+  },
+  MEMBERS_TAB,
 };
 
 export const REALM_SCREEN = {

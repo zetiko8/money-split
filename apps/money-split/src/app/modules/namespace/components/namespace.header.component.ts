@@ -18,6 +18,7 @@ import { AvatarComponent } from '../../../components/avatar.component';
             <button
                 class="icon-btn"
                 (click)="backNavigation.emit()"
+                data-test="navigate-back-button"
             >
                 <i class="fa-solid fa-arrow-left"></i>
             </button>

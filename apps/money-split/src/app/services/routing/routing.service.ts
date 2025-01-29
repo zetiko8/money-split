@@ -12,6 +12,11 @@ export class RoutingService {
   private readonly userService = inject(UserService);
   private readonly baseHref = inject(APP_BASE_HREF);
 
+  public NAMESPACE_VIEW_TAB = {
+    users: 'users',
+    recordsList: 'recordsList',
+  };
+
   public getOwnerKey () {
     return this.userService.loadUserProfile()
       .pipe(map(up => up.key as string));
@@ -23,6 +28,18 @@ export class RoutingService {
       window.location.href
         .split(this.baseHref)[1]
         .split('/')[2],
+    ).pipe(map(stringId => {
+      if (stringId.includes('?')) stringId = stringId.split('?')[0];
+      return Number(stringId);
+    }));
+  }
+
+  public getViewUserId () {
+    // i dont know why route params are not working - TODO
+    return of(
+      window.location.href
+        .split(this.baseHref)[1]
+        .split('/')[4],
     ).pipe(map(stringId => Number(stringId)));
   }
 
@@ -58,16 +75,26 @@ export class RoutingService {
   public goToNamespaceView (
     namespaceId?: number,
     ownerKey?: string,
+    tab?: string,
   ) {
+    if (tab !== this.NAMESPACE_VIEW_TAB.recordsList
+      && tab !== this.NAMESPACE_VIEW_TAB.users
+    ) tab = '';
+    const queryParams: Record<string, string> = {};
+    if (tab) queryParams['tab'] = tab;
     if (ownerKey && namespaceId) {
       this.router.navigate(
-        this.namespaceViewLink(ownerKey, namespaceId));
+        this.namespaceViewLink(ownerKey, namespaceId), {
+          queryParams,
+        });
     }
     else if (namespaceId) {
       this.getOwnerKey()
         .subscribe(
           ownerKeyG => this.router.navigate(
-            this.namespaceViewLink(ownerKeyG, namespaceId)),
+            this.namespaceViewLink(ownerKeyG, namespaceId), {
+              queryParams,
+            }),
         );
     }
     else {
@@ -77,9 +104,17 @@ export class RoutingService {
       )
         .subscribe(
           ([ownerKeyG, namespaceIdG]) => this.router.navigate(
-            this.namespaceViewLink(ownerKeyG, namespaceIdG)),
+            this.namespaceViewLink(ownerKeyG, namespaceIdG), {
+              queryParams,
+            }),
         );
     }
+  }
+
+  public goToNamespaceViewTab (
+    tab?: string,
+  ) {
+    this.goToNamespaceView(undefined, undefined, tab);
   }
 
   public goToSettleView (
@@ -194,6 +229,34 @@ export class RoutingService {
     }
   }
 
+  public goToViewUserView (
+    userId: number,
+    namespaceId?: number,
+    ownerKey?: string,
+  ) {
+    if (ownerKey && namespaceId) {
+      this.router.navigate(
+        this.inviteLink(ownerKey, namespaceId));
+    }
+    else if (namespaceId) {
+      this.getOwnerKey()
+        .subscribe(
+          ownerKeyG => this.router.navigate(
+            this.viewUserLink(ownerKeyG, namespaceId, userId)),
+        );
+    }
+    else {
+      combineLatest(
+        this.getOwnerKey(),
+        this.getNamespaceId(),
+      )
+        .subscribe(
+          ([ownerKeyG, namespaceId]) => this.router.navigate(
+            this.viewUserLink(ownerKeyG, namespaceId, userId)),
+        );
+    }
+  }
+
   public goToInvitationView (
     invitationId?: string,
   ) {
@@ -302,6 +365,14 @@ export class RoutingService {
     namespaceId: number,
   ) {
     return ['/', ownerKey, 'namespace', namespaceId, 'invite'];
+  }
+
+  public viewUserLink (
+    ownerKey: string,
+    namespaceId: number,
+    userId: number,
+  ) {
+    return ['/', ownerKey, 'namespace', namespaceId, 'user', userId];
   }
 
   public invitationLink (
