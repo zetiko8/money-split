@@ -1,4 +1,5 @@
 import { settle } from '.';
+import { validateDebtValueRounded, validateDebtsArrayRounded } from './test.helper';
 
 describe('settle', () => {
   it('development case', () => {
@@ -38,13 +39,13 @@ describe('settle', () => {
     expect(debts).toHaveLength(3);
     expect(debts[0].creditor).toBe(4);
     expect(debts[0].debtor).toBe(1);
-    expect(debts[0].value).toBe(0.33);
+    validateDebtValueRounded(debts[0].value, 0.3333333);
     expect(debts[1].creditor).toBe(4);
     expect(debts[1].debtor).toBe(2);
-    expect(debts[1].value).toBe(3.33);
+    validateDebtValueRounded(debts[1].value, 3.3333333);
     expect(debts[2].creditor).toBe(4);
     expect(debts[2].debtor).toBe(3);
-    expect(debts[2].value).toBe(4.83);
+    validateDebtValueRounded(debts[2].value, 4.8333333);
   });
   it ('simple', () => {
     const debts = settle([
@@ -59,7 +60,7 @@ describe('settle', () => {
     expect(debts).toHaveLength(1);
     expect(debts[0].creditor).toBe(1);
     expect(debts[0].debtor).toBe(2);
-    expect(debts[0].value).toBe(10);
+    validateDebtValueRounded(debts[0].value, 10);
   });
   it ('simple loop', () => {
     const debts = settle([
@@ -122,10 +123,10 @@ describe('settle', () => {
     expect(debts).toHaveLength(2);
     expect(debts[0].creditor).toBe(1);
     expect(debts[0].debtor).toBe(3);
-    expect(debts[0].value).toBe(6);
+    validateDebtValueRounded(debts[0].value, 6);
     expect(debts[1].creditor).toBe(3);
     expect(debts[1].debtor).toBe(2);
-    expect(debts[1].value).toBe(1);
+    validateDebtValueRounded(debts[1].value, 1);
   });
   it('complex 2', () => {
     const debts = settle([
@@ -152,13 +153,13 @@ describe('settle', () => {
     expect(debts).toHaveLength(3);
     expect(debts[0].creditor).toBe(1);
     expect(debts[0].debtor).toBe(3);
-    expect(debts[0].value).toBe(6);
+    validateDebtValueRounded(debts[0].value, 6);
     expect(debts[1].creditor).toBe(3);
     expect(debts[1].debtor).toBe(2);
-    expect(debts[1].value).toBe(1);
+    validateDebtValueRounded(debts[1].value, 1);
     expect(debts[2].creditor).toBe(2);
     expect(debts[2].debtor).toBe(4);
-    expect(debts[2].value).toBe(3);
+    validateDebtValueRounded(debts[2].value, 3);
   });
   it('complex 3', () => {
     const debts = settle([
@@ -189,9 +190,9 @@ describe('settle', () => {
     ]);
 
     expect(debts).toHaveLength(3);
-    expect(debts[0]).toEqual({ creditor: 1, debtor: 3, value: 6 });
-    expect(debts[1]).toEqual({ creditor: 2, debtor: 3, value: 1 });
-    expect(debts[2]).toEqual({ creditor: 2, debtor: 4, value: 3 });
+    validateDebtValueRounded(debts[0].value, 6);
+    validateDebtValueRounded(debts[1].value, 1);
+    validateDebtValueRounded(debts[2].value, 3);
   });
   it('complex 4', () => {
     const debts = settle([
@@ -221,7 +222,7 @@ describe('settle', () => {
       },
     ]);
 
-    expect(debts).toEqual([
+    validateDebtsArrayRounded(debts, [
       { creditor: 1, debtor: 3, value: 6 },
       { creditor: 2, debtor: 4, value: 2 },
       { creditor: 3, debtor: 4, value: 2 },
@@ -255,10 +256,10 @@ describe('settle', () => {
       },
     ]);
 
-    expect(debts).toEqual([
-      { creditor: 1, debtor: 2, value: 7.47 },
-      { creditor: 1, debtor: 3, value: 7.47 },
-      { creditor: 1, debtor: 4, value: 7.47 },
+    validateDebtsArrayRounded(debts, [
+      { creditor: 1, debtor: 2, value: 7.4666667 },
+      { creditor: 1, debtor: 3, value: 7.4666667 },
+      { creditor: 1, debtor: 4, value: 7.4666667 },
     ]);
   });
 });

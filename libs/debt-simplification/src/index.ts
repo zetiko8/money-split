@@ -272,8 +272,6 @@ export function settle (records: RecordData[]) {
 
   return tidied.map(denormalize)
     .map(item => {
-      item.value = Math.round(
-        (item.value + Number.EPSILON) * 100) / 100;
       return item;
     });
 }
