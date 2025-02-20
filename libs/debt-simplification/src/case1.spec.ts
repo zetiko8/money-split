@@ -1,6 +1,6 @@
 import { RecordData } from '@angular-monorepo/entities';
 import { settle } from '.';
-import { validateFinalDifference } from './test.helper';
+import { validateFinalDifference, validateTotalDebtMatchesCredit, validateNoRedundantTransactions } from './test.helper';
 
 describe('settle', () => {
   it('User 1 bought groceries for users 2, 3, and 4. User 2 paid for a dinner for users 1 and 3. User 3 paid for a movie ticket for users 1 and 2.', () => {
@@ -32,5 +32,7 @@ describe('settle', () => {
       3: 0,
       4: 0,
     });
+    validateTotalDebtMatchesCredit(debts);
+    validateNoRedundantTransactions(debts, [1, 2, 3, 4]);
   });
 });

@@ -92,3 +92,52 @@ export const roundToSevenDecimals = (value: number): number => {
   const roundedValue = Math.round((value + Number.EPSILON) * 10000000) / 10000000;
   return roundedValue === 0 ? 0 : roundedValue;
 };
+
+export function validateTotalDebtMatchesCredit(debts: Debt[]): void {
+  let totalDebt = 0;
+  let totalCredit = 0;
+
+  for (const debt of debts) {
+    totalDebt += debt.value;    // Sum total money owed
+    totalCredit += debt.value;  // Sum total money received
+  }
+
+  expect(totalDebt).toBeCloseTo(totalCredit, 7);  // Floating point safe comparison
+}
+
+export function validateNoRedundantTransactions(debts: Debt[], users: number[]): void {
+  const netBalances: Record<number, number> = {};
+
+  for (const user of users) netBalances[user] = 0;
+
+  for (const debt of debts) {
+    netBalances[debt.debtor] -= debt.value;
+    netBalances[debt.creditor] += debt.value;
+  }
+
+  // There should be no leftover "unnecessary" payments occurring.
+  const debtors = debts.map(d => d.debtor);
+  const uniqueDebtors = new Set(debtors);
+
+  expect(uniqueDebtors.size).toBeLessThanOrEqual(users.length - 1);
+
+  // If someone owes money but could settle by merging transactions, detect that.
+  // Map to track how much each user is owed (credit) or owes (debt)
+  const balanceMap = new Map<number, number>();
+
+  // Compute individual net balances
+  for (const { debtor, creditor, value } of debts) {
+    balanceMap.set(debtor, (balanceMap.get(debtor) || 0) - value);
+    balanceMap.set(creditor, (balanceMap.get(creditor) || 0) + value);
+  }
+
+  for (const { debtor } of debts) {
+    /**
+     * A redundant transaction exists if:
+     * - Debtor received money from someone BUT is then paying it forward to someone else (middleman).
+     */
+    if (balanceMap.has(debtor) && balanceMap.get(debtor)! > 0) {
+      throw Error(`Redundant transaction detected: User ${debtor} is both receiving and forwarding money. Transactions can be optimized.`);
+    }
+  }
+}
