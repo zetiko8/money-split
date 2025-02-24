@@ -25,7 +25,7 @@
     <span
         data-test="record-cost"
     >
-        {{ record.data.cost }}
+        {{ record.data.cost | number : '1.2-2' }}
     </span>
     <span
         data-test="record-currency"

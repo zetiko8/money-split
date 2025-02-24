@@ -161,10 +161,12 @@ describe(API_NAME, () => {
         });
         expect(JSON.parse(item.data)).toEqual({
           'benefitors': [expect.any(Number)],
-          'cost':7.47,
+          'cost': expect.any(Number),
           'currency':'SIT',
           'paidBy':[scenario.creator.user.id],
         });
+        expect(JSON.parse(item.data).cost)
+          .toBeCloseTo(7.47);
       });
       expect(response).toHaveLength(3);
     });

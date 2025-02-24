@@ -13,7 +13,7 @@
 <span
     data-test="record-cost"
 >
-    {{ debt.data.cost }}
+    {{ debt.data.cost | number : '1.2-2' }}
 </span>
 <span
     data-test="record-currency"

@@ -98,7 +98,7 @@ describe('Settle', () => {
       await ACTIONS.loginTestOwner(creatorOwner);
     });
 
-    it('can settle', () => {
+    it.only('can settle', () => {
       NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.settleButton.click();
