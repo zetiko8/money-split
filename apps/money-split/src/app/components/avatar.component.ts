@@ -60,8 +60,6 @@ export class AvatarComponent implements OnDestroy {
           )
           .subscribe(
             avatar => {
-              console.log(id);
-              console.log(avatar);
               if (avatar.url) {
                 this.url = avatar.url;
               }
