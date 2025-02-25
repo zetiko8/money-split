@@ -1,8 +1,9 @@
 import { ACTIONS } from '../support/actions';
 import { INVITATION_FORM, LOGIN_FORM, NAMESPACE_SCREEN, REGISTER_FORM } from '../support/app.po';
 import { TestOwner } from '@angular-monorepo/backdoor';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Invitation', () => {
 

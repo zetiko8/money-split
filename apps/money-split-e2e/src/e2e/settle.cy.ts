@@ -2,8 +2,9 @@ import { NAMESPACE_SCREEN, RECORD_LIST, SETTLE_PREVIEW_SCREEN } from '../support
 import * as moment from 'moment';
 import { ACTIONS } from '../support/actions';
 import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Settle', () => {
 
@@ -15,8 +16,8 @@ describe('Settle', () => {
     before(async () => {
       scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
         'testnamespace',
         {  username: 'testuser'},
         [
@@ -55,8 +56,8 @@ describe('Settle', () => {
       scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;
@@ -88,8 +89,8 @@ describe('Settle', () => {
       scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;
@@ -98,7 +99,7 @@ describe('Settle', () => {
       await ACTIONS.loginTestOwner(creatorOwner);
     });
 
-    it.only('can settle', () => {
+    it('can settle', () => {
       NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.settleButton.click();
@@ -148,8 +149,8 @@ describe('Settle', () => {
       scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;
@@ -194,8 +195,8 @@ describe('Settle', () => {
       scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;

@@ -1,5 +1,6 @@
 import { TestOwner } from '@angular-monorepo/backdoor';
 import { Invitation, MNamespace, Owner, Record, RecordDataCy } from '@angular-monorepo/entities';
+import { ENV } from './config';
 
 export function getRandomColor () {
   return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
@@ -11,7 +12,7 @@ export const ACTIONS = {
     password: string,
   ) => {
     return cy.request<Owner>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/app/register`,
+      url: `${ENV().DATA_PROVIDER_URL}/app/register`,
       body: {
         username,
         password,
@@ -26,7 +27,7 @@ export const ACTIONS = {
   ) => {
     cy.request(
       'DELETE',
-      `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/owner/${username}`,
+      `${ENV().DATA_PROVIDER_URL}/cybackdoor/owner/${username}`,
     ).then((response) => {
       expect(response.status).to.equal(200);
     });
@@ -36,7 +37,7 @@ export const ACTIONS = {
   ) => {
     cy.request(
       'DELETE',
-      `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/user/${username}`,
+      `${ENV().DATA_PROVIDER_URL}/cybackdoor/user/${username}`,
     ).then((response) => {
       expect(response.status).to.equal(200);
     });
@@ -46,7 +47,7 @@ export const ACTIONS = {
     password: string,
   ) => {
     return cy.request<{ token: string }>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/app/login`,
+      url: `${ENV().DATA_PROVIDER_URL}/app/login`,
       body: {
         username,
         password,
@@ -76,7 +77,7 @@ export const ACTIONS = {
     ownerKey: string,
   ) {
     return cy.request<MNamespace>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/${ownerKey}/namespace`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/${ownerKey}/namespace`,
       body: {
         name,
       },
@@ -87,7 +88,7 @@ export const ACTIONS = {
     namespaceId: number,
   ) {
     return cy.request<MNamespace>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/namespace/${namespaceId}`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/namespace/${namespaceId}`,
       method: 'DELETE',
     }).then(res => res.body);
   },
@@ -95,7 +96,7 @@ export const ACTIONS = {
     namespaceName: string,
   ) {
     return cy.request<MNamespace>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/namespaceName/${namespaceName}`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/namespaceName/${namespaceName}`,
       method: 'DELETE',
     }).then(res => res.body);
   },
@@ -103,7 +104,7 @@ export const ACTIONS = {
     email: string,
   ) {
     return cy.request<Invitation>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/invitation/${email}`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/invitation/${email}`,
       method: 'DELETE',
     }).then(res => res.body);
   },
@@ -111,7 +112,7 @@ export const ACTIONS = {
     email: string,
   ) {
     return cy.request<Invitation>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/invitation/${email}`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/invitation/${email}`,
       method: 'DELETE',
     }).then(res => res.body);
   },
@@ -121,7 +122,7 @@ export const ACTIONS = {
     email: string,
   ) {
     return cy.request<Invitation>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/app/${ownerKey}/namespace/${namespaceId}/invite`,
+      url: `${ENV().DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/invite`,
       method: 'POST',
       body: { email },
     }).then(res => res.body);
@@ -132,7 +133,7 @@ export const ACTIONS = {
     email: string,
   ) {
     return cy.request<Invitation>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/invitation/accept`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/invitation/accept`,
       method: 'POST',
       body: { email, name, ownerUsername },
     }).then(res => res.body);
@@ -143,7 +144,7 @@ export const ACTIONS = {
     record: RecordDataCy,
   ) {
     return cy.request<Record>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/record/${namespaceName}/${createdBy}`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/record/${namespaceName}/${createdBy}`,
       method: 'POST',
       body: record,
     }).then(res => res.body);
@@ -155,7 +156,7 @@ export const ACTIONS = {
     settledOn: Date,
   ) {
     return cy.request<Invitation>({
-      url: `${Cypress.env()['DATA_PROVIDER_URL']}/cybackdoor/settle/${namespaceName}/${byUsername}`,
+      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/settle/${namespaceName}/${byUsername}`,
       method: 'POST',
       body: { records, settledOn },
     }).then(res => res.body);

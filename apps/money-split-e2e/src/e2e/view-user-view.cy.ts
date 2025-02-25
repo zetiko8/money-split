@@ -3,8 +3,9 @@ import * as moment from 'moment';
 import { BACKDOOR_ACTIONS, TestOwner } from '@angular-monorepo/backdoor';
 import { ACTIONS } from '../support/actions';
 import { User } from '@angular-monorepo/entities';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Namespace user view', () => {
 
@@ -17,8 +18,8 @@ describe('Namespace user view', () => {
       const scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[2](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;
@@ -46,8 +47,8 @@ describe('Namespace user view', () => {
       const scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[2](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;

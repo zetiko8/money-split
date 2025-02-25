@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfigService } from './services/config.service';
+import { Owner } from '@angular-monorepo/entities';
 
 interface MigrationResponse {
   id: string,
@@ -51,7 +52,7 @@ export class AppComponent implements OnInit {
         headers: {
           'Authorization': 'Bearer ' + this.password,
         },
-      }
+      },
     ).subscribe(this.subscriber);
   }
 
@@ -64,8 +65,40 @@ export class AppComponent implements OnInit {
         headers: {
           'Authorization': 'Bearer ' + this.password,
         },
-      }
+      },
     ).subscribe(this.subscriber);
+  }
+
+  public createTestAdmin () {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<Owner | { error: string }>(
+      `${this.config.getConfig().middlewareUrl}/test-admin-create`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe({
+      next: (res: Owner | { error: string }) => {
+        console.log(res);
+        if ((res as { error: string }).error) {
+          this.error = (res as { error: string }).error;
+        } else {
+          this.actionDetails = 'Create test admin';
+        }
+        this.reload();
+      },
+      error: (errorResponse: HttpErrorResponse) => {
+        console.log(Object.entries(errorResponse));
+        if (errorResponse.error) {
+          this.error = errorResponse.error;
+        } else {
+          this.error = 'ERROR';
+        }
+        this.reload();
+      },
+    });
   }
 
   private subscriber = {
@@ -84,12 +117,12 @@ export class AppComponent implements OnInit {
     error: (errorResponse: HttpErrorResponse) => {
       console.log(Object.entries(errorResponse));
       this.reload();
-    }
-  }
+    },
+  };
 
   private reload () {
     this.http.get<{ migrations: MigrationDefinition[]}>(
-      `${this.config.getConfig().middlewareUrl}/migration`
+      `${this.config.getConfig().middlewareUrl}/migration`,
     ).subscribe({
       next: res => {
         this.migrations = res.migrations;

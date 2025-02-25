@@ -2,8 +2,9 @@ import { NAMESPACE_SCREEN, RECORD_LIST } from '../support/app.po';
 import * as moment from 'moment';
 import { BACKDOOR_ACTIONS, TestOwner } from '@angular-monorepo/backdoor';
 import { ACTIONS } from '../support/actions';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Record list', () => {
 
@@ -26,8 +27,8 @@ describe('Record list', () => {
     before(async () => {
       const scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
         'testnamespace',
         {  username: 'testuser'},
         [

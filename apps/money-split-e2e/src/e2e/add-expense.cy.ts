@@ -3,8 +3,9 @@ import * as moment from 'moment';
 import { BACKDOOR_ACTIONS, TestOwner } from '@angular-monorepo/backdoor';
 import { ACTIONS } from '../support/actions';
 import { User } from '@angular-monorepo/entities';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Add expense', () => {
 
@@ -117,8 +118,8 @@ describe('Add expense', () => {
       ];
 
       await creatorOwner.backdoorLogin({
-        username: Cypress.env()['BACKDOOR_USERNAME'],
-        password: Cypress.env()['BACKDOOR_PASSWORD'],
+        username: ENV().BACKDOOR_USERNAME,
+        password: ENV().BACKDOOR_PASSWORD,
       });
       await creatorOwner.addRecordToNamespace(namespaceId, {
         benefitors,
@@ -150,7 +151,7 @@ describe('Add expense', () => {
     });
   });
 
-  describe.only('form',() => {
+  describe('form',() => {
     let namespaceId!: number;
     let creatorOwner!: TestOwner;
     let benefitor!: User;
@@ -160,8 +161,8 @@ describe('Add expense', () => {
       const scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[2](
         moment,
         DATA_PROVIDER_URL,
-        Cypress.env()['BACKDOOR_USERNAME'],
-        Cypress.env()['BACKDOOR_PASSWORD'],
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
       );
 
       creatorOwner = scenario.creator.owner;

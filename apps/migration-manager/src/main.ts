@@ -3,7 +3,9 @@ import * as path from 'path';
 import * as cors from 'cors';
 import fs from 'fs';
 import { query } from './connection/connection';
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
+import axios from 'axios';
+import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
 
 const app = express();
 
@@ -20,32 +22,32 @@ app.get('/migration-manager/api/migration', async (req, res) => {
 
     const files = fs.readdirSync(
       path.join(__dirname, 'assets', 'migrations'),
-      { encoding: 'utf-8' }
+      { encoding: 'utf-8' },
     );
-  
+
     const migrations: string[] = [];
     files.forEach(fileName => {
       const cleaned = fileName
         .replace('-down.sql', '')
         .replace('-up.sql', '');
-  
+
       if (!migrations.includes(cleaned))
         migrations.push(cleaned);
-  
+
     });
-    const migrationObjects = migrations.map(m => ({ 
+    const migrationObjects = migrations.map(m => ({
       id: m,
       isApplied: false,
     }));
-  
+
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const doneMigrations = await query<any>(
         `
         SELECT * FROM \`Migration\`
-        `
+        `,
       );
-  
+
       doneMigrations.forEach(m => {
         const found = migrationObjects.find(item => item.id === m.id);
         if (found) found.isApplied = true;
@@ -59,10 +61,10 @@ app.get('/migration-manager/api/migration', async (req, res) => {
     } catch (error) {
       //
     }
-  
+
     res.json({ migrations: migrationObjects });
   } catch (error) {
-    res.json({ 
+    res.json({
       error: error.message,
       details: error.details,
     });
@@ -75,14 +77,14 @@ app.get('/migration-manager/api/migration/up/:id', async (req, res) => {
 
     await runMigration(
       req.params['id'],
-      true,  
-    );    
-    res.json({ 
+      true,
+    );
+    res.json({
       id: req.params['id'],
       up: true,
     });
   } catch (error) {
-    res.json({ 
+    res.json({
       id: req.params['id'],
       up: true,
       error: error.message,
@@ -97,18 +99,42 @@ app.get('/migration-manager/api/migration/down/:id', async (req, res) => {
 
     await runMigration(
       req.params['id'],
-      false,  
-    );    
-    res.json({ 
+      false,
+    );
+    res.json({
       id: req.params['id'],
       up: false,
     });
   } catch (error) {
-    res.json({ 
+    res.json({
       id: req.params['id'],
       up: false,
       error: error.message,
       details: error.details,
+    });
+  }
+});
+
+app.get('/migration-manager/api/test-admin-create', async (req, res) => {
+  try {
+    authorize(req);
+
+    const owner = await testAdminCreate();
+
+    const sql =
+      `
+      INSERT INTO \`OwnerRole\`
+      (\`ownerId\`, \`role\`)
+      VALUES(${owner.id}, 'ADMIN')
+      `;
+    console.log(sql);
+    await query(sql);
+
+    res.json(owner);
+  } catch (error) {
+    console.log(error);
+    res.json({
+      error: error.message,
     });
   }
 });
@@ -121,18 +147,18 @@ server.on('error', console.error);
 
 async function runMigration (
   id: string,
-  up: boolean
+  up: boolean,
 ) {
   const sql = fs.readFileSync(
-    path.join(__dirname, 'assets', 'migrations', 
+    path.join(__dirname, 'assets', 'migrations',
       `${id}-${up ? 'up': 'down'}.sql`),
-    { encoding: 'utf-8' }
+    { encoding: 'utf-8' },
   );
   try {
-  
+
     console.log(sql);
     await query(sql);
-    
+
     if (up) {
       await query(`
         INSERT INTO \`Migration\`
@@ -152,8 +178,30 @@ async function runMigration (
   }
 }
 
+async function testAdminCreate () {
+  const result
+  = await DATA_PROVIDER_API.registerApi.callPromise(
+    {
+      avatarColor: null,
+      avatarUrl: null,
+      password: process.env.ADMIN_PASSWORD,
+      username: process.env.ADMIN_USERNAME,
+    },
+    null,
+    async (endpoint, method, payload) => {
+      const res = await axios.post<Owner>(
+        `${process.env.MIDDLEWARE_URL}/app/${endpoint}`,
+        payload,
+      );
+      return res.data;
+    },
+  );
+
+  return result;
+}
+
 function authorize (request: Request) {
   const pwd = process.env.ADMIN_MIGRATION_PASSWORD || 'anze123';
   if (request.headers.authorization !== 'Bearer ' + pwd)
-    throw Error(ERROR_CODE.UNAUTHORIZED)
+    throw Error(ERROR_CODE.UNAUTHORIZED);
 }

@@ -1,8 +1,9 @@
 import { CREATE_NAMESPACE_FORM, NAMESPACE_SCREEN, REALM_SCREEN } from '../support/app.po';
 import { ACTIONS } from '../support/actions';
 import { TestOwner } from '@angular-monorepo/backdoor';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Create a namespace', () => {
 

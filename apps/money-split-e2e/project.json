@@ -14,14 +14,27 @@
         "demo": {
           "baseUrl": "https://62.171.161.203:8311/money-split/",
           "env": {
-            "DATA_PROVIDER_URL": "https://62.171.161.203:8311/data-provider"
+            "env": "production"
           }
         },
         "demo-watch": {
           "baseUrl": "https://62.171.161.203:8311/money-split/",
           "watch": true,
           "env": {
-            "DATA_PROVIDER_URL": "https://62.171.161.203:8311/data-provider"
+            "env": "production"
+          }
+        },
+        "production-local": {
+          "baseUrl": "https://localhost:8311/money-split/",
+          "env": {
+            "env": "production-local"
+          }
+        },
+        "production-local-dev": {
+          "baseUrl": "https://localhost:8311/money-split/",
+          "watch": true,
+          "env": {
+            "env": "production-local"
           }
         },
         "development-watch": {
@@ -29,18 +42,14 @@
           "watch": true,
           "baseUrl": "http://localhost:4200/money-split",
           "env": {
-            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider",
-            "BACKDOOR_USERNAME": "admin",
-            "BACKDOOR_PASSWORD": "testadmin"
+            "env": "development"
           }
         },
         "development": {
           "devServerTarget": "money-split:serve:development-ci",
           "baseUrl": "http://localhost:4201/money-split",
           "env": {
-            "DATA_PROVIDER_URL": "http://localhost:3333/data-provider",
-            "BACKDOOR_USERNAME": "admin",
-            "BACKDOOR_PASSWORD": "testadmin"
+            "env": "development"
           }
         }
       }

@@ -1,7 +1,8 @@
 import { TestOwner } from '@angular-monorepo/backdoor';
 import { LOGIN_FORM } from '../support/app.po';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Login', () => {
   beforeEach(async () => {

@@ -21,3 +21,19 @@ cd devops
 cd data-provider
 docker build --tag money-split-data-provider .
 ```
+
+## Docker local
+
+```
+npm run docker-compose:local
+```
+
+### Links
+ - https://localhost:8311/money-split/register
+ - https://localhost:8311/admin-dashboard/
+
+### Update DB
+
+If a admin user does not exist add an admin user.
+On Admin Dashboard run all the migrations
+Connect to the database and run all the pacakges in DB folder

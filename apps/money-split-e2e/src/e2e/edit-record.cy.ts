@@ -2,8 +2,9 @@ import { NAMESPACE_SCREEN, RECORD_FORM, RECORD_LIST } from '../support/app.po';
 import * as moment from 'moment';
 import { TestOwner } from '@angular-monorepo/backdoor';
 import { ACTIONS } from '../support/actions';
+import { ENV } from '../support/config';
 
-const DATA_PROVIDER_URL = Cypress.env()['DATA_PROVIDER_URL'];
+const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Add expense', () => {
 
@@ -54,8 +55,8 @@ describe('Add expense', () => {
       ];
 
       await creatorOwner.backdoorLogin({
-        username: Cypress.env()['BACKDOOR_USERNAME'],
-        password: Cypress.env()['BACKDOOR_PASSWORD'],
+        username: ENV().BACKDOOR_USERNAME,
+        password: ENV().BACKDOOR_PASSWORD,
       });
       await creatorOwner.addRecordToNamespace(namespaceId, {
         benefitors,

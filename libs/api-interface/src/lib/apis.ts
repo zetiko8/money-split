@@ -262,4 +262,5 @@ export const DATA_PROVIDER_API = {
   settleConfirmApi: new ApiDefinitionObj(settleConfirmApi()),
   settleConfirmApiBackdoor: new ApiDefinitionObj(settleConfirmApiBackdoor()),
   getViewUserApi: new ApiDefinitionObj(getViewUserApi()),
+  registerApi: new ApiDefinitionObj(registerApi()),
 };

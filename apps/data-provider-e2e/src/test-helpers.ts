@@ -2,10 +2,10 @@ import { BACKDOOR_ACTIONS } from '@angular-monorepo/backdoor';
 import { AxiosError, AxiosResponse } from 'axios';
 import axios from 'axios';
 
-export const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
+export const DATA_PROVIDER_URL = process.env.MIDDLEWARE_URL;
 
 export const BACKDOOR_USERNAME = 'admin';
-export const BACKDOOR_PASSWORD = 'testadmin';
+export const BACKDOOR_PASSWORD = process.env.ADMIN_PASSWORD;
 
 export function testEnv () {
   return {
