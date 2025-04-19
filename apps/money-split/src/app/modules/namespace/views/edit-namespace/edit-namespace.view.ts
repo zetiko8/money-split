@@ -8,9 +8,10 @@ import { Observable, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { NamespaceService } from '../../services/namespace.service';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { CreateNamespacePayload, MNamespaceSettings } from '@angular-monorepo/entities';
+import { CreateNamespacePayload, MNamespace, MNamespaceSettings } from '@angular-monorepo/entities';
 import { createNamespaceSettingsForm, NamespaceSettingsFormComponent } from '../../../../components/namespace-settings/namespace-settings.form';
 import { combineLoaders } from '@angular-monorepo/components';
+import { NamespaceHeaderComponent } from '../../components/namespace.header.component';
 
 @Component({
   standalone: true,
@@ -20,6 +21,7 @@ import { combineLoaders } from '@angular-monorepo/components';
     TranslateModule,
     PageComponent,
     NamespaceSettingsFormComponent,
+    NamespaceHeaderComponent,
   ],
   selector: 'edit-namespace',
   templateUrl: './edit-namespace.view.html',
@@ -33,13 +35,20 @@ export class EditNamespaceView {
   private readonly namespaceService = inject(NamespaceService);
   public readonly routingService = inject(RoutingService);
 
-  public readonly loadProcess = new BoundProcess2<void, MNamespaceSettings>(
-    () => this.namespaceService.getNamespaceSetting(),
-  );
+  public readonly loadSettingsProcess
+    = new BoundProcess2<void, MNamespaceSettings>(
+      () => this.namespaceService.getNamespaceSetting(),
+    );
+  public readonly loadNamespaceProcess
+    = new BoundProcess2<void, MNamespace>(
+      () => this.namespaceService.getNamespace(),
+    );
 
-  public readonly form$ = this.loadProcess.execute().pipe(
+  public readonly form$ = this.loadSettingsProcess.execute().pipe(
     map(namespaceSettings => createNamespaceSettingsForm(namespaceSettings)),
   );
+  public readonly namespace$
+    = this.loadNamespaceProcess.execute();
 
   public readonly editProcess = new BoundProcess(
     (data: CreateNamespacePayload) => this
@@ -47,12 +56,17 @@ export class EditNamespaceView {
   );
 
   public readonly isLoading$ = combineLoaders([
-    this.loadProcess.inProgress$,
+    this.loadSettingsProcess.inProgress$,
     this.editProcess.inProgress$,
+    this.loadNamespaceProcess.inProgress$,
   ]);
 
   public readonly notification$: Observable<Notification>
-    = merge(this.editProcess.error$, this.loadProcess.error$)
+    = merge(
+      this.editProcess.error$,
+      this.loadSettingsProcess.error$,
+      this.loadNamespaceProcess.error$,
+    )
       .pipe(
         filter(err => err !== null),
         map(event => {

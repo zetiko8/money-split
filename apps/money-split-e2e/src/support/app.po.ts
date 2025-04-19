@@ -50,8 +50,16 @@ export const CREATE_NAMESPACE_FORM = {
   setName (
     name: string,
   ) {
-    cy.get('input[name="namespaceName"]') // enter a username
+    cy.get('input[name="namespaceName"]')
+      .clear();
+    cy.get('input[name="namespaceName"]')
       .type(name);
+  },
+  nameIs (
+    name: string,
+  ) {
+    cy.get('input[name="namespaceName"]')
+      .should('have.value', name);
   },
   submit () {
     cy.get('button[type=submit]')
@@ -60,6 +68,16 @@ export const CREATE_NAMESPACE_FORM = {
 };
 
 export const EDIT_NAMESPACE_FORM = {
+  visit (
+    ownerKey: string,
+    namespaceId: number,
+  ) {
+    cy.visit(`/${ownerKey}/namespace/${namespaceId}/settings`);
+  },
+  goBack () {
+    cy.get('[data-test="navigate-back-button"]')
+      .click();
+  },
   ...CREATE_NAMESPACE_FORM,
 };
 

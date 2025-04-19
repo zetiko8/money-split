@@ -1,4 +1,5 @@
 import {
+  AvatarData,
   CreateNamespacePayload,
   EditProfileData,
   Invitation,
@@ -133,6 +134,18 @@ export function getOwnerProfileApi() {
   OwnerProfileView
   >({
     endpoint: '/:ownerKey/profile',
+    method: 'GET',
+  });
+}
+
+export function getAvatarApi() {
+  return apiDefinition<
+  null,
+  {
+    avatarId: number,
+  },
+  AvatarData>({
+    endpoint: '/avatar/:avatarId',
     method: 'GET',
   });
 }
@@ -292,4 +305,5 @@ export const DATA_PROVIDER_API = {
   registerApi: new ApiDefinitionObj(registerApi()),
   getNamespaceSettingsApi: new ApiDefinitionObj(getNamespaceSettingsApi()),
   editNamespaceSettingApi: new ApiDefinitionObj(editNamespaceSettingApi()),
+  getAvatarApi: new ApiDefinitionObj(getAvatarApi()),
 };

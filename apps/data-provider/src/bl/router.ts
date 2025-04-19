@@ -21,6 +21,7 @@ import {
   createNamespaceApi,
   editNamespaceSettingApi,
   editOwnerProfileApi,
+  getAvatarApi,
   getInvitationViewApi,
   getNamespaceSettingsApi,
   getNamespaceViewApi,
@@ -94,23 +95,16 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
-mainRouter.get('/avatar/:avatarId',
-  logRequestMiddleware('GET avatar'),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      const avatar = await AVATAR_SERVICE.getById(
-        Number(req.params['avatarId'] as string),
-      );
-
-      res.json(avatar);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  getAvatarApi(),
+  mainRouter,
+  async (_, params) => {
+    return await AVATAR_SERVICE.getById(
+      Number(params.avatarId),
+    );
+  },
+  AUTH_SERVICE.auth,
+);
 
 mainRouter.get('/avatar',
   logRequestMiddleware('GET avatar'),

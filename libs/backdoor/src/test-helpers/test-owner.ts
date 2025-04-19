@@ -1,5 +1,5 @@
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
-import { Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataBackdoor } from '@angular-monorepo/entities';
+import { AvatarData, Invitation, MNamespace, NamespaceView, Owner, Record, RecordDataBackdoor } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { BACKDOOR_ACTIONS, getRandomColor } from './backdoor-actions';
 
@@ -231,6 +231,25 @@ export class TestOwner {
         const res = await axios.post<Record>(
           `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
           payload,
+          this.backdoorAuthHeaders(),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
+  }
+
+  async getAvatar (
+    avatarId: number,
+  ) {
+    const result
+    = await DATA_PROVIDER_API.getAvatarApi.callPromise(
+      null,
+      { avatarId },
+      async (endpoint) => {
+        const res = await axios.get<AvatarData>(
+          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
           this.backdoorAuthHeaders(),
         );
         return res.data;
