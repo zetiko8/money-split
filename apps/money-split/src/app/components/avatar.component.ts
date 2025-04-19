@@ -44,35 +44,35 @@ export class AvatarComponent implements OnDestroy {
 
 
   public staticUrl = this.config.getConfig().staticUrl;
-    @Input() name = '';
-    @Input() color = '#271d3b';
-    @Input() backgroundColor = '#2ebf91';
-    @Input() avatarUrl: string | null = null;
+  @Input() name = '';
+  @Input() color = '#271d3b';
+  @Input() backgroundColor = '#2ebf91';
+  @Input() avatarUrl: string | null = null;
 
-    public url: string | null = null;
-    @Input()
-    set avatarId (id: number | null) {
-      if (id !== null) {
-        this.avatarService.load(id)
-          .pipe(
-            takeUntil(this.destroy$),
-            take(1),
-          )
-          .subscribe(
-            avatar => {
-              if (avatar.url) {
-                this.url = avatar.url;
-              }
-              else {
-                this.backgroundColor = avatar.color;
-              }
-            },
-          );
-      }
-    };
-
-    ngOnDestroy(): void {
-      this.destroy$.next();
-      this.destroy$.complete();
+  public url: string | null = null;
+  @Input()
+  set avatarId (id: number | null) {
+    if (id !== null) {
+      this.avatarService.load(id)
+        .pipe(
+          takeUntil(this.destroy$),
+          take(1),
+        )
+        .subscribe(
+          avatar => {
+            if (avatar.url) {
+              this.url = avatar.url;
+            }
+            else {
+              this.backgroundColor = avatar.color;
+            }
+          },
+        );
     }
+  };
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }
