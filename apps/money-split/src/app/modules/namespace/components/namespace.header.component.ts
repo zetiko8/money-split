@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AvatarComponent } from '../../../components/avatar.component';
+import { inject } from '@angular/core';
+import { RoutingService } from '../../../services/routing/routing.service';
 
 @Component({
   standalone: true,
@@ -27,6 +29,8 @@ import { AvatarComponent } from '../../../components/avatar.component';
         <avatar
             [avatarId]="avatarId"
             [name]="name"
+            data-test="edit-namespace-button"
+            (click)="routingService.goToEditNamespaceView()"
         ></avatar>
     </div>
   `,
@@ -36,4 +40,6 @@ export class NamespaceHeaderComponent {
     @Input() name = '';
     @Input() avatarId: number | null = null;
     @Output() backNavigation = new EventEmitter<void>();
+
+    public readonly routingService = inject(RoutingService);
 }

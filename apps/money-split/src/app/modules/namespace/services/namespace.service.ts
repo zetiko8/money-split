@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { ConfigService } from '../../../services/config.service';
 import { Observable, catchError, combineLatest, mergeMap, throwError } from 'rxjs';
-import { CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, NamespaceView, Record, RecordView, SettlePayload, SettlementPreview } from '@angular-monorepo/entities';
+import { CreateNamespacePayload, CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, MNamespaceSettings, NamespaceView, Record, RecordView, SettlePayload, SettlementPreview } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
+import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
 
 @Injectable()
 export class NamespaceService {
@@ -225,6 +226,47 @@ export class NamespaceService {
                         + settlementDebtId,
           ),
         ),
+      );
+  }
+
+  public editNamespace (payload: CreateNamespacePayload): Observable<MNamespaceSettings> {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => {
+          return DATA_PROVIDER_API.editNamespaceSettingApi.callObservable(
+            payload,
+            { ownerKey, namespaceId },
+            (url) => {
+              return this.http.post<MNamespaceSettings>(
+                this.config.getConfig().middlewareUrl + url,
+                payload,
+              );
+            },
+          )},
+        ),
+      );
+  }
+
+  public getNamespaceSetting (): Observable<MNamespaceSettings> {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => {
+          return DATA_PROVIDER_API.getNamespaceSettingsApi.callObservable(
+            null,
+            { ownerKey, namespaceId },
+            (url) => {
+              return this.http.get<MNamespaceSettings>(
+                this.config.getConfig().middlewareUrl + url,
+              );
+            },
+          );
+        }),
       );
   }
 }

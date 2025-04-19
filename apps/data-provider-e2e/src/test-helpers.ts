@@ -116,6 +116,10 @@ export function fnCall (
     },
   };
 }
+
+/**
+ * @deprecated
+ */
 export function expectEqual (
   expected: unknown,
   actual: unknown,

@@ -1,0 +1,26 @@
+<form
+    (submit)="$event.preventDefault(); submit()"
+>
+    <div class="input-group">
+        <label>{{ 'namespaceName' | translate }}</label>
+        <input
+            [formControl]="form.controls.namespaceName" 
+            type="text"
+            name="namespaceName"    
+        >
+    </div>
+    <customize-avatar
+        [avatarColor]="form.controls.avatarColor"
+        [avatarImage]="form.controls.avatarImage"
+        [avatarName]="form.controls.namespaceName.value || ''"
+        [avatarUrl]="form.controls.avatarUrl"
+    ></customize-avatar>
+    <div class="input-group">
+        <button
+            type="submit"
+            [disabled]="!form.valid"
+        >
+            {{ 'confirm' | translate }}
+        </button>
+    </div>
+</form>

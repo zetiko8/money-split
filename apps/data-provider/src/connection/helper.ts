@@ -2,11 +2,11 @@ import { ERROR_CODE } from '@angular-monorepo/entities';
 import { Entity, EntityPropertyType } from '../types';
 import { query } from './connection';
 
-export async function lastInsertId (): Promise<number> {
+export async function lastInsertId(): Promise<number> {
   const lidRes
-        = await query<{
-            'LAST_INSERT_ID()': number
-        }[]>('SELECT LAST_INSERT_ID()');
+    = await query<{
+      'LAST_INSERT_ID()': number
+    }[]>('SELECT LAST_INSERT_ID()');
 
   if (!lidRes.length)
     throw Error(ERROR_CODE.LAST_INSERT_ID_ERROR);
@@ -40,9 +40,9 @@ export function insertSql(
   }
 
   const sql = 'INSERT INTO '
-          + '`' + tableName + '`'
-          + ' (' + columns + ') '
-          + 'VALUES(' + values + ')';
+    + '`' + tableName + '`'
+    + ' (' + columns + ') '
+    + 'VALUES(' + values + ')';
 
   return sql;
 }
@@ -91,14 +91,14 @@ export function insertMultipleSql(
   }
 
   const sql = 'INSERT INTO '
-          + '`' + tableName + '`'
-          + ' (' + columns + ') '
-          + 'VALUES' + values;
+    + '`' + tableName + '`'
+    + ' (' + columns + ') '
+    + 'VALUES' + values;
 
   return sql;
 }
 
-function addValue (
+function addValue(
   type: EntityPropertyType,
   column: string,
   data: unknown,
@@ -133,7 +133,7 @@ function addValue (
   return values;
 }
 
-export function mysqlDate (
+export function mysqlDate(
   dataPoint: Date,
 ) {
   return dataPoint.toISOString().slice(0, 19).replace('T', ' ');
@@ -147,7 +147,7 @@ export async function selectSql<T>(
 
   const mapped = res.map(row => {
     const accumulator: Record<string, unknown> = {};
-    Object.entries(entity).forEach(([ column, type ]) => {
+    Object.entries(entity).forEach(([column, type]) => {
       if (type === EntityPropertyType.BOOL) {
         accumulator[column] = row[column] === 1 ? true : false;
       }
@@ -221,13 +221,13 @@ export async function selectWhereSql<T>(
   return mapped as T;
 }
 
-function mapSelectRows (
+function mapSelectRows(
   selectResult: Record<string, unknown>[],
   entity: Entity,
 ) {
   const mapped = selectResult.map(row => {
     const accumulator: Record<string, unknown> = {};
-    Object.entries(entity).forEach(([ column, type ]) => {
+    Object.entries(entity).forEach(([column, type]) => {
       if (type === EntityPropertyType.BOOL) {
         accumulator[column] = row[column] === 1 ? true : false;
       }
@@ -249,7 +249,7 @@ function mapSelectRows (
   return mapped;
 }
 
-function createSelectWhereClause (
+function createSelectWhereClause(
   tableName: string,
   property: string,
   propertyType: EntityPropertyType,
@@ -270,7 +270,7 @@ function createSelectWhereClause (
   return sql;
 }
 
-export async function errorFirstProcedure <T>(
+export async function errorFirstProcedure<T>(
   sql: string,
 ) {
   const result = await query<unknown[]>(sql);
@@ -282,7 +282,7 @@ export async function errorFirstProcedure <T>(
   }
 }
 
-export async function errorSecondProcedure <T>(
+export async function errorSecondProcedure<T>(
   sql: string,
 ) {
   const result = await query<unknown[]>(sql);
@@ -294,12 +294,13 @@ export async function errorSecondProcedure <T>(
   }
 }
 
-export async function jsonProcedure <T>(
+export async function jsonProcedure<T>(
   sql: string,
 ) {
-  const result = await query<unknown[]>(sql);
+  let result: unknown[];
 
   try {
+    result = await query<unknown[]>(sql);
     if (!result) throw Error(ERROR_CODE.PROCEDURE_ERROR);
     if (!result[0]) throw Error(ERROR_CODE.PROCEDURE_ERROR);
     if (!result[0][0]) throw Error(ERROR_CODE.PROCEDURE_ERROR);
@@ -318,6 +319,11 @@ export async function jsonProcedure <T>(
       throw Error(ERROR_CODE.PROCEDURE_ERROR);
     }
   } catch (error) {
+    if (error.message && error.message.startsWith(
+      'You have an error in your SQL syntax',
+    )) {
+      console.log(sql);
+    }
     console.log('Result', result);
     throw error;
   }

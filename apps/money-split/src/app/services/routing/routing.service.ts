@@ -111,6 +111,33 @@ export class RoutingService {
     }
   }
 
+  public goToEditNamespaceView (
+    namespaceId?: number,
+    ownerKey?: string,
+  ) {
+    if (ownerKey && namespaceId) {
+      this.router.navigate(
+        this.editNamespaceViewLink(ownerKey, namespaceId));
+    }
+    else if (namespaceId) {
+      this.getOwnerKey()
+        .subscribe(
+          ownerKeyG => this.router.navigate(
+            this.editNamespaceViewLink(ownerKeyG, namespaceId)),
+        );
+    }
+    else {
+      combineLatest(
+        this.getOwnerKey(),
+        this.getNamespaceId(),
+      )
+        .subscribe(
+          ([ownerKeyG, namespaceIdG]) => this.router.navigate(
+            this.editNamespaceViewLink(ownerKeyG, namespaceIdG)),
+        );
+    }
+  }
+
   public goToNamespaceViewTab (
     tab?: string,
   ) {
@@ -334,6 +361,13 @@ export class RoutingService {
     namespaceId: number,
   ) {
     return ['/', ownerKey, 'namespace', namespaceId];
+  }
+
+  public editNamespaceViewLink (
+    ownerKey: string,
+    namespaceId: number,
+  ) {
+    return ['/', ownerKey, 'namespace', namespaceId, 'settings'];
   }
 
   public settleLink (

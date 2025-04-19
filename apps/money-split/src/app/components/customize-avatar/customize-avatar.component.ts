@@ -19,7 +19,7 @@ import { FileUploadService } from '../../services/file-upload.service';
   templateUrl: './customize-avatar.component.html',
   providers: [
     FileUploadService,
-  ]
+  ],
 })
 export class CustomizeAvatarComponent {
 

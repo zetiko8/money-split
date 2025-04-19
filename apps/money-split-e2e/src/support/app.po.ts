@@ -59,6 +59,10 @@ export const CREATE_NAMESPACE_FORM = {
   },
 };
 
+export const EDIT_NAMESPACE_FORM = {
+  ...CREATE_NAMESPACE_FORM,
+};
+
 const NAMESPACE_USER = (username: string) => ({
   click () {
     cy.get(`[data-test-username="user-${username}"]`)
@@ -98,6 +102,9 @@ export const NAMESPACE_SCREEN = {
   },
   goToAddRecord () {
     cy.get('[data-test="add-expense-button"]').click();
+  },
+  goToEditNamespace () {
+    cy.get('[data-test="edit-namespace-button"]').click();
   },
   openMembersTab () {
     cy.get('[role=tab][data-test=tab-users]')

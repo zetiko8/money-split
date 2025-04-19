@@ -71,6 +71,15 @@ export class AvatarComponent implements OnDestroy {
     }
   };
 
+  @Input()
+  set urlEnding (ending: string | null) {
+    if (ending !== null) {
+      this.url = ending;
+    } else {
+      this.url = null;
+    }
+  };
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

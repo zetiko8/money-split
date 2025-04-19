@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
@@ -9,19 +8,17 @@ import { Observable, filter, map, merge } from 'rxjs';
 import { Notification } from '../../../../components/notifications/notifications.types';
 import { OwnerRealmService } from '../../services/owner-realm.service';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { getRandomColor } from '../../../../../helpers';
-import { CustomizeAvatarComponent } from '../../../../components/customize-avatar/customize-avatar.component';
 import { CreateNamespacePayload } from '@angular-monorepo/entities';
+import { NamespaceSettingsFormComponent } from '../../../../components/namespace-settings/namespace-settings.form';
 
 @Component({
   standalone: true,
   imports: [
     RouterModule,
     CommonModule,
-    ReactiveFormsModule,
     TranslateModule,
     PageComponent,
-    CustomizeAvatarComponent,
+    NamespaceSettingsFormComponent,
   ],
   selector: 'new-namespace',
   templateUrl: './new-namespace.view.html',
@@ -34,17 +31,6 @@ export class NewNamespaceView {
 
   private readonly ownerRealmService = inject(OwnerRealmService);
   public readonly routingService = inject(RoutingService);
-
-  public readonly form = new FormGroup({
-    namespaceName: new FormControl<string>(
-      '', { validators: [ Validators.required ] }),
-    avatarColor: new FormControl<string>(
-      getRandomColor()),
-    avatarImage: new FormControl<string | null>(
-      null),
-    avatarUrl: new FormControl<string | null>(
-      null),
-  });
 
   public readonly createProcess = new BoundProcess(
     (data: CreateNamespacePayload) => this
@@ -60,10 +46,10 @@ export class NewNamespaceView {
       }),  
     );
 
-  public create () {
+  public create (form: CreateNamespacePayload) {
 
     this.createProcess.execute(
-      this.form.value as CreateNamespacePayload
+      form
     )
       .subscribe(namespace => {
         this.routingService.goToNamespaceView(namespace.id);

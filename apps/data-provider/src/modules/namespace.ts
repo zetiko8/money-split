@@ -3,6 +3,7 @@ import {
   ERROR_CODE,
   Invitation,
   MNamespace,
+  MNamespaceSettings,
   NamespaceView,
   Owner,
   Record,
@@ -231,6 +232,38 @@ async function getSettlementListViews (
   return settlementListViews;
 }
 
+export async function getNamespaceSettings (
+  namespaceId: number,
+): Promise<MNamespaceSettings> {
+  return await appErrorWrap('getNamespaceSettings', async () => {
+    return await jsonProcedure<MNamespaceSettings>(
+      `
+      call getNamespaceSettings(
+        '${namespaceId}'
+      );
+      `,
+    );
+  });
+}
+
+export async function editNamespaceSettings (
+  namespaceId: number,
+  payload: CreateNamespacePayload,
+): Promise<MNamespaceSettings> {
+  return await appErrorWrap('editNamespaceSettings', async () => {
+    return await jsonProcedure<MNamespaceSettings>(
+      `
+      call editNamespaceSettings(
+        ${namespaceId},
+        '${payload.namespaceName}',
+        '${payload.avatarColor}',
+        ${payload.avatarUrl ? `'${payload.avatarUrl}'` : 'NULL'}
+      );
+      `,
+    );
+  });
+}
+
 export const NAMESPACE_SERVICE = {
   deleteNamespace: async (
     namespaceId: number,
@@ -248,4 +281,6 @@ export const NAMESPACE_SERVICE = {
   mapToRecordView,
   mapToRecordDataView,
   getSettlementListViews,
+  getNamespaceSettings,
+  editNamespaceSettings,
 };

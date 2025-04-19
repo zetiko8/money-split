@@ -7,6 +7,7 @@
         [backgroundColor]="avatarColor.value || '#2ebf91'"
         [name]="avatarName"
         [avatarUrl]="avatarImage.value"
+        [urlEnding]="!avatarImage.value && avatarUrl.value || null"
     >
     </avatar>
     <div class="input-group">

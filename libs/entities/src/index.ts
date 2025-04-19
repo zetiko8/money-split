@@ -234,4 +234,11 @@ export interface OwnerRoleDb {
   role: OwnerRole,
 }
 
+export interface MNamespaceSettings {
+  namespaceName: string,
+  avatarColor: string | null,
+  avatarId: number,
+  avatarUrl: string | null,
+}
+
 export * from './error';

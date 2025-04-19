@@ -4,6 +4,7 @@ import {
   Invitation,
   InvitationViewData,
   MNamespace,
+  MNamespaceSettings,
   NamespaceView,
   Owner,
   OwnerProfileView,
@@ -94,6 +95,32 @@ export function getNamespaceViewApi() {
   NamespaceView>({
     endpoint: '/:ownerKey/namespace/:namespaceId',
     method: 'GET',
+  });
+}
+
+export function getNamespaceSettingsApi() {
+  return apiDefinition<
+  null,
+  {
+    ownerKey: string,
+    namespaceId: number,
+  },
+  MNamespaceSettings>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/settings',
+    method: 'GET',
+  });
+}
+
+export function editNamespaceSettingApi() {
+  return apiDefinition<
+  CreateNamespacePayload,
+  {
+    ownerKey: string,
+    namespaceId: number,
+  },
+  MNamespaceSettings>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/settings',
+    method: 'POST',
   });
 }
 
@@ -263,4 +290,6 @@ export const DATA_PROVIDER_API = {
   settleConfirmApiBackdoor: new ApiDefinitionObj(settleConfirmApiBackdoor()),
   getViewUserApi: new ApiDefinitionObj(getViewUserApi()),
   registerApi: new ApiDefinitionObj(registerApi()),
+  getNamespaceSettingsApi: new ApiDefinitionObj(getNamespaceSettingsApi()),
+  editNamespaceSettingApi: new ApiDefinitionObj(editNamespaceSettingApi()),
 };

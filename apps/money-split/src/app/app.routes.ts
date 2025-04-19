@@ -16,6 +16,7 @@ import { HomeView } from './modules/home/home.view';
 import { HomeGuard } from './services/guards/HomeGuard';
 import { AuthGuard } from './services/guards/AuthGuard';
 import { ViewUserView } from './modules/namespace/views/view-user/view-user.view';
+import { EditNamespaceView } from './modules/namespace/views/edit-namespace/edit-namespace.view';
 
 export const appRoutes: Route[] = [
   {
@@ -83,6 +84,10 @@ export const appRoutes: Route[] = [
       {
         path: 'namespace/:namespaceId/settle',
         component: SettleView,
+      },
+      {
+        path: 'namespace/:namespaceId/settings',
+        component: EditNamespaceView,
       },
       {
         path: 'namespace/:namespaceId/edit/:recordId',

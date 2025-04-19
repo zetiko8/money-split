@@ -19,8 +19,10 @@ import {
   addRecordApiBackdoor,
   createInvitationApi,
   createNamespaceApi,
+  editNamespaceSettingApi,
   editOwnerProfileApi,
   getInvitationViewApi,
+  getNamespaceSettingsApi,
   getNamespaceViewApi,
   getOwnerNamespacesApi,
   getOwnerProfileApi,
@@ -463,6 +465,35 @@ registerRoute(
       params.invitationKey,
       context.owner,
       payload.name,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  getNamespaceSettingsApi(),
+  mainRouter,
+  async (_, params) => {
+    return await NAMESPACE_SERVICE.getNamespaceSettings(
+      Number(params.namespaceId),
+    );
+  },
+  AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  editNamespaceSettingApi(),
+  mainRouter,
+  async (payload, params) => {
+    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (
+      !payload.avatarColor && !payload.avatarUrl
+    ) throw Error(ERROR_CODE.INVALID_REQUEST);
+
+    return await NAMESPACE_SERVICE.editNamespaceSettings(
+      Number(params.namespaceId),
+      payload,
     );
   },
   AUTH_SERVICE.auth,
