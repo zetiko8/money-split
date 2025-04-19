@@ -40,7 +40,6 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - TZ=${TZ}
     depends_on:
-      # - main-db
       main-db:
         condition: service_healthy
     networks:
@@ -68,8 +67,8 @@ services:
       - MYSQL_PORT=3306
       - ADMIN_MIGRATION_PASSWORD=${ADMIN_MIGRATION_PASSWORD}
       - TZ=${TZ}
+      - MIDDLEWARE_URL_INTERNAL=${MIDDLEWARE_URL_INTERNAL}
     depends_on:
-      # - main-db
       main-db:
         condition: service_healthy
     networks:

@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfigService } from './services/config.service';
 import { Owner } from '@angular-monorepo/entities';
+import { TaskListComponent } from './components/task-list/task-list.component';
 
 interface MigrationResponse {
   id: string,
@@ -24,6 +25,7 @@ interface MigrationDefinition {
     RouterModule,
     FormsModule,
     CommonModule,
+    TaskListComponent,
   ],
   selector: 'admin-dashboard-root',
   templateUrl: './app.component.html',
@@ -42,6 +44,7 @@ export class AppComponent implements OnInit {
   public actionDetails = '';
 
   public migrations: MigrationDefinition[] = [];
+  public procedures: MigrationDefinition[] = [];
 
   public runMigrationUp (id: string) {
     this.error = '';
@@ -61,6 +64,84 @@ export class AppComponent implements OnInit {
     this.actionDetails = '';
     this.http.get<MigrationResponse>(
       `${this.config.getConfig().middlewareUrl}/migration/down/${id}`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe(this.subscriber);
+  }
+
+  public runAllMigrations () {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<MigrationResponse>(
+      `${this.config.getConfig().middlewareUrl}/migration/all/up`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe(this.subscriber);
+  }
+
+  public runAllUnstagedMigrations () {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<MigrationResponse>(
+      `${this.config.getConfig().middlewareUrl}/migration/all/unstaged/up`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe(this.subscriber);
+  }
+
+  public runProcedureUp (id: string) {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<MigrationResponse>(
+      `${this.config.getConfig().middlewareUrl}/procedure/up/${id}`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe(this.subscriber);
+  }
+
+  public runProcedureDown (id: string) {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<MigrationResponse>(
+      `${this.config.getConfig().middlewareUrl}/procedure/down/${id}`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe(this.subscriber);
+  }
+
+  public runAllProcedures () {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<MigrationResponse>(
+      `${this.config.getConfig().middlewareUrl}/procedure/all/up`,
+      {
+        headers: {
+          'Authorization': 'Bearer ' + this.password,
+        },
+      },
+    ).subscribe(this.subscriber);
+  }
+
+  public runAllUnstagedProcedures () {
+    this.error = '';
+    this.actionDetails = '';
+    this.http.get<MigrationResponse>(
+      `${this.config.getConfig().middlewareUrl}/procedure/all/unstaged/up`,
       {
         headers: {
           'Authorization': 'Bearer ' + this.password,
@@ -126,6 +207,13 @@ export class AppComponent implements OnInit {
     ).subscribe({
       next: res => {
         this.migrations = res.migrations;
+      },
+    });
+    this.http.get<{ procedures: MigrationDefinition[]}>(
+      `${this.config.getConfig().middlewareUrl}/procedures`,
+    ).subscribe({
+      next: res => {
+        this.procedures = res.procedures;
       },
     });
   }

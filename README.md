@@ -36,4 +36,11 @@ npm run docker-compose:local
 
 If a admin user does not exist add an admin user.
 On Admin Dashboard run all the migrations
-Connect to the database and run all the pacakges in DB folder
+On Admin Dashboard run all the procedures
+On Admin Dashboard add the test user.
+
+### Test
+
+```
+npm run test:production-local:headless
+```

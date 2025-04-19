@@ -1,11 +1,10 @@
 <header>
+  <h1>
     ADMIN DASHBOARD
+  </h1>
 </header>
 <main>
     <article>
-        <h1>
-            Migrations
-        </h1>
         <section>
             <div class="input-group">
                 <label for="password">Password</label>
@@ -19,32 +18,44 @@
             </div>
         </section>
         <section>
-            <ul>
-                <li
-                    *ngFor="let migration of migrations"
-                >
-                    <span
-                        *ngIf="!migration.isApplied"
-                    >
-                        {{ migration.id }}
-                    </span>
-                    <b
-                        *ngIf="migration.isApplied"
-                    >
-                        {{ migration.id }}
-                    </b>
-                    <button
-                        (click)="runMigrationDown(migration.id)"
-                    >
-                        DOWN
-                    </button>
-                    <button
-                        (click)="runMigrationUp(migration.id)"
-                    >
-                        UP
-                    </button>
-                </li>
-            </ul>
+            <p>
+                {{ error }}
+            </p>
+            <p>
+                {{ actionDetails }}
+            </p>
+        </section>
+        <section>
+            <h1>
+                Migrations
+            </h1>
+            <task-list
+              [tasks]="migrations"
+              (runTaskDown)="runMigrationDown($event.id)"
+              (runTaskUp)="runMigrationUp($event.id)"
+              (all)="runAllMigrations()"
+              (allUnstaged)="runAllUnstagedMigrations()"
+            ></task-list>
+        </section>
+        <section>
+            <p>
+                {{ error }}
+            </p>
+            <p>
+                {{ actionDetails }}
+            </p>
+        </section>
+        <section>
+            <h1>
+                Procedures
+            </h1>
+            <task-list
+              [tasks]="procedures"
+              (runTaskDown)="runProcedureDown($event.id)"
+              (runTaskUp)="runProcedureUp($event.id)"
+              (all)="runAllProcedures()"
+              (allUnstaged)="runAllUnstagedProcedures()"
+            ></task-list>
         </section>
         <section>
             <p>

@@ -1,5 +1,5 @@
 ## upload to nginx
-FROM nginx:alpine
+FROM nginx:slim
 
 # add certificates
 COPY nginx-selfsigned.crt /etc/nginx/ssl/nginx-selfsigned.crt

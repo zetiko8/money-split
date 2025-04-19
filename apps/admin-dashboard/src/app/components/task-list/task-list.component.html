@@ -1,0 +1,36 @@
+<button
+  (click)="all.emit()"
+>
+  ALL
+</button>
+<button
+  (click)="allUnstaged.emit()"
+>
+  ALL UNSTAGED
+</button>
+<ul>
+  <li
+      *ngFor="let task of tasks"
+  >
+      <span
+          *ngIf="!task.isApplied"
+      >
+          {{ task.id }}
+      </span>
+      <b
+          *ngIf="task.isApplied"
+      >
+          {{ task.id }}
+      </b>
+      <button
+          (click)="runTaskDown.emit(task)"
+      >
+          DOWN
+      </button>
+      <button
+          (click)="runTaskUp.emit(task)"
+      >
+          UP
+      </button>
+  </li>
+</ul>
