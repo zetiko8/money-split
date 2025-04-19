@@ -13,7 +13,7 @@ import { Notification } from '../../components/notifications/notifications.types
     FullScreenLoaderComponent,
     CommonModule,
     NotificationsControllerComponent,
-  ]
+  ],
 })
 export class PageComponent {
   @Input() isLoading: Observable<boolean> = new Subject<boolean>();
