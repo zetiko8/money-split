@@ -38,8 +38,26 @@ export const INVITATION_FORM = {
   accept (
     name: string,
   ) {
+    INVITATION_FORM.setName(name);
+    INVITATION_FORM.submit();
+  },
+  setName (
+    name: string,
+  ) {
     cy.get('input[name="name"').type(name);
+  },
+  expectNameMaxLengthError () {
+    cy.get('input[name="name"')
+      .parent()
+      .find('[data-cy="max-length-error"]')
+      .should('be.visible');
+  },
+  submit () {
     cy.get('[data-test="accept-invitation-btn"]').click();
+  },
+  expectSubmitButtonToBeDisabled () {
+    cy.get('button[data-test="accept-invitation-btn"]')
+      .should('be.disabled');
   },
 };
 
@@ -48,11 +66,36 @@ export const REGISTER_FORM = {
     username: string,
     password: string,
   ) {
-    cy.get('[data-testid="username-input"]') // enter a username
+    REGISTER_FORM.setUsername(username);
+    REGISTER_FORM.setPassword(password);
+    REGISTER_FORM.submit();
+  },
+  setUsername (
+    username: string,
+  ) {
+    cy.get('[data-testid="username-input"]')
       .type(username);
-    cy.get('[data-testid="password-input"]') // enter a password
+  },
+  expectUsernameError () {
+    cy.get('[data-testid="username-input"]')
+      .parent()
+      .find('[data-cy="error"]')
+      .should('be.visible');
+  },
+  expectUsernameMaxLengthError () {
+    cy.get('[data-testid="username-input"]')
+      .parent()
+      .find('[data-cy="max-length-error"]')
+      .should('be.visible');
+  },
+  setPassword (
+    password: string,
+  ) {
+    cy.get('[data-testid="password-input"]')
       .type(password);
-    cy.get('[data-testid="register-button"]') // click the register button
+  },
+  submit () {
+    cy.get('[data-testid="register-button"]')
       .click();
   },
 };

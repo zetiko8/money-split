@@ -177,6 +177,45 @@ describe(API_NAME, () => {
         }),
     ).throwsError('OWNER_USERNAME_ALREADY_EXISTS');
   });
+
+  it('trims the username and does not allow empty after trimming', async () => {
+    let ownerId: string;
+    // Should save trimmed username
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/register`,
+        {
+          username: '   testusername   ',
+          password: 'testpassword',
+          avatarUrl: 'http:test.com',
+          avatarColor: 'color',
+        }))
+      .result((result => {
+        expect(result.username).toBe('testusername');
+        ownerId = result.id;
+      }));
+
+    const response = await queryDb(
+      `
+        SELECT * FROM Owner
+        WHERE id = ${ownerId}
+        `,
+    );
+    expect(response[0].username).toEqual('testusername');
+
+    // Should not allow username with only spaces
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/register`,
+        {
+          username: '   ',
+          password: 'testpassword',
+          avatarUrl: 'http:test.com',
+          avatarColor: 'color',
+        }))
+      .throwsError(ERROR_CODE.INVALID_REQUEST);
+  });
+
   describe('dbState', () => {
     let ownerId!: number;
     let ownerAvatarId!: number;

@@ -435,6 +435,7 @@ registerRoute(
     VALIDATE.string(payload.avatarUrl);
     VALIDATE.anyOf(payload.avatarColor, payload.avatarUrl);
 
+    payload.username = payload.username.trim();
     return await OWNER_SERVICE.createOwner(payload);
   },
 );
@@ -457,6 +458,7 @@ registerRoute(
     VALIDATE.requiredPayload(payload);
     VALIDATE.requiredString(payload.name);
 
+    payload.name = payload.name.trim();
     return await INVITATION_SERVICE.acceptInvitation(
       params.invitationKey,
       context.owner,

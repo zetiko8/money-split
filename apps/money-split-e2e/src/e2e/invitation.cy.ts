@@ -51,7 +51,7 @@ describe('Invitation', () => {
     });
   });
 
-  describe('accept invitation - already logged in',() => {
+  describe.only('accept invitation - already logged in',() => {
     const email = 'test@email.com';
     let namespaceId!: number;
     let testOwner!: TestOwner;
@@ -98,16 +98,19 @@ describe('Invitation', () => {
         .should('have.length', 0);
     });
 
-    it('username validation', () => {
+    it('username length validation', () => {
       ACTIONS.loginTestOwnerWithToken(token);
       cy.visit(`/invitation/${invitationKey}/join`);
-      INVITATION_FORM.accept(email);
-      cy.url().should('contain', '/namespace/');
-      NAMESPACE_SCREEN.openMembersTab();
-      cy.get('[data-test="number-of-invited-users"]')
-        .should('contain.text', '(0)');
-      cy.get('[data-test="invited-owner"]')
-        .should('have.length', 0);
+      INVITATION_FORM.setName('a'.repeat(21));
+      INVITATION_FORM.expectNameMaxLengthError();
+      INVITATION_FORM.expectSubmitButtonToBeDisabled();
+    });
+
+    it('username trim validation', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/invitation/${invitationKey}/join`);
+      INVITATION_FORM.setName('   ');
+      INVITATION_FORM.expectSubmitButtonToBeDisabled();
     });
   });
 

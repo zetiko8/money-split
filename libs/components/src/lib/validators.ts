@@ -8,3 +8,7 @@ export const requiredNotEmpty = (
   }
   return null;
 };
+
+export class CustomValidators {
+  static requiredNotEmpty= requiredNotEmpty;
+}

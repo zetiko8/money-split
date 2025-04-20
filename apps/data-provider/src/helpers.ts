@@ -227,6 +227,7 @@ export const VALIDATE = {
   requiredString (value: unknown) {
     if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
     VALIDATE.string(value);
+    if (!(value as string).trim()) throw Error(ERROR_CODE.INVALID_REQUEST);
   },
   requiredPayload (value: unknown) {
     if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);

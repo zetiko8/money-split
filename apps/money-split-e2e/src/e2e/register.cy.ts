@@ -72,4 +72,16 @@ describe('Register Component', () => {
     cy.wait('@namespace');
     APP.expectNoErrorNotification();
   });
+
+  it('username length validation', () => {
+    cy.visit('/register');
+    REGISTER_FORM.setUsername('a'.repeat(21));
+    REGISTER_FORM.expectUsernameMaxLengthError();
+  });
+
+  it('username trim validation', () => {
+    cy.visit('/register');
+    REGISTER_FORM.setUsername('   ');
+    REGISTER_FORM.expectUsernameError();
+  });
 });

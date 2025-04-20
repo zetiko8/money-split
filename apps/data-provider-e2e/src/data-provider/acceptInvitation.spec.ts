@@ -108,8 +108,34 @@ describe(API_NAME, () => {
         });
       }));
   });
+  it('trims the name and does not allow empty after trimming', async () => {
+    // Should save trimmed name
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+        { name: '   inviteduser   ' },
+        testOwner.authHeaders()))
+      .result(() => {});
+
+    // Check by querying the DB
+    const userRes = await queryDb(
+      `SELECT * FROM \`User\` 
+                WHERE namespaceId = ${namespaceId} 
+                AND ownerId = ${testOwner.owner.id}`,
+    );
+    expect(userRes[0].name).toBe('inviteduser');
+
+    // Should not allow name with only spaces
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+        { name: '   ' },
+        testOwner.authHeaders()))
+      .throwsError(ERROR_CODE.INVALID_REQUEST);
+  });
   it.todo('edited date is corrected');
   it.todo('the owner accepting the invite can not be the same as the inviter');
+
   describe('dbState', () => {
     let invitationId!: number;
     beforeEach(async () => {

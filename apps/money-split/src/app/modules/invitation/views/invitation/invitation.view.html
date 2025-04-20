@@ -25,6 +25,12 @@
                     type="text"
                     name="name"    
                 >
+                <p class="error"
+                   data-cy="max-length-error"
+                   *ngIf="form.controls.name.errors?.['maxlength']"
+                >
+                    {{ 'INPUT_VALUE_TO_LONG' | translate }}
+                </p>
             </div>
         </form>
         <section>

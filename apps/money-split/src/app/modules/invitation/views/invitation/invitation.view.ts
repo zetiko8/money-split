@@ -10,6 +10,7 @@ import { InvitationService } from '../../services/invitation.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ImprovedProcess, combineLoaders } from '../../../../../helpers';
 import { UserService } from '../../../../services/auth/token/auth.token.user.service';
+import { CustomValidators } from '@angular-monorepo/components';
 
 @Component({
   standalone: true,
@@ -63,7 +64,11 @@ export class InvitationView {
       );
 
   public readonly form = new FormGroup({
-    name: new FormControl<string>('', Validators.required),
+    name: new FormControl<string>('', [
+      Validators.required,
+      Validators.maxLength(20),
+      CustomValidators.requiredNotEmpty,
+    ]),
   });
 
   public accept () {

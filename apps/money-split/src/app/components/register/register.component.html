@@ -17,10 +17,18 @@
             >
             <p
                 class="error"
-                *ngIf="form.controls.username.errors"
+                *ngIf="form.controls.username.errors 
+                && !form.controls.username.errors?.['maxlength']"
                 data-cy="error"
             >
                 {{ 'register_username_error' | translate }}
+            </p>
+            <p 
+               class="error"
+               data-cy="max-length-error"
+               *ngIf="form.controls.username.errors?.['maxlength']"
+            >
+              {{ 'INPUT_VALUE_TO_LONG' | translate }}
             </p>
         </div>
         <div class="input-group">

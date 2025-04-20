@@ -12,6 +12,7 @@ import { getRandomColor } from '../../../helpers';
 import { Notification } from '../notifications/notifications.types';
 import { AppErrorCode } from '../../types';
 import { CustomizeAvatarComponent } from '../customize-avatar/customize-avatar.component';
+import { CustomValidators } from '@angular-monorepo/components';
 
 @Component({
   standalone: true,
@@ -38,7 +39,11 @@ export class RegisterComponent {
     password: new FormControl<string>(
       '', { validators: [ Validators.required ] }),
     username: new FormControl<string>(
-      '', { validators: [ Validators.required ] }),
+      '', { validators: [
+        Validators.required,
+        Validators.maxLength(20),
+        CustomValidators.requiredNotEmpty,
+      ] }),
     avatarColor: new FormControl<string>(
       getRandomColor()),
     avatarImage: new FormControl<string | null>(
