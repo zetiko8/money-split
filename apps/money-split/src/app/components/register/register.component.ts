@@ -49,18 +49,17 @@ export class RegisterComponent {
 
   public readonly registerProcess = new AsyncProcess(
     (data: RegisterOwnerPayload) => this
-      .userService.register(data) 
-  )
+      .userService.register(data),
+  );
 
-  public readonly notification$: Observable<Notification> 
-    = merge(this.registerProcess.error$) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        console.log(event);
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+  public readonly notification$: Observable<Notification>
+    = merge(this.registerProcess.error$)
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   public register () {
 
@@ -71,10 +70,10 @@ export class RegisterComponent {
       password: this.form.value.password as string,
       avatarColor: this.form.value.avatarColor as string,
       avatarUrl: this.form.value.avatarUrl as string,
-    }
+    },
     )
       .subscribe(() => {
         this.onSuccess();
-      })
+      });
   }
 }
