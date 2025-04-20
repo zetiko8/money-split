@@ -13,8 +13,9 @@ describe('Invitation', () => {
     let otherOwner!: TestOwner;
     let namespaceId!: number;
     let ownerKey!: string;
+    let token!: string;
 
-    before(async () => {
+    beforeEach(async () => {
       testOwner = new TestOwner(
         DATA_PROVIDER_URL,
         'testowner',
@@ -32,10 +33,11 @@ describe('Invitation', () => {
       const namespace = await testOwner.createNamespace('testnamespace1');
       namespaceId = namespace.id;
       ownerKey = testOwner.owner.key;
-      await ACTIONS.loginTestOwner(testOwner);
+      token = testOwner.token;
     });
 
     it('can invite a person', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
       cy.visit(`/${ownerKey}/namespace/${namespaceId}`);
       cy.get('[data-test="add-user-button"]').click();
       cy.get('input[name="email"').type(email);
@@ -49,13 +51,14 @@ describe('Invitation', () => {
     });
   });
 
-  describe('accept invitation',() => {
+  describe('accept invitation - already logged in',() => {
     const email = 'test@email.com';
     let namespaceId!: number;
     let testOwner!: TestOwner;
     let creatorOwner!: TestOwner;
     let invitationKey!: string;
-    before(async () => {
+    let token!: string;
+    beforeEach(async () => {
       try {
         creatorOwner = new TestOwner(
           DATA_PROVIDER_URL,
@@ -77,14 +80,26 @@ describe('Invitation', () => {
         await testOwner.dispose();
         await testOwner.register();
 
-        await ACTIONS.loginTestOwner(testOwner);
+        token = testOwner.token;
       } catch (error) {
         throw Error('beforeAll error: ' + (error as Error).message);
       }
     });
 
     it('can accept invitation', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/invitation/${invitationKey}/join`);
+      INVITATION_FORM.accept(email);
+      cy.url().should('contain', '/namespace/');
+      NAMESPACE_SCREEN.openMembersTab();
+      cy.get('[data-test="number-of-invited-users"]')
+        .should('contain.text', '(0)');
+      cy.get('[data-test="invited-owner"]')
+        .should('have.length', 0);
+    });
 
+    it('username validation', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
       cy.visit(`/invitation/${invitationKey}/join`);
       INVITATION_FORM.accept(email);
       cy.url().should('contain', '/namespace/');
@@ -102,8 +117,7 @@ describe('Invitation', () => {
     let testOwner!: TestOwner;
     let creatorOwner!: TestOwner;
     let invitationKey!: string;
-
-    before(async () => {
+    beforeEach(async () => {
 
       creatorOwner = new TestOwner(
         DATA_PROVIDER_URL,
@@ -148,7 +162,7 @@ describe('Invitation', () => {
     let creatorOwner!: TestOwner;
     let invitationKey!: string;
 
-    before(async () => {
+    beforeEach(async () => {
 
       creatorOwner = new TestOwner(
         DATA_PROVIDER_URL,

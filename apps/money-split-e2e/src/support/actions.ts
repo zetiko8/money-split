@@ -59,6 +59,9 @@ export const ACTIONS = {
       });
     });
   },
+  /**
+   * @deprecated use loginTestOwnerWithToken
+   */
   loginTestOwner: async (
     testOwner: TestOwner,
   ) => {
