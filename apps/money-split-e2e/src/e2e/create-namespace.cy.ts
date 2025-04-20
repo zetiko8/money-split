@@ -7,7 +7,7 @@ const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Create a namespace', () => {
 
-  describe('create a namespace',() => {
+  describe('create a namespace', () => {
     let testOwner!: TestOwner;
     let token!: string;
 
@@ -29,6 +29,28 @@ describe('Create a namespace', () => {
       CREATE_NAMESPACE_FORM.setName('testnamespace');
       CREATE_NAMESPACE_FORM.submit();
       NAMESPACE_SCREEN.userIsOn('testnamespace');
+    });
+
+    it.only('validates namespace name', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      CREATE_NAMESPACE_FORM.visit(testOwner.owner.key);
+
+      // can not submit without name
+      CREATE_NAMESPACE_FORM.expectSubmitButtonToBeDisabled();
+
+      // empty name
+      CREATE_NAMESPACE_FORM.setName('  ');
+      CREATE_NAMESPACE_FORM.expectSubmitButtonToBeDisabled();
+
+      // name too long
+      CREATE_NAMESPACE_FORM.setName('a'.repeat(21));
+      CREATE_NAMESPACE_FORM.expectSubmitButtonToBeDisabled();
+      CREATE_NAMESPACE_FORM.expectNameError('Predolg vnos');
+
+      // valid name
+      CREATE_NAMESPACE_FORM.setName('a'.repeat(20));
+      CREATE_NAMESPACE_FORM.submit();
+      NAMESPACE_SCREEN.userIsOn('a'.repeat(20));
     });
   });
 });

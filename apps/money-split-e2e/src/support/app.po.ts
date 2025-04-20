@@ -58,6 +58,11 @@ export const REGISTER_FORM = {
 };
 
 export const CREATE_NAMESPACE_FORM = {
+  visit (
+    ownerKey: string,
+  ) {
+    cy.visit(`/${ownerKey}/new`);
+  },
   setName (
     name: string,
   ) {
@@ -84,6 +89,10 @@ export const CREATE_NAMESPACE_FORM = {
     cy.get('button[type=submit]')
       .click();
   },
+  expectSubmitButtonToBeDisabled () {
+    cy.get('button[type=submit]')
+      .should('be.disabled');
+  },
   cancel () {
     cy.get('[data-test="cancel-button"]')
       .click();
@@ -93,6 +102,12 @@ export const CREATE_NAMESPACE_FORM = {
   },
   expectFileUploadError (errorMessage: string) {
     cy.get('input[type=file]')
+      .parent()
+      .find('.error')
+      .should('contain.text', errorMessage);
+  },
+  expectNameError (errorMessage: string) {
+    cy.get('input[name="namespaceName"]')
       .parent()
       .find('.error')
       .should('contain.text', errorMessage);
@@ -124,17 +139,17 @@ export const CREATE_NAMESPACE_FORM = {
 };
 
 export const EDIT_NAMESPACE_FORM = {
+  goBack () {
+    cy.get('[data-test="navigate-back-button"]')
+      .click();
+  },
+  ...CREATE_NAMESPACE_FORM,
   visit (
     ownerKey: string,
     namespaceId: number,
   ) {
     cy.visit(`/${ownerKey}/namespace/${namespaceId}/settings`);
   },
-  goBack () {
-    cy.get('[data-test="navigate-back-button"]')
-      .click();
-  },
-  ...CREATE_NAMESPACE_FORM,
 };
 
 const NAMESPACE_USER = (username: string) => ({

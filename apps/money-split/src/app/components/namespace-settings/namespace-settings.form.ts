@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { CustomizeAvatarComponent } from '../customize-avatar/customize-avatar.component';
 import { CreateNamespacePayload, MNamespaceSettings } from '@angular-monorepo/entities';
 import { getRandomColor } from '@angular-monorepo/utils';
+import { requiredNotEmpty } from '@angular-monorepo/components';
 
 export type NamespaceSettingsFormType = FormGroup<{
   namespaceName: FormControl<string | null>;
@@ -18,7 +19,14 @@ export const createNamespaceSettingsForm = (
 ): NamespaceSettingsFormType => {
   return new FormGroup({
     namespaceName: new FormControl<string>(
-      namespaceSettings?.namespaceName || '', { validators: [ Validators.required ] }),
+      namespaceSettings?.namespaceName || '',
+      {
+        validators: [
+          Validators.required,
+          requiredNotEmpty,
+          Validators.maxLength(20),
+        ],
+      }),
     avatarColor: new FormControl<string>(
       namespaceSettings?.avatarColor || getRandomColor()),
     avatarImage: new FormControl<string | null>(
@@ -68,6 +76,12 @@ export class NamespaceSettingsFormComponent {
       avatarColor: this._originalForm.value.avatarColor || null,
       avatarUrl: this._originalForm.value.avatarUrl || null,
       namespaceName: this._originalForm.value.namespaceName || '',
+    });
+  }
+
+  constructor () {
+    this._form.valueChanges.subscribe(() => {
+      console.log(this._form.controls);
     });
   }
 }

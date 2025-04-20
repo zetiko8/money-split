@@ -33,6 +33,15 @@ describe(API_NAME, () => {
         },
         testOwner.authHeaders()))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+        {
+          avatarUrl: 'http://url.com',
+          namespaceName: '  ',
+        },
+        testOwner.authHeaders()))
+      .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   it('requires either avatarUrl or avatarColor to be provided', async () => {
     await fnCall(API_NAME,
@@ -80,6 +89,20 @@ describe(API_NAME, () => {
         expect(typeof result.id).toBe('number');
         expect(result).toHaveProperty('name');
         expect(typeof result.name).toBe('string');
+      }));
+  });
+  it('trims the namespace name', async () => {
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+        {
+          namespaceName: '  testnamespace  ',
+          avatarColor: 'green',
+        },
+        testOwner.authHeaders(),
+      ))
+      .result((result => {
+        expect(result.name).toBe('testnamespace');
       }));
   });
   it('can not have two namespaces with same name', async () => {
@@ -180,6 +203,32 @@ describe(API_NAME, () => {
         },
         users[0],
       );
+    });
+  });
+  describe('db state - triming', () => {
+    let namespaceId!: number;
+    beforeEach(async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: '  testnamespace  ',
+            avatarColor: 'green',
+          },
+          testOwner.authHeaders(),
+        ))
+        .result((async res => {
+          namespaceId = res.id;
+        }));
+    });
+    it('trims the namespace name', async () => {
+      const response = await queryDb(
+        `
+        SELECT * FROM Namespace
+        WHERE id = ${namespaceId}
+        `,
+      );
+      expect(response[0].name).toEqual('testnamespace');
     });
   });
 });

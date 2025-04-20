@@ -8,6 +8,11 @@
             type="text"
             name="namespaceName"    
         >
+        <p class="error" 
+           *ngIf="_form.controls.namespaceName.errors?.['maxlength']"
+        >
+            {{ 'INPUT_VALUE_TO_LONG' | translate }}
+        </p>
     </div>
     <customize-avatar
         [avatarColor]="_form.controls.avatarColor"
