@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input, HostBinding, Output, EventEmitter } from '@angular/core';
-import { 
-  ControlValueAccessor, 
-  FormsModule, 
+import {
+  ControlValueAccessor,
+  FormsModule,
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { randomHtmlName } from '@angular-monorepo/utils';
@@ -18,14 +18,14 @@ import { Observable } from 'rxjs';
   templateUrl: './file-input.component.html',
   styleUrls: ['file-input.component.scss'],
   providers: [
-    { 
+    {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => FileInputComponent),
       multi: true,
     },
   ],
 })
-export class FileInputComponent 
+export class FileInputComponent
 implements ControlValueAccessor {
 
   @HostBinding('class.ms-form-control') efc = true;
@@ -38,7 +38,7 @@ implements ControlValueAccessor {
     url: string
   }>) | null = null;
   @Output() uploadedFileUrl = new EventEmitter<string>();
-  
+
   _disabled = false;
   _value = '';
 
@@ -50,7 +50,7 @@ implements ControlValueAccessor {
   writeValue(obj: unknown): void {
     if (
       typeof obj !== 'string'
-    ) 
+    )
       this._value = '';
     else {
       this._value = obj.toUpperCase();
@@ -74,22 +74,22 @@ implements ControlValueAccessor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async handleChange ($event: any) {
     if ($event.target?.files?.length) {
-        const fileDataUrl
+      const fileDataUrl
             = await getBase64($event.target?.files[0]);
-        this.propagateChange(fileDataUrl);
-        if (this.uploadFn) {
-          this.uploadFn($event.target?.files[0])
-            .subscribe({
-              next: response => {
-                this.uploadedFileUrl.emit(response.url);
-              },
-              error: err => {
-                throw err;
-              }
-            })
-        }
+      this.propagateChange(fileDataUrl);
+      if (this.uploadFn) {
+        this.uploadFn($event.target?.files[0])
+          .subscribe({
+            next: response => {
+              this.uploadedFileUrl.emit(response.url);
+            },
+            error: err => {
+              throw err;
+            },
+          });
+      }
     } else {
-        this.propagateChange(null);
+      this.propagateChange(null);
     }
   }
 
@@ -99,14 +99,14 @@ implements ControlValueAccessor {
 }
 
 function getBase64(file: File) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = function () {
-          resolve(reader.result as string);
-        };
-        reader.onerror = function (error) {
-          reject(error);
-        };
-    });
- }
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function () {
+      resolve(reader.result as string);
+    };
+    reader.onerror = function (error) {
+      reject(error);
+    };
+  });
+}
