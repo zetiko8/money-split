@@ -42,6 +42,15 @@ describe(API_NAME, () => {
         },
         testOwner.authHeaders()))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+        {
+          namespaceName: '  ',
+          avatarColor: 'green',
+        },
+        testOwner.authHeaders()))
+      .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
 
   it('requires either avatarUrl or avatarColor to be provided', async () => {
@@ -88,7 +97,6 @@ describe(API_NAME, () => {
   });
 
   it('can not change to a duplicate namespace name', async () => {
-    // Create another namespace with the target name
     await testOwner.createNamespace('duplicatename');
     await fnCall(API_NAME,
       async () => await axios.post(
@@ -120,6 +128,21 @@ describe(API_NAME, () => {
           avatarUrl: 'my//url',
           namespaceName: 'updatednamespace',
         });
+      }));
+  });
+
+  it('trims the namespace name', async () => {
+    await fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+        {
+          namespaceName: '  changedNamespace name  ',
+          avatarColor: 'green',
+        },
+        testOwner.authHeaders(),
+      ))
+      .result((result => {
+        expect(result.namespaceName).toBe('changedNamespace name');
       }));
   });
 
@@ -188,6 +211,33 @@ describe(API_NAME, () => {
         dataUrl: null,
         url: null,
       });
+    });
+  });
+
+  describe('db state - triming', () => {
+    let namespaceId!: number;
+    beforeEach(async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: '  testnamespace  ',
+            avatarColor: 'green',
+          },
+          testOwner.authHeaders(),
+        ))
+        .result((async res => {
+          namespaceId = res.id;
+        }));
+    });
+    it('trims the namespace name', async () => {
+      const response = await queryDb(
+        `
+        SELECT * FROM Namespace
+        WHERE id = ${namespaceId}
+        `,
+      );
+      expect(response[0].name).toEqual('testnamespace');
     });
   });
 });

@@ -483,9 +483,13 @@ registerRoute(
   async (payload, params) => {
     if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (typeof payload.namespaceName !== 'string') throw Error(ERROR_CODE.INVALID_REQUEST);
+    if (!payload.namespaceName.trim()) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (
       !payload.avatarColor && !payload.avatarUrl
     ) throw Error(ERROR_CODE.INVALID_REQUEST);
+
+    payload.namespaceName = payload.namespaceName.trim();
 
     return await NAMESPACE_SERVICE.editNamespaceSettings(
       Number(params.namespaceId),
