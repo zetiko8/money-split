@@ -26,7 +26,7 @@ import { EditAvatarData, EditProfileData } from '@angular-monorepo/entities';
   templateUrl: './edit-profile.view.html',
   providers: [
     EditProfileService,
-  ]
+  ],
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class EditProfileView {
@@ -35,41 +35,41 @@ export class EditProfileView {
   private readonly routingService = inject(RoutingService);
 
   public readonly loadProcess = new BoundProcess(
-    () => this.editProfile.getProfile() 
-  )
+    () => this.editProfile.getProfile(),
+  );
   public readonly submitProcess = new BoundProcess(
-    (data: EditProfileData) => this.editProfile.editProfile(data), 
-  )
+    (data: EditProfileData) => this.editProfile.editProfile(data),
+  );
 
   public readonly profile$
     = merge(
       this.loadProcess.execute(),
       this.submitProcess.success$,
     )
-    .pipe(
-      map(profile => {
-        return Object.assign({}, profile, {
-          form: new FormGroup({
-            avatarColor: new FormControl<string>(
-              profile.avatar.color),
-            avatarImage: new FormControl<string | null>(
-              null),
-            avatarUrl: new FormControl<string | null>(
-              null),
-          })
-        })
-      }),
-      shareReplay(1),
-    );
+      .pipe(
+        map(profile => {
+          return Object.assign({}, profile, {
+            form: new FormGroup({
+              avatarColor: new FormControl<string>(
+                profile.avatar.color),
+              avatarImage: new FormControl<string | null>(
+                null),
+              avatarUrl: new FormControl<string | null>(
+                null),
+            }),
+          });
+        }),
+        shareReplay(1),
+      );
 
-  public readonly notification$: Observable<Notification> 
-    = merge(this.loadProcess.error$) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+  public readonly notification$: Observable<Notification>
+    = merge(this.loadProcess.error$)
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   edit () {
     this.profile$.pipe(
@@ -80,7 +80,7 @@ export class EditProfileView {
           avatarUrl: profile.form.controls.avatarUrl.value,
         };
         const payload: EditProfileData = {
-          ownerAvatar
+          ownerAvatar,
         };
 
         return payload;
