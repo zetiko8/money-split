@@ -67,6 +67,14 @@ export const ACTIONS = {
       win.localStorage.setItem('token', token);
     });
   },
+  loginTestOwnerWithToken: (
+    token: string,
+  ) => {
+    cy.visit('');
+    cy.window().then(win => {
+      win.localStorage.setItem('token', token);
+    });
+  },
   logout () {
     cy.window().then(win => {
       win.localStorage.removeItem('token');

@@ -9,8 +9,9 @@ describe('Create a namespace', () => {
 
   describe('create a namespace',() => {
     let testOwner!: TestOwner;
+    let token!: string;
 
-    before(async () => {
+    beforeEach(async () => {
       testOwner = new TestOwner(
         DATA_PROVIDER_URL,
         'testowner',
@@ -18,10 +19,11 @@ describe('Create a namespace', () => {
       );
       await testOwner.dispose();
       await testOwner.register();
-      await ACTIONS.loginTestOwner(testOwner);
+      token = await testOwner.login();
     });
 
     it('can create a namespace', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
       REALM_SCREEN.visit(testOwner.owner.key);
       REALM_SCREEN.goToCreateANamespace();
       CREATE_NAMESPACE_FORM.setName('testnamespace');

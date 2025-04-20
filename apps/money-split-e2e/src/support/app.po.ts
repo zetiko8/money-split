@@ -62,6 +62,7 @@ export const CREATE_NAMESPACE_FORM = {
     name: string,
   ) {
     cy.get('input[name="namespaceName"]')
+      .should('be.visible')
       .clear();
     cy.get('input[name="namespaceName"]')
       .type(name);
@@ -215,10 +216,14 @@ export const REALM_SCREEN = {
     ownerKey: string,
   ) {
     cy.visit(`/${ownerKey}/realm`);
+    cy.get('h4').contains('Moje skupine')
+      .should('be.visible');
   },
   goToCreateANamespace () {
     cy.get('[data-test="new-namespace-button"]')
       .click();
+    cy.get('h4').contains('Nova skupina')
+      .should('be.visible');
   },
   expect,
 };
