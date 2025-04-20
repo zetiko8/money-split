@@ -241,3 +241,4 @@ export interface MNamespaceSettings {
 }
 
 export * from './error';
+export * from './constants';

@@ -79,6 +79,12 @@ export const CREATE_NAMESPACE_FORM = {
   uploadAvatar (imageName: string) {
     cy.get('input[type=file]').selectFile(`src/fixtures/${imageName}`);
   },
+  expectFileUploadError (errorMessage: string) {
+    cy.get('input[type=file]')
+      .parent()
+      .find('.error')
+      .should('contain.text', errorMessage);
+  },
   deleteUploadedImage () {
     cy.get('customize-avatar file-input .icon-btn')
       .click();

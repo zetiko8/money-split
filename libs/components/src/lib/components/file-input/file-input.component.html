@@ -23,3 +23,17 @@
 >
     <i class="fa-solid fa-xmark"></i>
 </button>
+<p
+  class="error"
+  *ngIf="fileToBigError"
+  data-cy="fileToBigError"
+  >
+  {{ 'FILE_TO_BIG' | translate }}
+</p>
+<p
+  class="error"
+  *ngIf="fileTypeNotSupportedError"
+  data-cy="fileTypeNotSupportedError"
+  >
+  {{ 'FILE_TYPE_NOT_SUPPORTED' | translate }}
+</p>

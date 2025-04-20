@@ -7,12 +7,14 @@ import {
 } from '@angular/forms';
 import { randomHtmlName } from '@angular-monorepo/utils';
 import { Observable } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   standalone: true,
   imports: [
     FormsModule,
     CommonModule,
+    TranslateModule,
   ],
   selector: 'file-input',
   templateUrl: './file-input.component.html',
@@ -34,14 +36,19 @@ implements ControlValueAccessor {
   @Input() label = '';
   @Input() required = false;
   @Input() readonly = false;
+  @Input() fileSizeLimit: number | null = null;
+  @Input() supportedFileTypes: string[] | null = null;
   @Input() uploadFn: ((fn: File) => Observable<{
     url: string
   }>) | null = null;
   @Output() uploadedFileUrl = new EventEmitter<string>();
   @Output() deleteFile = new EventEmitter<string>();
+  @Output() uploadError = new EventEmitter<Error>();
 
   _disabled = false;
   _value = '';
+  fileToBigError = false;
+  fileTypeNotSupportedError = false;
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   propagateChange = (_: any) => {};
@@ -74,18 +81,42 @@ implements ControlValueAccessor {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async handleChange ($event: any) {
+    this.fileToBigError = false;
+    this.fileTypeNotSupportedError = false;
     if ($event?.target?.files?.length) {
       const fileDataUrl
             = await getBase64($event.target?.files[0]);
-      this.propagateChange(fileDataUrl);
+      if ($event.target?.files[0].size > (this.fileSizeLimit || 200)) {
+        this.fileToBigError = true;
+        this._value ='';
+        this.propagateChange(null);
+        return;
+      }
+      if (this.supportedFileTypes
+        && !this.supportedFileTypes.includes($event.target?.files[0].type)) {
+        this.fileTypeNotSupportedError = true;
+        this._value ='';
+        this.propagateChange(null);
+        return;
+      }
+      if (!this.uploadFn) {
+        this.propagateChange(fileDataUrl);
+      }
       if (this.uploadFn) {
         this.uploadFn($event.target?.files[0])
           .subscribe({
             next: response => {
+              this.propagateChange(fileDataUrl);
               this.uploadedFileUrl.emit(response.url);
             },
             error: err => {
-              throw err;
+              this.propagateChange(fileDataUrl);
+              this.deleteFile.emit();
+              if (err instanceof Error) {
+                this.uploadError.emit(err);
+              } else {
+                this.uploadError.emit(Error('Error when uploading file'));
+              }
             },
           });
       }

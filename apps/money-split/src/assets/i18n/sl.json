@@ -41,5 +41,8 @@
   "settle": "Poravnava",
   "settlePreview": "Predogled",
   "settleConfirm": "Potrdi poravnavo",
-  "settledOn": "Poravnava"
+  "settledOn": "Poravnava",
+  "FILE_UPLOAD_ERROR": "Napaka pri nalaganju datoteke",
+  "FILE_TO_BIG": "Datoteka je prevelika",
+  "FILE_TYPE_NOT_SUPPORTED": "Vrsta datoteke je nepodprta"
 }

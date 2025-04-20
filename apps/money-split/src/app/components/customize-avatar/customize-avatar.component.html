@@ -19,6 +19,9 @@
             [uploadFn]="fileUploadProcess.execute"
             (uploadedFileUrl)="avatarUrl.setValue($event)"
             (deleteFile)="avatarUrl.setValue(null)"
+            (uploadError)="onUploadError($event)"
+            [fileSizeLimit]="FILE_SIZE_LIMIT"
+            [supportedFileTypes]="['image/jpeg', 'image/png']"
         ></file-input>
     </div>
     <div class="input-group">
@@ -35,3 +38,7 @@
 <full-screen-loader
     *ngIf="fileUploadProcess.inProgress$| async"
 ></full-screen-loader>
+<notifications-controller
+    [notification$]="notifications$"
+>
+</notifications-controller>

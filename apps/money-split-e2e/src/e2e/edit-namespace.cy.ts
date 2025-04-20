@@ -142,23 +142,12 @@ describe('Edit a namespace', () => {
       await ACTIONS.loginTestOwner(creatorOwner);
     });
 
-    it('can edit a namespace image', () => {
+    it('limits supported formats and limits size', () => {
       EDIT_NAMESPACE_FORM.visit(creatorOwner.owner.key, namespaceId);
-      EDIT_NAMESPACE_FORM.uploadAvatar('TestImage1.PNG');
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(1000);
-      EDIT_NAMESPACE_FORM.submit();
-      NAMESPACE_SCREEN.goToEditNamespace();
-      EDIT_NAMESPACE_FORM.avatarIsHttpImage();
-      EDIT_NAMESPACE_FORM.uploadAvatar('TestImage2.PNG');
-      EDIT_NAMESPACE_FORM.avatarIsUploadedImage();
-
-      EDIT_NAMESPACE_FORM.deleteUploadedImage();
-      EDIT_NAMESPACE_FORM.avatarIsColoredAvatar();
-
-      EDIT_NAMESPACE_FORM.cancel();
-      EDIT_NAMESPACE_FORM.avatarIsHttpImage();
-      EDIT_NAMESPACE_FORM.setAvatarColor('#9a8619');
+      EDIT_NAMESPACE_FORM.uploadAvatar('ToBig.txt');
+      EDIT_NAMESPACE_FORM.expectFileUploadError('Datoteka je prevelika');
+      EDIT_NAMESPACE_FORM.uploadAvatar('FileTypeNotSupported.txt');
+      EDIT_NAMESPACE_FORM.expectFileUploadError('Vrsta datoteke je nepodprta');
       EDIT_NAMESPACE_FORM.avatarIsColoredAvatar();
     });
   });

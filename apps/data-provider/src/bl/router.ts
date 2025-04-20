@@ -11,8 +11,6 @@ import { AVATAR_SERVICE } from '../modules/avatar';
 import { PROFILE_SERVICE } from '../modules/profile';
 import { VALIDATE, numberRouteParam, registerRoute } from '../helpers';
 import { SETTLE_SERVICE } from '../modules/settle';
-import multer from 'multer';
-import path from 'path';
 import {
   acceptInvitationApi,
   addRecordApi,
@@ -37,6 +35,7 @@ import { AUTH_SERVICE } from '../modules/auth/auth';
 import { asyncMap } from '@angular-monorepo/utils';
 import { mysqlDate } from '../connection/helper';
 import { USER_SERVICE } from '../modules/user';
+import { UPLOAD_SERVICE } from '../modules/upload';
 
 export const mainRouter = Router();
 
@@ -493,30 +492,9 @@ registerRoute(
   AUTH_SERVICE.auth,
 );
 
-const multerStorage = multer.diskStorage({
-  destination: (
-    req, file, cb,
-  ) => {
-    cb(null, path.join(__dirname, 'assets'));
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix
-      = Date.now()
-        + '-' + Math.round(Math.random() * 1E9);
-    cb(
-      null,
-      uniqueSuffix + '.' +
-      file.originalname.split('.')[1],
-    );
-  },
-});
-const upload = multer({
-  storage: multerStorage,
-});
-
 mainRouter.post('/upload',
   logRequestMiddleware(),
-  upload.single('file'),
+  UPLOAD_SERVICE.upload.single('file'),
   async (
     req: TypedRequestBody<{ name: string }>,
     res,
