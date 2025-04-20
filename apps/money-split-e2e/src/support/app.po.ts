@@ -55,6 +55,13 @@ export const CREATE_NAMESPACE_FORM = {
     cy.get('input[name="namespaceName"]')
       .type(name);
   },
+  setAvatarColor (
+    color: string,
+  ) {
+    cy.get('input[type=color]')
+      .invoke('val', color)
+      .trigger('input');
+  },
   nameIs (
     name: string,
   ) {
@@ -64,6 +71,37 @@ export const CREATE_NAMESPACE_FORM = {
   submit () {
     cy.get('button[type=submit]')
       .click();
+  },
+  cancel () {
+    cy.get('[data-test="cancel-button"]')
+      .click();
+  },
+  uploadAvatar (imageName: string) {
+    cy.get('input[type=file]').selectFile(`src/fixtures/${imageName}`);
+  },
+  deleteUploadedImage () {
+    cy.get('customize-avatar file-input .icon-btn')
+      .click();
+  },
+  avatarIsHttpImage () {
+    cy.get('customize-avatar avatar img')
+      .should('be.visible')
+      .and('have.attr', 'src')
+      .should('be.a', 'string')
+      .and('not.be.empty')
+      .and('contain', '/assets/');
+  },
+  avatarIsUploadedImage () {
+    cy.get('customize-avatar avatar img')
+      .should('be.visible')
+      .and('have.attr', 'src')
+      .should('be.a', 'string')
+      .and('not.be.empty')
+      .and('contain', 'data:image');
+  },
+  avatarIsColoredAvatar () {
+    cy.get('customize-avatar avatar .avatar-image')
+      .should('be.visible');
   },
 };
 

@@ -1,18 +1,25 @@
-<div>
-    <label
-        [for]="name"
-        class="form-label"
-    >
-        {{ label }}
-    </label>
-    <input
-        class="form-control"
-        [name]="name"
-        type="file"
-        [(ngModel)]="_value"
-        [required]="required"
-        [readonly]="readonly"
-        (change)="handleChange($event)"
-        (blur)="onBlur()"
-    >
-</div>
+<label
+    [for]="name"
+    class="form-label"
+>
+    {{ label }}
+</label>
+<input
+    class="form-control"
+    [name]="name"
+    type="file"
+    [(ngModel)]="_value"
+    [required]="required"
+    [readonly]="readonly"
+    (change)="handleChange($event)"
+    (blur)="onBlur()"
+>
+
+<button
+    type="button"
+    class="icon-btn"
+    *ngIf="_value"
+    (click)="handleChange(null)"
+>
+    <i class="fa-solid fa-xmark"></i>
+</button>

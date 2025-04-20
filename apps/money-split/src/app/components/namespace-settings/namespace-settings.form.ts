@@ -6,9 +6,16 @@ import { CustomizeAvatarComponent } from '../customize-avatar/customize-avatar.c
 import { CreateNamespacePayload, MNamespaceSettings } from '@angular-monorepo/entities';
 import { getRandomColor } from '@angular-monorepo/utils';
 
+export type NamespaceSettingsFormType = FormGroup<{
+  namespaceName: FormControl<string | null>;
+  avatarColor: FormControl<string | null>;
+  avatarImage: FormControl<string | null>;
+  avatarUrl: FormControl<string | null>;
+}>;
+
 export const createNamespaceSettingsForm = (
   namespaceSettings?: MNamespaceSettings,
-) => {
+): NamespaceSettingsFormType => {
   return new FormGroup({
     namespaceName: new FormControl<string>(
       namespaceSettings?.namespaceName || '', { validators: [ Validators.required ] }),
@@ -34,11 +41,33 @@ export const createNamespaceSettingsForm = (
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export class NamespaceSettingsFormComponent {
-  @Input() form = createNamespaceSettingsForm();
+  _form: NamespaceSettingsFormType = createNamespaceSettingsForm();
+  private _originalForm: NamespaceSettingsFormType = createNamespaceSettingsForm();
+  @Input()
+  set form (form: NamespaceSettingsFormType) {
+    this._form = form;
+    this._originalForm = createNamespaceSettingsForm({
+      avatarColor: form.value.avatarColor || null,
+      avatarUrl: form.value.avatarUrl || null,
+      namespaceName: form.value.namespaceName || '',
+    });
+  }
 
   @Output() submited = new EventEmitter<CreateNamespacePayload>();
 
   public submit () {
-    this.submited.emit(this.form.value as CreateNamespacePayload);
+    this.submited.emit({
+      avatarColor: this._form.value.avatarColor,
+      avatarUrl: this._form.value.avatarUrl,
+      namespaceName: this._form.value.namespaceName,
+    } as CreateNamespacePayload);
+  }
+
+  public cancel () {
+    this._form = createNamespaceSettingsForm({
+      avatarColor: this._originalForm.value.avatarColor || null,
+      avatarUrl: this._originalForm.value.avatarUrl || null,
+      namespaceName: this._originalForm.value.namespaceName || '',
+    });
   }
 }

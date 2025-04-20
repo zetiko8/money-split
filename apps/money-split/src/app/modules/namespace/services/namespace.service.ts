@@ -245,8 +245,8 @@ export class NamespaceService {
                 payload,
               );
             },
-          )},
-        ),
+          );
+        }),
       );
   }
 

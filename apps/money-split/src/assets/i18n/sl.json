@@ -13,6 +13,7 @@
   "myNamespaces": "Moje skupine",
   "namespaceName": "Ime skupine",
   "confirm": "Potrdi",
+  "cancel": "Prekliči",
   "invitationExplanation": "Povabljeni ste bili v skupino za deljenje stroškov. Se želite priključiti?",
   "invitationNameFormLabel": "Ime s katerim se boste priključili",
   "acceptInvitation": "Sprejmi povabilo",

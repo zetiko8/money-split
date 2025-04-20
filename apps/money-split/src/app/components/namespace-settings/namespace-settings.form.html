@@ -4,21 +4,32 @@
     <div class="input-group">
         <label>{{ 'namespaceName' | translate }}</label>
         <input
-            [formControl]="form.controls.namespaceName" 
+            [formControl]="_form.controls.namespaceName" 
             type="text"
             name="namespaceName"    
         >
     </div>
     <customize-avatar
-        [avatarColor]="form.controls.avatarColor"
-        [avatarImage]="form.controls.avatarImage"
-        [avatarName]="form.controls.namespaceName.value || ''"
-        [avatarUrl]="form.controls.avatarUrl"
+        [avatarColor]="_form.controls.avatarColor"
+        [avatarImage]="_form.controls.avatarImage"
+        [avatarName]="_form.controls.namespaceName.value || ''"
+        [avatarUrl]="_form.controls.avatarUrl"
     ></customize-avatar>
     <div class="input-group">
         <button
+            class="btn-secondary"
+            type="button"
+            data-test="cancel-button"
+            [disabled]="!_form.valid"
+            (click)="cancel()"
+        >
+            {{ 'cancel' | translate }}
+        </button>
+    </div>
+    <div class="input-group">
+        <button
             type="submit"
-            [disabled]="!form.valid"
+            [disabled]="!_form.valid"
         >
             {{ 'confirm' | translate }}
         </button>

@@ -305,6 +305,11 @@ ul {
         padding: var(--gap-normal) var(--gap-large);
         font-weight: 600;
 
+        &.btn-secondary {
+            background-color: var(--color-secondary);
+            color: var(--text-color-inverted);
+        }
+        
         i {
             background-color: inherit;
             color: inherit;

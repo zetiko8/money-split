@@ -28,7 +28,7 @@ import { Observable } from 'rxjs';
 export class FileInputComponent
 implements ControlValueAccessor {
 
-  @HostBinding('class.ms-form-control') efc = true;
+  @HostBinding('class.input-group') efc = true;
 
   @Input() name = randomHtmlName();
   @Input() label = '';
@@ -38,6 +38,7 @@ implements ControlValueAccessor {
     url: string
   }>) | null = null;
   @Output() uploadedFileUrl = new EventEmitter<string>();
+  @Output() deleteFile = new EventEmitter<string>();
 
   _disabled = false;
   _value = '';
@@ -73,7 +74,7 @@ implements ControlValueAccessor {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async handleChange ($event: any) {
-    if ($event.target?.files?.length) {
+    if ($event?.target?.files?.length) {
       const fileDataUrl
             = await getBase64($event.target?.files[0]);
       this.propagateChange(fileDataUrl);
@@ -89,7 +90,9 @@ implements ControlValueAccessor {
           });
       }
     } else {
+      this._value = '';
       this.propagateChange(null);
+      this.deleteFile.emit();
     }
   }
 

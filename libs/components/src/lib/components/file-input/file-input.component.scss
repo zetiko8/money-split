@@ -1,0 +1,13 @@
+:host {
+  position: relative;
+
+  .icon-btn {
+    position: absolute;
+    top: calc(var(--gap-xlarge));
+    right: var(--gap-small);
+  }
+
+  input {
+    padding-top: var(--gap-xlarge);
+  }
+}

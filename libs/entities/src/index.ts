@@ -237,7 +237,6 @@ export interface OwnerRoleDb {
 export interface MNamespaceSettings {
   namespaceName: string,
   avatarColor: string | null,
-  avatarId: number,
   avatarUrl: string | null,
 }
 

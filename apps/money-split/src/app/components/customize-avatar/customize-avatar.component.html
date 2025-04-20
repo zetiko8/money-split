@@ -16,8 +16,9 @@
             name="image"
             data-testid="image-input"
             [formControl]="avatarImage"
-            [uploadFn]="fileUploadService.upload"
+            [uploadFn]="fileUploadProcess.execute"
             (uploadedFileUrl)="avatarUrl.setValue($event)"
+            (deleteFile)="avatarUrl.setValue(null)"
         ></file-input>
     </div>
     <div class="input-group">
@@ -27,6 +28,10 @@
             type="color"
             name="color"
             data-testid="color-input"
+            (ngModelChange)="avatarUrl.setValue(null); avatarImage.setValue(null)"
         >
     </div>
 </section>
+<full-screen-loader
+    *ngIf="fileUploadProcess.inProgress$| async"
+></full-screen-loader>
