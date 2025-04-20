@@ -6,6 +6,17 @@ export const APP = {
     cy.get('full-screen-loader')
       .should('be.visible');
   },
+  expectErrorNotification (errorMessage: string) {
+    cy
+      .get('[data-cy="notification"]')
+      .should('be.visible')
+      .and('contain', errorMessage);
+  },
+  expectNoErrorNotification () {
+    cy
+      .get('[data-cy="notification"]')
+      .should('not.exist');
+  },
 };
 
 export const LOGIN_FORM = {
@@ -209,6 +220,7 @@ export const REALM_SCREEN = {
     cy.get('[data-test="new-namespace-button"]')
       .click();
   },
+  expect,
 };
 
 export const RECORD_LIST = {

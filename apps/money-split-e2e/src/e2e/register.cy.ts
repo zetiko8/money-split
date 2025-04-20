@@ -1,5 +1,5 @@
 import { TestOwner } from '@angular-monorepo/backdoor';
-import { APP, REGISTER_FORM } from '../support/app.po';
+import { APP, LOGIN_FORM, REGISTER_FORM } from '../support/app.po';
 import { ENV } from '../support/config';
 
 const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
@@ -62,5 +62,14 @@ describe('Register Component', () => {
     cy.intercept('**/register', { delay: 200 });
     REGISTER_FORM.register('testuser', 'testpassword');
     APP.loaderISvisible();
+  });
+
+  it('should not throw an error when a new owner comes to realm', () => {
+    cy.visit('/register');
+    REGISTER_FORM.register('testuser', 'testpassword');
+    LOGIN_FORM.login('testuser', 'testpassword');
+    cy.intercept('**/namespace').as('namespace');
+    cy.wait('@namespace');
+    APP.expectNoErrorNotification();
   });
 });

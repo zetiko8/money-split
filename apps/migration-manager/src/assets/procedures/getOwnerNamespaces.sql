@@ -1,4 +1,6 @@
-CREATE PROCEDURE getOwnerNamespaces (
+DROP PROCEDURE IF EXISTS `main`.`getOwnerNamespaces`;
+
+CREATE PROCEDURE `main`.`getOwnerNamespaces` (
    argOwnerId varchar(100)
 ) 
   BEGIN
@@ -7,13 +9,15 @@ CREATE PROCEDURE getOwnerNamespaces (
   DECLARE procedureError TEXT;
  
   SELECT (
-	  SELECT JSON_ARRAYAGG(
-	  	JSON_OBJECT(
-	  		'id', n.id,
-	  		'name', n.name,
-	  		'avatarId', n.avatarId
-	  	)
-	  )
+    SELECT COALESCE(
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+          'id', n.id,
+          'name', n.name,
+          'avatarId', n.avatarId
+        )
+      ), JSON_ARRAY()
+    )
 	  FROM NamespaceOwner no2 
 	  INNER JOIN Namespace n 
 	  ON n.id = no2.namespaceId

@@ -82,5 +82,27 @@ describe(API_NAME, () => {
         ]);
       }));
   });
-  it.todo('returns an empty array if there are no namespaces for owner');
+});
+
+describe(API_NAME + 'bugs', () => {
+  let testOwner!: TestOwner;
+  beforeEach(async () => {
+    testOwner = new TestOwner(
+      DATA_PROVIDER_URL,
+      'testowner',
+      'testpassword',
+    );
+    await testOwner.dispose();
+    await testOwner.register();
+  });
+
+  it('should not throw when there are no namespaces created', async () => {
+    await fnCall(API_NAME,
+      async () => await axios.get(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+        testOwner.authHeaders()))
+      .result((result => {
+        expect(result).toEqual([]);
+      }));
+  });
 });
