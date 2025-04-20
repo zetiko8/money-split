@@ -16,16 +16,16 @@ export function getRecordForm (
       {
         validators: [
           (control) => {
-              if (control.value === '') {
-                  return { required: true };
-              } 
-              else if (control.value === null) {
-                  return { required: true };
-              } 
-              else {
-                  return null;
-              }
-          }
+            if (control.value === '') {
+              return { required: true };
+            }
+            else if (control.value === null) {
+              return { required: true };
+            }
+            else {
+              return null;
+            }
+          },
         ],
         nonNullable: true,
       },
@@ -33,19 +33,19 @@ export function getRecordForm (
     cost: new FormControl<number>(data?.cost || 0, {
       validators: [
         (control) => {
-            if (control.value <= 0) {
-                return { required: true };
-            } 
-            else if (control.value === null) {
-                return { required: true };
-            } 
-            else if ((Number.isNaN(control.value))) {
-                return { required: true };
-            } 
-            else {
-                return null;
-            }
-        }
+          if (control.value <= 0) {
+            return { required: true };
+          }
+          else if (control.value === null) {
+            return { required: true };
+          }
+          else if ((Number.isNaN(control.value))) {
+            return { required: true };
+          }
+          else {
+            return null;
+          }
+        },
       ],
       nonNullable: true,
     }),
@@ -54,12 +54,12 @@ export function getRecordForm (
       {
         validators: [
           (control) => {
-              if (control.value  && control.value.length === 0) {
-                  return { required: true };
-              } else {
-                  return null;
-              }
-          }
+            if (control.value  && control.value.length === 0) {
+              return { required: true };
+            } else {
+              return null;
+            }
+          },
         ],
         nonNullable: true,
       },
@@ -69,12 +69,12 @@ export function getRecordForm (
       {
         validators: [
           (control) => {
-              if (control.value  && control.value.length === 0) {
-                  return { required: true };
-              } else {
-                  return null;
-              }
-          }
+            if (control.value  && control.value.length === 0) {
+              return { required: true };
+            } else {
+              return null;
+            }
+          },
         ],
         nonNullable: true,
       },
@@ -84,14 +84,14 @@ export function getRecordForm (
       {
         validators: [
           (control) => {
-              if (!control.value) {
-                  return { required: true };
-              } else {
-                  return null;
-             }
-          }
+            if (!control.value) {
+              return { required: true };
+            } else {
+              return null;
+            }
+          },
         ],
-      } 
+      },
     ),
   });
 }
@@ -112,7 +112,7 @@ export function getRecordForm (
 export class RecordFormComponent {
 
   @Input() submitButtonText = '';
-  @Input() 
+  @Input()
   set formData (data: {
     form: RecordFormGroup,
     namespace: NamespaceView,
@@ -126,8 +126,8 @@ export class RecordFormComponent {
     }
   }
 
-  
-  @Output() formSubmit = new EventEmitter<CreateRecordData>(); 
+
+  @Output() formSubmit = new EventEmitter<CreateRecordData>();
   public form: RecordFormGroup | null = null;
   public usersOptions: { label: string, value: number }[] = [];
   public ownerUsersOptions: { label: string, value: number }[] = [];
@@ -135,8 +135,8 @@ export class RecordFormComponent {
   public submit () {
     if (this.form) {
       this.formSubmit.emit(
-        this.form.value as CreateRecordData
-      )
+        this.form.value as CreateRecordData,
+      );
     }
   }
 }
