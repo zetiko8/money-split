@@ -138,6 +138,26 @@ export interface Record {
     settlementId: number | null,
 }
 
+export interface PaymentEvent {
+  paidBy: PaymentNode[],
+  benefitors: PaymentNode[],
+  id: number,
+  created: Date,
+  edited: Date,
+  createdBy: number,
+  editedBy: number,
+  namespaceId: number,
+  settlementId: number | null,
+  description: string,
+  notes: string,
+}
+
+export interface PaymentNode {
+  userId: number,
+  amount: number,
+  currency: string,
+}
+
 export interface Settlement {
     id: number,
     created: Date,

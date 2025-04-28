@@ -1,0 +1,30 @@
+<form
+    (submit)="$event.preventDefault(); submit()"
+    *ngIf="form"
+>
+    <div
+        *ngFor="let user of usersOptions"
+    >
+        <payment-user-form
+            [form]="form.controls.paidBy"
+            [user]="user"
+        ></payment-user-form>
+    </div>
+    <div
+        *ngFor="let user of usersOptions"
+    >
+        <payment-user-form
+            [form]="form.controls.benefitors"
+            [user]="user"
+        ></payment-user-form>
+    </div>
+    <div class="input-group">
+        <button
+            type="submit"
+            data-test="add-expense-confirm-btn"
+            [disabled]="!form.valid"
+        >
+        {{ submitButtonText}}
+        </button>
+    </div>
+</form>

@@ -1,0 +1,34 @@
+<ng-container
+  *ngIf="user && form"
+>
+  <div>
+    {{ user.name }}
+    <avatar
+      [avatarId]="user.avatarId"
+    ></avatar>
+  </div>
+  <div>
+    <ng-container
+      *ngFor="let payment of form.controls; let i = index"
+    >
+      <amount-form
+        *ngIf="payment.controls.userId.value === user.id"
+        [form]="payment"
+        [canRemove]="i !== 0"
+        (remove)="remove.emit(payment)"
+      ></amount-form>
+    </ng-container>
+    <div class="input-group">
+      <button
+          type="button"
+          data-test="add-amount-btn"
+          [disabled]="!form.valid"
+          class="icon-button"
+          (click)="add.emit(user)"
+      >
+         <i class="fa fa-plus"></i>
+      </button>
+  </div>
+  </div>
+</ng-container>
+  

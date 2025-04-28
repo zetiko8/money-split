@@ -1,4 +1,4 @@
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormControl, FormGroup } from '@angular/forms';
 
 export * from './config.types';
 export * from './app.error.types';
@@ -10,4 +10,16 @@ export type RecordFormGroup = FormGroup<{
     benefitors: FormControl<number[]>;
     paidBy: FormControl<number[]>;
     createdBy: FormControl<number | null>;
+}>
+
+export type PaymentEventFormGroup = FormGroup<{
+    paidBy: FormArray<PaymentNodeFormGroup>;
+    benefitors: FormArray<PaymentNodeFormGroup>;
+    createdBy: FormControl<number>;
+}>
+
+export type PaymentNodeFormGroup = FormGroup<{
+    userId: FormControl<number>;
+    amount: FormControl<number>;
+    currency: FormControl<string>;
 }>
