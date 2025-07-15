@@ -6,7 +6,7 @@ import { FormArray } from '@angular/forms';
 import { User } from '@angular-monorepo/entities';
 import { PaymentNodeFormGroup } from '../../../../types';
 import { AmountFormComponent } from '../amount-form/amount-form.component';
-import { AvatarComponent } from 'apps/money-split/src/app/components/avatar.component';
+import { AvatarComponent } from '../../../../components/avatar.component';
 
 @Component({
   standalone: true,
