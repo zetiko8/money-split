@@ -35,13 +35,13 @@ export class AddExpenseView {
   public readonly routingService = inject(RoutingService);
 
   public readonly loadProcess = new BoundProcess(
-    () => this.nameSpaceService.getNamespace() 
+    () => this.nameSpaceService.getNamespace(),
   );
   public readonly addExpenseProcess = new BoundProcess(
     (recordData: CreateRecordData) => this.nameSpaceService.addRecord(recordData)
       .pipe(
         tap(() => this.routingService.goToNamespaceView()),
-      ) 
+      ),
   );
 
   public readonly formData$
@@ -51,11 +51,11 @@ export class AddExpenseView {
       mergeMap(() => this.loadProcess.execute()),
       map(namespace => {
         const form = getRecordForm({
-          createdBy: namespace.ownerUsers.length === 1 
+          createdBy: namespace.ownerUsers.length === 1
             ? namespace.ownerUsers[0].id
             : undefined,
         });
-        return { namespace, form }; 
+        return { namespace, form };
       }),
       share({ connector: () => new ReplaySubject<{
         namespace: NamespaceView;
@@ -68,17 +68,17 @@ export class AddExpenseView {
     this.addExpenseProcess.inProgress$,
   ]);
 
-  public readonly notification$: Observable<Notification> 
+  public readonly notification$: Observable<Notification>
     = merge(
       this.loadProcess.error$,
       this.addExpenseProcess.error$,
-    ) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+    )
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   public addExpense (data: CreateRecordData) {
     this.addExpenseProcess

@@ -41,15 +41,15 @@ export class EditRecordView {
       map(params => params['recordId'] as number),
       mergeMap(
         recordId => this.nameSpaceService
-          .getEditRecordView(recordId)
-      )
-    ) 
+          .getEditRecordView(recordId),
+      ),
+    ),
   );
   public readonly editRecordProcess = new BoundProcess(
     (recordData: EditRecordData) => this.nameSpaceService.editRecord(recordData)
       .pipe(
         tap(() => this.routingService.goToNamespaceView()),
-      ) 
+      ),
   );
 
   public readonly formData$
@@ -68,8 +68,8 @@ export class EditRecordView {
             .map(pb => pb.id),
         });
 
-        return { 
-          namespace: data.namespace, 
+        return {
+          namespace: data.namespace,
           form,
           recordId: data.record.id,
         };
@@ -86,17 +86,17 @@ export class EditRecordView {
     this.editRecordProcess.inProgress$,
   ]);
 
-  public readonly notification$: Observable<Notification> 
+  public readonly notification$: Observable<Notification>
     = merge(
       this.loadProcess.error$,
       this.editRecordProcess.error$,
-    ) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+    )
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   public addExpense (data: CreateRecordData) {
     this.formData$
@@ -112,6 +112,6 @@ export class EditRecordView {
             recordId: formData.recordId,
           })
           .subscribe();
-      })
+      });
   }
 }
