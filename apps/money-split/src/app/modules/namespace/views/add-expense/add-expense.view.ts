@@ -8,10 +8,9 @@ import { Notification } from '../../../../components/notifications/notifications
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
-import { RecordFormComponent, getRecordForm } from '../../components/record-form/record-form.component';
+import { CreatePaymentEventData } from '@angular-monorepo/entities';
 import { TranslateModule } from '@ngx-translate/core';
-import { RecordFormGroup } from '../../../../types';
+import { getPaymentEventForm, PaymentEventFormComponent, PaymentEventFormData } from '../../components/payment-event-form/payment-event-form.component';
 
 @Component({
   standalone: true,
@@ -19,7 +18,7 @@ import { RecordFormGroup } from '../../../../types';
     RouterModule,
     CommonModule,
     PageComponent,
-    RecordFormComponent,
+    PaymentEventFormComponent,
     TranslateModule,
   ],
   selector: 'add-expense',
@@ -38,29 +37,24 @@ export class AddExpenseView {
     () => this.nameSpaceService.getNamespace(),
   );
   public readonly addExpenseProcess = new BoundProcess(
-    (recordData: CreateRecordData) => this.nameSpaceService.addRecord(recordData)
+    (recordData: CreatePaymentEventData) => this.nameSpaceService.addPaymentEvent(recordData)
       .pipe(
         tap(() => this.routingService.goToNamespaceView()),
       ),
   );
 
-  public readonly formData$
+  public readonly formData$: Observable<PaymentEventFormData>
     = merge(
       of(''),
     ).pipe(
       mergeMap(() => this.loadProcess.execute()),
       map(namespace => {
-        const form = getRecordForm({
-          createdBy: namespace.ownerUsers.length === 1
-            ? namespace.ownerUsers[0].id
-            : undefined,
-        });
+        const form = getPaymentEventForm(
+          namespace.ownerUsers[0].id,
+        );
         return { namespace, form };
       }),
-      share({ connector: () => new ReplaySubject<{
-        namespace: NamespaceView;
-        form: RecordFormGroup;
-      }>() }),
+      share({ connector: () => new ReplaySubject<PaymentEventFormData>() }),
     );
 
   public readonly isLoading = combineLoaders([
@@ -80,7 +74,7 @@ export class AddExpenseView {
         }),
       );
 
-  public addExpense (data: CreateRecordData) {
+  public addExpense (data: CreatePaymentEventData) {
     this.addExpenseProcess
       .execute(data)
       .subscribe();

@@ -1,11 +1,24 @@
-<ng-container
+<div
   *ngIf="user && form"
+  class="box"
 >
-  <div>
-    {{ user.name }}
-    <avatar
-      [avatarId]="user.avatarId"
-    ></avatar>
+  <div
+    style="display: flex;"
+  >
+    <div>
+      <avatar
+        [avatarId]="user.avatarId"
+        [name]="user.name"
+      ></avatar>
+    </div>
+    <button
+        type="button"
+        data-test="add-amount-btn"
+        (click)="add.emit(user)"
+        class="icon-btn"
+    >
+      <i class="fa fa-plus"></i>
+    </button>
   </div>
   <div>
     <ng-container
@@ -14,21 +27,9 @@
       <amount-form
         *ngIf="payment.controls.userId.value === user.id"
         [form]="payment"
-        [canRemove]="i !== 0"
         (remove)="remove.emit(payment)"
       ></amount-form>
     </ng-container>
-    <div class="input-group">
-      <button
-          type="button"
-          data-test="add-amount-btn"
-          [disabled]="!form.valid"
-          class="icon-button"
-          (click)="add.emit(user)"
-      >
-         <i class="fa fa-plus"></i>
-      </button>
   </div>
-  </div>
-</ng-container>
+</div>
   

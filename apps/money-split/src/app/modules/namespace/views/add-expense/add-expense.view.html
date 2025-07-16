@@ -19,11 +19,11 @@
     <ng-container
         *ngIf="formData$ | async as formData"
     >
-        <record-form
+        <payment-event-form
             [formData]="formData"
             (formSubmit)="addExpense($event)"
             [submitButtonText]="'confirm' | translate"
         >
-        </record-form>
+        </payment-event-form>
     </ng-container>
 </page>

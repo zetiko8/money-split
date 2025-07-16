@@ -458,5 +458,42 @@ ul {
     .is-all-settled {
         background-color: var(--color-primary);
     }
+
+    .inline-form-group {
+
+      &.box {
+        .input-group {
+          margin-top: 0;
+          margin-bottom: 0;
+        }
+      }
+
+      .input-group {
+        width: unset;
+
+        label {
+          text-align: left;
+        }
+
+        &.w-1 {
+          width: 10%;
+        }
+
+        &.w-3 {
+          width: 30%;
+        }
+
+        &.w-6 {
+          width: 60%;
+        }
+
+        margin-right: var(--gap-small);
+
+        input {
+          text-align: left;
+        }
+      }
+        display: flex;
+    }
 }
 

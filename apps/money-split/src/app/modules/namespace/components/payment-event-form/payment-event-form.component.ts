@@ -3,9 +3,14 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CreateRecordData, NamespaceView, User } from '@angular-monorepo/entities';
+import { CreatePaymentEventData, NamespaceView, PaymentNode, User } from '@angular-monorepo/entities';
 import { PaymentEventFormGroup, PaymentNodeFormGroup } from '../../../../types';
 import { PaymentUserFormComponent } from '../payment-user-form/payment-user-form.component';
+
+export interface PaymentEventFormData {
+  form: PaymentEventFormGroup,
+  namespace: NamespaceView,
+};
 
 export function getPaymentNodeFormGroup (
   userId: number,
@@ -54,20 +59,10 @@ export function getPaymentNodeFormGroup (
 
 export function getPaymentEventForm (
   createdBy: number,
-  users: User[],
-  currencies: string[],
 ): PaymentEventFormGroup {
   return new FormGroup({
-    paidBy: new FormArray<PaymentNodeFormGroup>(
-      users.map(user => {
-        return getPaymentNodeFormGroup(user.id, 0, currencies[0]);
-      }),
-    ),
-    benefitors: new FormArray<PaymentNodeFormGroup>(
-      users.map(user => {
-        return getPaymentNodeFormGroup(user.id, 0, currencies[0]);
-      }),
-    ),
+    paidBy: new FormArray<PaymentNodeFormGroup>([]),
+    benefitors: new FormArray<PaymentNodeFormGroup>([]),
     createdBy: new FormControl<number>(
       createdBy,
       {
@@ -75,6 +70,20 @@ export function getPaymentEventForm (
         nonNullable: true,
       },
     ),
+  }, {
+    validators: [
+      (control) => {
+        if (control.value.paidBy.length === 0) {
+          return { required: true };
+        }
+        else if (control.value.benefitors.length === 0) {
+          return { required: true };
+        }
+        else {
+          return null;
+        }
+      },
+    ],
   });
 }
 
@@ -94,10 +103,7 @@ export class PaymentEventFormComponent {
 
   @Input() submitButtonText = '';
   @Input()
-  set formData (data: {
-    form: PaymentEventFormGroup,
-    namespace: NamespaceView,
-  } | null) {
+  set formData (data: PaymentEventFormData | null) {
     if (data !== null) {
       this.form = data.form;
       this.usersOptions = data.namespace.users;
@@ -106,16 +112,52 @@ export class PaymentEventFormComponent {
   }
 
 
-  @Output() formSubmit = new EventEmitter<CreateRecordData>();
+  @Output() formSubmit = new EventEmitter<CreatePaymentEventData>();
   public form: PaymentEventFormGroup | null = null;
   public usersOptions: User[] = [];
   public ownerUsersOptions: User[] = [];
 
   public submit () {
     if (this.form) {
+      const createPaymentEventData: CreatePaymentEventData = {
+        paidBy: this.form.controls.paidBy.value as PaymentNode[],
+        benefitors: this.form.controls.benefitors.value as PaymentNode[],
+        namespaceId: this.form.controls.createdBy.value,
+        description: '',
+        notes: '',
+        createdBy: this.form.controls.createdBy.value,
+      };
       this.formSubmit.emit(
-        this.form.value as CreateRecordData,
+        createPaymentEventData,
       );
+    }
+  }
+
+  addUserPayment (user: User) {
+    if (this.form) {
+      this.form.controls.paidBy.push(
+        getPaymentNodeFormGroup(user.id, 0, 'EUR'),
+      );
+    }
+  }
+
+  addUserBenefit (user: User) {
+    if (this.form) {
+      this.form.controls.benefitors.push(
+        getPaymentNodeFormGroup(user.id, 0, 'EUR'),
+      );
+    }
+  }
+
+  removeUserPayment (payment: PaymentNodeFormGroup) {
+    if (this.form) {
+      this.form.controls.paidBy.removeAt(this.form.controls.paidBy.controls.indexOf(payment));
+    }
+  }
+
+  removeUserBenefit (payment: PaymentNodeFormGroup) {
+    if (this.form) {
+      this.form.controls.benefitors.removeAt(this.form.controls.benefitors.controls.indexOf(payment));
     }
   }
 }

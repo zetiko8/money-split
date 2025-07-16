@@ -2,21 +2,29 @@
     (submit)="$event.preventDefault(); submit()"
     *ngIf="form"
 >
-    <div
+    <div>
+      <h5>
+        {{ 'addExpensePaidBy' | translate }}
+      </h5>
+      <payment-user-form
         *ngFor="let user of usersOptions"
-    >
-        <payment-user-form
-            [form]="form.controls.paidBy"
-            [user]="user"
-        ></payment-user-form>
+        [form]="form.controls.paidBy"
+        [user]="user"
+        (add)="addUserPayment($event)"
+        (remove)="removeUserPayment($event)"
+      ></payment-user-form>
     </div>
-    <div
+    <div>
+      <h5>
+        {{ 'addExpenseBenefitors' | translate }}
+      </h5>
+      <payment-user-form
         *ngFor="let user of usersOptions"
-    >
-        <payment-user-form
-            [form]="form.controls.benefitors"
-            [user]="user"
-        ></payment-user-form>
+        [form]="form.controls.benefitors"
+        [user]="user"
+        (add)="addUserBenefit($event)"
+        (remove)="removeUserBenefit($event)"
+      ></payment-user-form>
     </div>
     <div class="input-group">
         <button

@@ -19,6 +19,4 @@ import { PaymentNodeFormGroup } from '../../../../types';
 export class AmountFormComponent {
   @Output() remove = new EventEmitter<PaymentNodeFormGroup>();
   @Input() public form: PaymentNodeFormGroup | null = null;
-  @Input() public canRemove = true;
-
 }

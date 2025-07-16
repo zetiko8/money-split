@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { ConfigService } from '../../../services/config.service';
 import { Observable, catchError, combineLatest, mergeMap, throwError } from 'rxjs';
-import { CreateNamespacePayload, CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, MNamespaceSettings, NamespaceView, Record, RecordView, SettlePayload, SettlementPreview } from '@angular-monorepo/entities';
+import { CreateNamespacePayload, CreatePaymentEventData, CreateRecordData, ERROR_CODE, EditRecordData, MNamespace, MNamespaceSettings, NamespaceView, PaymentEvent, Record, RecordView, SettlePayload, SettlementPreview } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
 
@@ -110,6 +110,25 @@ export class NamespaceService {
                         + '/add',
           recordData,
         ),
+        ),
+      );
+  }
+
+  public addPaymentEvent (paymentEventData: CreatePaymentEventData) {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => {
+          return DATA_PROVIDER_API.addPaymentEventApi.callObservable(
+            paymentEventData,
+            { ownerKey, namespaceId, userId: paymentEventData.createdBy },
+            (url, method, payload) => {
+              return this.http.post<PaymentEvent>(this.config.getConfig().middlewareUrl + url, payload);
+            },
+          );
+        },
         ),
       );
   }

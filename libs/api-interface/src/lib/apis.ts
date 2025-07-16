@@ -1,6 +1,7 @@
 import {
   AvatarData,
   CreateNamespacePayload,
+  CreatePaymentEventData,
   EditProfileData,
   Invitation,
   InvitationViewData,
@@ -9,6 +10,7 @@ import {
   NamespaceView,
   Owner,
   OwnerProfileView,
+  PaymentEvent,
   Record,
   RecordData,
   RecordDataBackdoor,
@@ -223,6 +225,20 @@ export function addRecordApi() {
   });
 }
 
+export function addPaymentEventApi() {
+  return apiDefinition<
+  CreatePaymentEventData,
+  {
+    ownerKey: string,
+    namespaceId: number,
+    userId: number,
+  },
+  PaymentEvent>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/:userId/add-payment-event',
+    method: 'POST',
+  });
+}
+
 export function addRecordApiBackdoor() {
   return apiDefinition<
   RecordDataBackdoor,
@@ -231,6 +247,18 @@ export function addRecordApiBackdoor() {
   },
   Record>({
     endpoint: '/backdoor/:ownerKey/namespace/:namespaceId/:userId/add',
+    method: 'POST',
+  });
+}
+
+export function addPaymentEventApiBackdoor() {
+  return apiDefinition<
+  CreatePaymentEventData,
+  {
+    namespaceId: number,
+  },
+  PaymentEvent>({
+    endpoint: '/backdoor/:ownerKey/namespace/:namespaceId/:userId/add-payment-event',
     method: 'POST',
   });
 }
@@ -306,4 +334,6 @@ export const DATA_PROVIDER_API = {
   getNamespaceSettingsApi: new ApiDefinitionObj(getNamespaceSettingsApi()),
   editNamespaceSettingApi: new ApiDefinitionObj(editNamespaceSettingApi()),
   getAvatarApi: new ApiDefinitionObj(getAvatarApi()),
+  addPaymentEventApi: new ApiDefinitionObj(addPaymentEventApi()),
+  addPaymentEventApiBackdoor: new ApiDefinitionObj(addPaymentEventApiBackdoor()),
 };

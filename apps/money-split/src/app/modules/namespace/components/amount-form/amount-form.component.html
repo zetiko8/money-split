@@ -1,44 +1,31 @@
 <div
     *ngIf="form"
+    class="inline-form-group"
 >
-    <div class="input-group">
-        <label>{{ 'currency' | translate }}</label>
+    <div class="input-group w-3">
         <input
             [formControl]="form.controls.currency" 
             type="text"
             name="currency"
-            data-testid="currency-input" 
+            data-testid="currency-input"
+            [class.error]="form.controls.currency.errors"
         >
-        <p
-            class="error"
-            *ngIf="form.controls.currency.errors"
-            data-cy="addExpenseCurrencyError"
-        >
-            {{ 'addExpenseCurrencyError' | translate }}
-        </p>
     </div>
-    <div class="input-group">
-        <label>{{ 'amount' | translate }}</label>
+    <div class="input-group w-6">
         <input
             [formControl]="form.controls.amount" 
             type="number"
             name="amount"
             data-testid="amount-input" 
+            [class.error]="form.controls.amount.errors"
         >
-        <p
-            class="error"
-            *ngIf="form.controls.amount.errors"
-            data-cy="addExpenseAmountError"
-        >
-            {{ 'addExpenseAmountError' | translate }}
-        </p>
     </div>
     <div class="input-group">
         <button
             type="button"
             data-test="remove-amount-btn"
-            [disabled]="!form.valid"
-            class="icon-button"
+            class="icon-btn"
+            (click)="remove.emit(form)"
         >
            <i class="fa fa-xmark"></i>
         </button>

@@ -152,6 +152,15 @@ export interface PaymentEvent {
   notes: string,
 }
 
+export interface CreatePaymentEventData {
+  paidBy: PaymentNode[],
+  benefitors: PaymentNode[],
+  namespaceId: number,
+  description: string,
+  notes: string,
+  createdBy: number,
+}
+
 export interface PaymentNode {
   userId: number,
   amount: number,
