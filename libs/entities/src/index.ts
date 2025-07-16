@@ -153,12 +153,11 @@ export interface PaymentEvent {
 }
 
 export interface CreatePaymentEventData {
-  paidBy: PaymentNode[],
-  benefitors: PaymentNode[],
-  namespaceId: number,
-  description: string,
-  notes: string,
-  createdBy: number,
+  paidBy: PaymentNode[];
+  benefitors: PaymentNode[];
+  description: string | null;
+  notes: string | null;
+  createdBy: number;
 }
 
 export interface PaymentNode {

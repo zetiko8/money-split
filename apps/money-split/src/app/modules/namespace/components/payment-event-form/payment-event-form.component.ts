@@ -122,7 +122,6 @@ export class PaymentEventFormComponent {
       const createPaymentEventData: CreatePaymentEventData = {
         paidBy: this.form.controls.paidBy.value as PaymentNode[],
         benefitors: this.form.controls.benefitors.value as PaymentNode[],
-        namespaceId: this.form.controls.createdBy.value,
         description: '',
         notes: '',
         createdBy: this.form.controls.createdBy.value,

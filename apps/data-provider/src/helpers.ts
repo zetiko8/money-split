@@ -237,10 +237,48 @@ export const VALIDATE = {
     if (typeof value !== 'string')
       throw Error(ERROR_CODE.INVALID_REQUEST);
   },
+  number (value: unknown) {
+    if (value === null || value === undefined) return;
+    if (typeof value !== 'number' || isNaN(value))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  requiredNumber (value: unknown) {
+    if (value === undefined || value === null) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.number(value);
+  },
+  array (value: unknown) {
+    if (value === null || value === undefined) return;
+    if (!Array.isArray(value))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  requiredArray (value: unknown) {
+    if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.array(value);
+    if ((value as unknown[]).length === 0) throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  currency (value: unknown) {
+    if (value === null || value === undefined) return;
+    VALIDATE.string(value);
+    if (!(value as string).match(/^[A-Z]{3}$/))
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  requiredCurrency (value: unknown) {
+    if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.currency(value);
+  },
   anyOf (...values) {
     values.forEach((value: unknown) => {
       if (values === null || value === undefined)
         throw Error(ERROR_CODE.INVALID_REQUEST);
     });
+  },
+  bigint (value: unknown) {
+    if (value === null || value === undefined) return;
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < 0)
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+  },
+  requiredBigint (value: unknown) {
+    if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.bigint(value);
   },
 };

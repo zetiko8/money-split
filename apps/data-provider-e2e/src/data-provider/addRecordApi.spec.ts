@@ -253,7 +253,7 @@ describe(API_NAME, () => {
           recordId = res.id;
         }));
     });
-    it('saves invitation in the db', async () => {
+    it('saves recird in the db', async () => {
       const response = await queryDb(
         `
         SELECT * FROM \`Record\`
