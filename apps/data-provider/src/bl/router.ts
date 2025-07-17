@@ -33,6 +33,7 @@ import {
   registerApi,
   settleConfirmApi,
   settleConfirmApiBackdoor,
+  getPaymentEventApi,
 } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../modules/auth/auth';
 import { asyncMap } from '@angular-monorepo/utils';
@@ -499,6 +500,19 @@ registerRoute(
     return await NAMESPACE_SERVICE.editNamespaceSettings(
       Number(params.namespaceId),
       payload,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  getPaymentEventApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    return await PAYMENT_EVENT_SERVICE.getPaymentEvent(
+      Number(params.namespaceId),
+      Number(params.paymentEventId),
+      context.owner.id,
     );
   },
   AUTH_SERVICE.auth,

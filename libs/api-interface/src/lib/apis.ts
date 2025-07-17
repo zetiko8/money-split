@@ -320,6 +320,20 @@ export function getViewUserApi() {
   });
 }
 
+export function getPaymentEventApi() {
+  return apiDefinition<
+  null,
+  {
+    ownerKey: string,
+    namespaceId: number,
+    paymentEventId: number,
+  },
+  PaymentEvent>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/payment-event/:paymentEventId',
+    method: 'GET',
+  });
+}
+
 export function editPaymentEventApi() {
   return apiDefinition<
   CreatePaymentEventData,
@@ -352,4 +366,5 @@ export const DATA_PROVIDER_API = {
   addPaymentEventApi: new ApiDefinitionObj(addPaymentEventApi()),
   addPaymentEventApiBackdoor: new ApiDefinitionObj(addPaymentEventApiBackdoor()),
   editPaymentEventApi: new ApiDefinitionObj(editPaymentEventApi()),
+  getPaymentEventApi: new ApiDefinitionObj(getPaymentEventApi()),
 };
