@@ -60,24 +60,7 @@ BEGIN
             argNotes
         );
 
-        SELECT (SELECT
-            JSON_OBJECT(
-                'id', r.id,
-                'namespaceId', r.namespaceId,
-                'created', r.created,
-                'edited', r.edited,
-                'createdBy', r.createdBy,
-                'editedBy', r.editedBy,
-                'settlementId', r.settlementId,
-                'paidBy', r.paidBy,
-                'benefitors', r.benefitors,
-                'description', r.description,
-                'notes', r.notes
-            )
-        FROM `PaymentEvent` r
-        WHERE r.id = LAST_INSERT_ID()
-        LIMIT 1
-        ) INTO jsonResult;
+        CALL getPaymentEventJson(LAST_INSERT_ID(), jsonResult);
     END IF;
 
     SELECT procedureError;

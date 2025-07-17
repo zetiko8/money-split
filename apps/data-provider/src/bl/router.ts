@@ -15,6 +15,7 @@ import { PAYMENT_EVENT_SERVICE } from '../modules/payment-event';
 import {
   acceptInvitationApi,
   addPaymentEventApi,
+  editPaymentEventApi,
   addRecordApi,
   addRecordApiBackdoor,
   createInvitationApi,
@@ -498,6 +499,43 @@ registerRoute(
     return await NAMESPACE_SERVICE.editNamespaceSettings(
       Number(params.namespaceId),
       payload,
+    );
+  },
+  AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  editPaymentEventApi(),
+  mainRouter,
+  async (payload, params, context) => {
+    VALIDATE.requiredPayload(payload);
+    VALIDATE.requiredArray(payload.paidBy);
+    VALIDATE.requiredArray(payload.benefitors);
+
+    // Validate each paidBy node
+    payload.paidBy.forEach(node => {
+      VALIDATE.requiredBigint(node.userId);
+      VALIDATE.requiredNumber(node.amount);
+      VALIDATE.requiredCurrency(node.currency);
+    });
+
+    // Validate each benefitor node
+    payload.benefitors.forEach(node => {
+      VALIDATE.requiredBigint(node.userId);
+      VALIDATE.requiredNumber(node.amount);
+      VALIDATE.requiredCurrency(node.currency);
+    });
+
+    // Optional fields
+    if (payload.description !== undefined) VALIDATE.string(payload.description);
+    if (payload.notes !== undefined) VALIDATE.string(payload.notes);
+
+    return await PAYMENT_EVENT_SERVICE.editPaymentEvent(
+      Number(params.namespaceId),
+      Number(params.userId),
+      Number(params.paymentEventId),
+      payload,
+      context.owner.id,
     );
   },
   AUTH_SERVICE.auth,

@@ -320,6 +320,21 @@ export function getViewUserApi() {
   });
 }
 
+export function editPaymentEventApi() {
+  return apiDefinition<
+  CreatePaymentEventData,
+  {
+    ownerKey: string,
+    namespaceId: number,
+    userId: number,
+    paymentEventId: number,
+  },
+  PaymentEvent>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/:userId/edit-payment-event/:paymentEventId',
+    method: 'POST',
+  });
+}
+
 export const DATA_PROVIDER_API = {
   getNamespaceApi: new ApiDefinitionObj(getOwnerNamespacesApi()),
   createInvitationApi: new ApiDefinitionObj(createInvitationApi()),
@@ -336,4 +351,5 @@ export const DATA_PROVIDER_API = {
   getAvatarApi: new ApiDefinitionObj(getAvatarApi()),
   addPaymentEventApi: new ApiDefinitionObj(addPaymentEventApi()),
   addPaymentEventApiBackdoor: new ApiDefinitionObj(addPaymentEventApiBackdoor()),
+  editPaymentEventApi: new ApiDefinitionObj(editPaymentEventApi()),
 };

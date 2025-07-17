@@ -1,2 +1,3 @@
 1. Never try to run terminal commands. Just let me know which command to run when you are done.
 2. Before creating api endpoints, read the HOW_TO_API_ENDPOINT.md file in DOCUMENTATION folder.
+3. Before creating tests for api endpoints, read the HOW_TO_API_ENDPOINT_TEST.md file in DOCUMENTATION folder.

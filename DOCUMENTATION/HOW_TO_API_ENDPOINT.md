@@ -5,90 +5,95 @@ This guide explains how to create and test a new API endpoint based on the examp
 ## 1. API Structure
 
 ### 1.1 API Interface Library (`libs/api-interface/src/lib/apis.ts`)
-- Define the API endpoint interface using `apiDefinition`
-- Specify request payload type, URL parameters type, and response type
 
 ### 1.2 Router Setup (`apps/data-provider/src/bl/router.ts`)
 - Use `registerRoute` to define the endpoint
 - Implement validation in the route handler
 - Use the VALIDATE helper functions for input validation
-
+- Never throw string errors, always use error codes from `libs/entities/src/error.ts`
 
 ### 1.3 Module Types (`apps/data-provider/src/modules/payment-event.ts` or similar module file)
 - Define request payload types
 - Define response types
 - Use strict typing for all parameters
 
-## 2. Testing Strategy
+## 2. Database Procedures
 
-### 2.1 Test File Organization
-Tests should be organized into logical blocks using `describe`.
+### 2.1 Location
+Procedures are stored in `apps/migration-manager/src/assets/procedures/`
 
-Example files:
-- `apps/data-provider-e2e/src/data-provider/addPaymentEventApi.spec.ts` - Complete example of validation, happy path, and database state tests
+Example: `editPaymentEvent.sql`
 
-File structure:
+### 2.2 Structure
+```sql
+DELIMITER //
 
-```typescript
-describe('addPaymentEventApi', () => {
-  describe('validation', () => {
-    // Input validation tests
-  });
+CREATE PROCEDURE procedureName(
+  IN p_param1 TYPE,
+  IN p_param2 TYPE
+)
+BEGIN
+  -- Validation
+  IF NOT EXISTS (SELECT 1 FROM Table WHERE condition) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'RESOURCE_NOT_FOUND';
+  END IF;
 
-  describe('happy path', () => {
-    // Successful operation tests
-  });
+  -- Main operation
+  UPDATE/INSERT/DELETE ...
 
-  describe('dbState', () => {
-    // Database state verification tests
-  });
-});
+  -- Return result
+  SELECT fields FROM Table WHERE condition;
+END //
+
+DELIMITER ;
 ```
 
-### 2.2 Validation Tests
-Example: `apps/data-provider-e2e/src/data-provider/addPaymentEventApi.spec.ts` -> `describe('validation')`
+### 2.3 Response Format
+All procedures should return results in a consistent JSON format:
+- Declare two special variables without the v_ prefix:
+  ```sql
+  DECLARE jsonResult TEXT;       -- For successful responses
+  DECLARE procedureError TEXT;    -- For error responses
+  ```
+- Set error responses using: `SELECT JSON_OBJECT('procedureError', 'ERROR_CODE') INTO procedureError;`
+- Always return both variables at the end:
+  ```sql
+  SELECT procedureError;
+  SELECT jsonResult;
+  ```
 
-Test all input validation cases:
-- Required fields
-- Field types (number, string, array)
-- Field formats (currency = 3 uppercase letters)
-- Array contents validation
-- Authorization checks
-- Business rule validations
+### 2.4 Shared Procedures
+Common functionality should be extracted into shared procedures:
+- Place shared procedures in separate files in the same directory
+- Use meaningful names that describe what the procedure does
+- Document input/output parameters
 
-Best practices:
-- Only make one field invalid per test
-- Keep all other fields valid
-- Use clear test names that describe what's being tested
-- Add TODO tests for future validations
+Example of a shared procedure:
+```sql
+CREATE PROCEDURE getPaymentEventJson(
+    IN p_paymentEventId BIGINT,   -- ID of payment event to format
+    OUT p_jsonResult TEXT         -- Formatted JSON result
+)
+BEGIN
+    SELECT (SELECT JSON_OBJECT(
+        'id', r.id,
+        'created', r.created,
+        -- ... other fields
+    )
+    FROM PaymentEvent r
+    WHERE r.id = p_paymentEventId
+    LIMIT 1) INTO p_jsonResult;
+END
+```
 
-### 2.3 Happy Path Tests
-Example: `apps/data-provider-e2e/src/data-provider/addPaymentEventApi.spec.ts` -> `describe('happy path')`
-
-Test successful operation:
-- Verify all response fields
-- Use `expect.any()` for dynamic fields like IDs and timestamps
-- Match the exact shape of the expected response
-
-### 2.4 Database State Tests
-Example: `apps/data-provider-e2e/src/data-provider/addPaymentEventApi.spec.ts` -> `describe('dbState')`
-
-Verify the database state after operations:
-- Use beforeEach to set up test data
-- Verify all stored fields
-- Check data types and formats
-- Verify relationships and foreign keys
-
-## 3. Security Considerations
-
-### 3.1 Authorization
-- Validate user tokens
-- Check namespace access
-- Verify user permissions
-- Validate that users belong to the correct owner
-
-### 3.2 Input Validation
-- Validate all input fields
-- Check field types and formats
-- Validate array contents
-- Prevent SQL injection by using parameterized queries
+### 2.5 Best Practices
+- Use `p_` prefix for procedure parameters
+- Use `v_` prefix for local variables
+- Always validate input data
+- Verify data ownership
+- Handle errors with SIGNAL using error codes from `libs/entities/src/error.ts`
+  - Example: `SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'RESOURCE_NOT_FOUND'`
+  - Never use custom string error messages
+- Document complex logic
+- Extract common functionality into shared procedures
+- Use transactions when needed
