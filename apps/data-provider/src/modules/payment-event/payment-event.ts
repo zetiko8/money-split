@@ -1,6 +1,6 @@
 import { CreatePaymentEventData, PaymentEvent } from '@angular-monorepo/entities';
-import { jsonProcedure } from '../connection/helper';
-import { appErrorWrap } from '../helpers';
+import { jsonProcedure } from '../../connection/helper';
+import { appErrorWrap } from '../../helpers';
 
 export const PAYMENT_EVENT_SERVICE = {
   getPaymentEvent: async (

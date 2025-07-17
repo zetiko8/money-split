@@ -1,9 +1,9 @@
 import { Owner, RegisterOwnerPayload } from '@angular-monorepo/entities';
-import { query } from '../connection/connection';
+import { query } from '../../connection/connection';
 import bcrypt from 'bcrypt';
-import { errorSecondProcedure } from '../connection/helper';
+import { errorSecondProcedure } from '../../connection/helper';
 import { randomUUID } from 'crypto';
-import { appErrorWrap } from '../helpers';
+import { appErrorWrap } from '../../helpers';
 
 async function createOwner (
   data: RegisterOwnerPayload,

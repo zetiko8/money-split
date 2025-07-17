@@ -14,13 +14,13 @@ import {
   SettlementListView,
   User,
 } from '@angular-monorepo/entities';
-import { query } from '../connection/connection';
-import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../connection/helper';
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../types';
-import { USER_SERVICE } from './user';
-import { RECORD_SERVICE } from './record';
-import { appError, appErrorWrap } from '../helpers';
-import { SETTLE_SERVICE } from './settle';
+import { query } from '../../connection/connection';
+import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
+import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../../types';
+import { USER_SERVICE } from '../user/user';
+import { RECORD_SERVICE } from '../record/record';
+import { appError, appErrorWrap } from '../../helpers';
+import { SETTLE_SERVICE } from '../settle/settle';
 import { asyncMap } from '@angular-monorepo/utils';
 
 export async function getNamespacesForOwner (

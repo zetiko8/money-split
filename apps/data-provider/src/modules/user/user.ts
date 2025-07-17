@@ -1,7 +1,7 @@
 import { User } from '@angular-monorepo/entities';
-import { query } from '../connection/connection';
-import { selectOneWhereSql } from '../connection/helper';
-import { EntityPropertyType, UserEntity } from '../types';
+import { query } from '../../connection/connection';
+import { selectOneWhereSql } from '../../connection/helper';
+import { EntityPropertyType, UserEntity } from '../../types';
 
 async function getUserById (
   id: number,

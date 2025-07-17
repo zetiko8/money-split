@@ -1,8 +1,8 @@
 import { Invitation, InvitationViewData, Owner } from '@angular-monorepo/entities';
-import { errorFirstProcedure, jsonProcedure } from '../connection/helper';
+import { errorFirstProcedure, jsonProcedure } from '../../connection/helper';
 import { randomUUID } from 'crypto';
-import { sendMail } from './email';
-import { appError, appErrorWrap } from '../helpers';
+import { sendMail } from '../email';
+import { appError, appErrorWrap } from '../../helpers';
 
 async function getInvitationViewData (
   invitationKey: string,

@@ -2,8 +2,8 @@ import { ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, Us
 import { lastInsertId, query } from '../../connection/connection';
 import { insertSql, mysqlDate, selectOneWhereSql } from '../../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, RecordEntity } from '../../types';
-import { RECORD_SERVICE } from '../record';
-import { SETTLE_SERVICE } from '../settle';
+import { RECORD_SERVICE } from '../record/record';
+import { SETTLE_SERVICE } from '../settle/settle';
 import { asyncMap } from '@angular-monorepo/utils';
 
 export const CYBACKDOOR_SERVICE = {

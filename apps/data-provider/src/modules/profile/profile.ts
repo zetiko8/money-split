@@ -1,6 +1,6 @@
 import { EditProfileData, OwnerProfileView } from '@angular-monorepo/entities';
-import { appErrorWrap } from '../helpers';
-import { jsonProcedure } from '../connection/helper';
+import { appErrorWrap } from '../../helpers';
+import { jsonProcedure } from '../../connection/helper';
 
 export const PROFILE_SERVICE = {
   getProfile: async (

@@ -1,7 +1,7 @@
 import express from 'express';
 import * as path from 'path';
 import * as cors from 'cors';
-import { mainRouter } from './bl/router';
+import { mainRouter } from './router';
 import { cyBackdoorRouter } from './modules/cybackdoor/cybackdoor.router';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { AppError } from './types';

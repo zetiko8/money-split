@@ -1,6 +1,6 @@
 import { AvatarData } from '@angular-monorepo/entities';
-import { selectOneWhereSql } from '../connection/helper';
-import { AvatarEntity, EntityPropertyType } from '../types';
+import { selectOneWhereSql } from '../../connection/helper';
+import { AvatarEntity, EntityPropertyType } from '../../types';
 
 export const AVATAR_SERVICE = {
   getById: async (

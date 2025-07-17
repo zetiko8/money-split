@@ -6,16 +6,32 @@ This guide explains how to create and test a new API endpoint based on the examp
 
 ### 1.1 API Interface Library (`libs/api-interface/src/lib/apis.ts`)
 
-### 1.2 Router Setup (`apps/data-provider/src/bl/router.ts`)
-- Use `registerRoute` to define the endpoint
-- Implement validation in the route handler
+### 1.2 Module Structure
+Each module should follow this structure:
+```
+modules/
+  module-name/
+    module-name.ts      # Service implementation
+    module-name.router.ts  # Router implementation
+```
+
+### 1.3 Router Implementation
+- Create a router file (e.g., `module-name.router.ts`)
+- Import the service from the same directory (e.g., `import { SERVICE } from './module-name'`)
+- Use `registerRoute` to define endpoints
+- Implement validation in the route handlers
 - Use the VALIDATE helper functions for input validation
 - Never throw string errors, always use error codes from `libs/entities/src/error.ts`
 
-### 1.3 Module Types (`apps/data-provider/src/modules/payment-event.ts` or similar module file)
+### 1.4 Service Implementation
+- Create a service file (e.g., `module-name.ts`)
+- Export a service object (e.g., `export const MODULE_SERVICE = {...}`)
 - Define request payload types
 - Define response types
 - Use strict typing for all parameters
+- Implement business logic
+- Handle database operations through procedures
+- Return strongly typed responses
 
 ## 2. Database Procedures
 

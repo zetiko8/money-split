@@ -94,11 +94,29 @@ async function getOwnerFromRequest (
   return owner;
 }
 
+export async function getOwnerFromToken(
+  token: string,
+): Promise<Owner> {
+  try {
+    const decoded = AUTH_SERVICE.decodeJwt(token);
+    const owner = (await query<Owner>(`
+    SELECT * FROM \`Owner\`
+    WHERE \`key\` = "${decoded.key}"
+    `))[0];
+    return owner;
+  } catch (error) {
+    throw Error(ERROR_CODE.UNAUTHORIZED);
+  }
+}
+
 export const AUTH_SERVICE = {
   login,
   decodeJwt,
-  getOwnerFromToken: async (token: string) => {
+  getOwnerFromToken,
+  getOwnerFromRequest: async (request: Request) => {
     try {
+      const token = request.headers.authorization
+        .split('Bearer ')[1];
       const decoded = AUTH_SERVICE.decodeJwt(token);
       const owner = (await query<Owner>(`
       SELECT * FROM \`Owner\`
