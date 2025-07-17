@@ -33,6 +33,9 @@ modules/
 - Handle database operations through procedures
 - Return strongly typed responses
 
+### 1.5 Interfaces
+- Define interfaces in `libs/entities/src/index.ts`
+
 ## 2. Database Procedures
 
 ### 2.1 Location
@@ -113,3 +116,18 @@ END
 - Document complex logic
 - Extract common functionality into shared procedures
 - Use transactions when needed
+
+## 3. Testing
+
+### 3.1 Test Structure
+API endpoint tests should be organized in the following sections:
+- smoke: Basic endpoint functionality test
+- validation: Tests for error cases (invalid input, unauthorized access, etc.)
+- happy path: Tests for successful operations
+- dbState: Tests for verifying database state (only for POST/PUT/DELETE endpoints)
+
+### 3.2 Database State Tests
+- Only include dbState tests for endpoints that modify data (POST, PUT, DELETE)
+- Do NOT include dbState tests for GET endpoints that only read data
+- Use `queryDb` helper to verify database state directly
+- Compare all relevant fields and their types

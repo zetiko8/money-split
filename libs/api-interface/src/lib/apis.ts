@@ -2,6 +2,7 @@ import {
   AvatarData,
   CreateNamespacePayload,
   CreatePaymentEventData,
+  EditPaymentEventViewData,
   EditProfileData,
   Invitation,
   InvitationViewData,
@@ -334,6 +335,20 @@ export function getPaymentEventApi() {
   });
 }
 
+export function getEditPaymentEventViewApi() {
+  return apiDefinition<
+  null,
+  {
+    ownerKey: string,
+    namespaceId: number,
+    paymentEventId: number,
+  },
+  EditPaymentEventViewData>({
+    endpoint: '/:ownerKey/namespace/:namespaceId/payment-event/:paymentEventId/edit',
+    method: 'GET',
+  });
+}
+
 export function editPaymentEventApi() {
   return apiDefinition<
   CreatePaymentEventData,
@@ -367,4 +382,5 @@ export const DATA_PROVIDER_API = {
   addPaymentEventApiBackdoor: new ApiDefinitionObj(addPaymentEventApiBackdoor()),
   editPaymentEventApi: new ApiDefinitionObj(editPaymentEventApi()),
   getPaymentEventApi: new ApiDefinitionObj(getPaymentEventApi()),
+  getEditPaymentEventViewApi: new ApiDefinitionObj(getEditPaymentEventViewApi()),
 };

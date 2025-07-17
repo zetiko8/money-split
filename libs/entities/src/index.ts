@@ -138,6 +138,11 @@ export interface Record {
     settlementId: number | null,
 }
 
+export interface EditPaymentEventViewData {
+  namespace: NamespaceView;
+  paymentEvent: PaymentEvent;
+}
+
 export interface PaymentEvent {
   paidBy: PaymentNode[],
   benefitors: PaymentNode[],

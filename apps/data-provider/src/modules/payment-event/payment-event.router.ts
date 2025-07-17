@@ -6,9 +6,32 @@ import {
   addPaymentEventApi,
   editPaymentEventApi,
   getPaymentEventApi,
+  getEditPaymentEventViewApi,
 } from '@angular-monorepo/api-interface';
+import { NAMESPACE_SERVICE } from '../namespace/namespace';
 
 export const paymentEventRouter = Router();
+
+registerRoute(
+  getEditPaymentEventViewApi(),
+  paymentEventRouter,
+  async (payload, params, context) => {
+    const [namespace, paymentEvent] = await Promise.all([
+      NAMESPACE_SERVICE.getNamespaceViewForOwner(
+        Number(params.namespaceId),
+        context.owner.id,
+      ),
+      PAYMENT_EVENT_SERVICE.getPaymentEvent(
+        Number(params.namespaceId),
+        Number(params.paymentEventId),
+        context.owner.id,
+      ),
+    ]);
+
+    return { namespace, paymentEvent };
+  },
+  AUTH_SERVICE.auth,
+);
 
 registerRoute(
   getPaymentEventApi(),
