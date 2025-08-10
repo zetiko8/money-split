@@ -1,4 +1,4 @@
-import { Invitation, MNamespace, Owner, Record, RecordDataCy, User } from '@angular-monorepo/entities';
+import { CreatePaymentEventData, Invitation, MNamespace, Owner, PaymentEvent, PaymentNode, Record, RecordDataCy, User } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { TestOwner } from './test-owner';
 import { asyncMap } from '@angular-monorepo/utils';
@@ -20,7 +20,7 @@ interface TestNamespaceUserData {
 export interface TestScenarioNamespace {
   creator: TestNamespaceUserData,
   allUsers: TestNamespaceUserData[],
-  addedRecords: Record[],
+  addedPaymentEvents: PaymentEvent[],
   namespaceId: number,
   namespace: MNamespace,
   nonCreatorUsers: TestNamespaceUserData[],
@@ -87,29 +87,42 @@ export async function prepareNamespace (
     ...addedUsers,
   ];
 
-  const addedRecords = await asyncMap(records, async (rec) => {
+  const addedPaymentEvents = await asyncMap(records, async (rec) => {
     const adder = allUsers.find(u => u.user.name === rec.user);
 
     if (!adder) throw Error('Adder not found: ' + rec.user);
 
-    const res = await creatorOwner.addRecordToNamespace(namespaceId, {
+    const createPaymentEventData: CreatePaymentEventData = {
       benefitors: rec.record.benefitors.map(b => {
         const found = allUsers.find(u => u.user.name === b);
         if (!found) throw Error('Benefitor not found: ' + rec.user);
-        return found.user.id;
+        const pn: PaymentNode = {
+          amount: rec.record.cost / rec.record.benefitors.length,
+          currency: rec.record.currency,
+          userId: found.user.id,
+        };
+        return pn;
       }),
-      cost: rec.record.cost,
-      currency: rec.record.currency,
       paidBy: rec.record.paidBy.map(p => {
         const found = allUsers.find(u => u.user.name === p);
         if (!found) throw Error('Payer not found: ' + rec.user);
-        return found.user.id;
+        const pn: PaymentNode = {
+          amount: rec.record.cost / rec.record.paidBy.length,
+          currency: rec.record.currency,
+          userId: found.user.id,
+        };
+        return pn;
       }),
-      created: rec.record.created,
-      edited: rec.record.edited,
-      addingOwnerId: adder.owner.owner.id,
-      addingUserId: adder.user.id,
-    });
+      createdBy: adder.user.id,
+      description: '',
+      notes: '',
+    };
+
+    const res = await creatorOwner.addPaymentEventToNamespace(
+      namespaceId,
+      adder.user.id,
+      createPaymentEventData,
+    );
 
     return res;
   });
@@ -122,7 +135,7 @@ export async function prepareNamespace (
   return {
     creator: creatorNamespaceData,
     allUsers,
-    addedRecords,
+    addedPaymentEvents,
     namespaceId,
     namespace,
     nonCreatorUsers,

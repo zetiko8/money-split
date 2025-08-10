@@ -136,7 +136,7 @@ describe(API_NAME, () => {
             invitations: expect.any(Array),
             users: expect.any(Array),
             ownerUsers: expect.any(Array),
-            records: expect.any(Array),
+            paymentEvents: expect.any(Array),
             hasRecordsToSettle: expect.any(Boolean),
             settlements: expect.any(Array),
             avatarId: expect.any(Number),

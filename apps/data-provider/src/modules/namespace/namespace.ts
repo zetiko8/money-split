@@ -18,9 +18,9 @@ import { query } from '../../connection/connection';
 import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../../types';
 import { USER_SERVICE } from '../user/user';
-import { RECORD_SERVICE } from '../record/record';
 import { appError, appErrorWrap } from '../../helpers';
 import { SETTLE_SERVICE } from '../settle/settle';
+import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 import { asyncMap } from '@angular-monorepo/utils';
 
 export async function getNamespacesForOwner (
@@ -117,23 +117,16 @@ async function getNamespaceViewForOwner (
     .getNamespaceOwnerUsers(ownerId, namespaceId);
 
   const namespace = await getNamespaceById(namespaceId);
-  const records
-        = await RECORD_SERVICE.getNamespaceRecords(namespaceId);
-
-  const recordViews: RecordView[]
-        = await asyncMap<Record, RecordView>(
-          records, async (record) => await mapToRecordView(
-            record, namespace));
+  const paymentEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEvents(namespaceId, ownerId);
 
   const hasRecordsToSettle = (() => {
-    if (!records.length) return false;
-    if (records.some(record => record.settlementId === null))
+    if (!paymentEvents.length) return false;
+    if (paymentEvents.some(event => event.settlementId === null))
       return true;
     return false;
   })();
 
-  const settlements
-        = await NAMESPACE_SERVICE.getSettlementListViews(namespaceId);
+  const settlements = await NAMESPACE_SERVICE.getSettlementListViews(namespaceId);
 
   const namespaceView: NamespaceView = {
     id: namespaces[0].id,
@@ -141,7 +134,7 @@ async function getNamespaceViewForOwner (
     invitations,
     users,
     ownerUsers,
-    records: recordViews,
+    paymentEvents,
     avatarId: namespace.avatarId,
     hasRecordsToSettle,
     settlements,

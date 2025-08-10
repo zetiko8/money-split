@@ -3,6 +3,29 @@ import { jsonProcedure } from '../../connection/helper';
 import { appErrorWrap } from '../../helpers';
 
 export const PAYMENT_EVENT_SERVICE = {
+  getNamespacePaymentEvents: async (
+    namespaceId: number,
+    ownerId: number,
+  ): Promise<PaymentEvent[]> => {
+    return await appErrorWrap('getNamespacePaymentEvents', async () => {
+      const res = await jsonProcedure<PaymentEvent[]>(
+        `
+        call getNamespacePaymentEvents(
+          ${namespaceId},
+          ${ownerId}
+        );
+        `,
+      );
+
+      res.forEach((paymentEvent) => {
+        paymentEvent.paidBy = JSON.parse(paymentEvent.paidBy as unknown as string);
+        paymentEvent.benefitors = JSON.parse(paymentEvent.benefitors as unknown as string);
+      });
+
+      return res;
+    });
+  },
+
   getPaymentEvent: async (
     namespaceId: number,
     paymentEventId: number,

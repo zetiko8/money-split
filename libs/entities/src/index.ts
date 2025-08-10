@@ -8,7 +8,7 @@ export interface NamespaceView extends MNamespace {
     invitations: Invitation[],
     users: User[],
     ownerUsers: User[],
-    records: RecordView[],
+    paymentEvents: PaymentEvent[]
     hasRecordsToSettle: boolean,
     settlements: SettlementListView[],
 }

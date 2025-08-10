@@ -105,29 +105,13 @@ BEGIN
 END
 ```
 
-### 2.5 Best Practices
-- Use `p_` prefix for procedure parameters
-- Use `v_` prefix for local variables
-- Always validate input data
-- Verify data ownership
-- Handle errors with SIGNAL using error codes from `libs/entities/src/error.ts`
-  - Example: `SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'RESOURCE_NOT_FOUND'`
-  - Never use custom string error messages
-- Document complex logic
-- Extract common functionality into shared procedures
-- Use transactions when needed
+## 3. Database tables
 
-## 3. Testing
+### 3.2 Location
+Alter scripts for tables are stored in `apps/migration-manager/src/assets/migrations/`
 
-### 3.1 Test Structure
-API endpoint tests should be organized in the following sections:
-- smoke: Basic endpoint functionality test
-- validation: Tests for error cases (invalid input, unauthorized access, etc.)
-- happy path: Tests for successful operations
-- dbState: Tests for verifying database state (only for POST/PUT/DELETE endpoints)
+Example: `21-get-namespace-payment-events-up.sql`
 
-### 3.2 Database State Tests
-- Only include dbState tests for endpoints that modify data (POST, PUT, DELETE)
-- Do NOT include dbState tests for GET endpoints that only read data
-- Use `queryDb` helper to verify database state directly
-- Compare all relevant fields and their types
+### 3.3. Rules
+
+Do not modify old alters. If you have to change database structure, create a new alter script.
