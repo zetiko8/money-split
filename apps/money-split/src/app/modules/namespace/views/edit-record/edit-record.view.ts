@@ -8,10 +8,11 @@ import { Notification } from '../../../../components/notifications/notifications
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { CreateRecordData, EditRecordData, NamespaceView } from '@angular-monorepo/entities';
-import { RecordFormComponent, getRecordForm } from '../../components/record-form/record-form.component';
-import { RecordFormGroup } from '../../../../types';
+import { CreatePaymentEventData, NamespaceView } from '@angular-monorepo/entities';
+import { PaymentEventFormGroup } from '../../../../types';
 import { TranslateModule } from '@ngx-translate/core';
+import { PaymentEventFormComponent } from '../../components/payment-event-form/payment-event-form.component';
+import { getPaymentEventForm } from '../../components/payment-event-form/payment-event-form.component';
 
 @Component({
   standalone: true,
@@ -19,8 +20,8 @@ import { TranslateModule } from '@ngx-translate/core';
     RouterModule,
     CommonModule,
     PageComponent,
-    RecordFormComponent,
     TranslateModule,
+    PaymentEventFormComponent,
   ],
   selector: 'edit-record',
   templateUrl: './edit-record.view.html',
@@ -41,12 +42,15 @@ export class EditRecordView {
       map(params => params['recordId'] as number),
       mergeMap(
         recordId => this.nameSpaceService
-          .getEditRecordView(recordId),
+          .getPaymentEventView(recordId),
       ),
     ),
   );
-  public readonly editRecordProcess = new BoundProcess(
-    (recordData: EditRecordData) => this.nameSpaceService.editRecord(recordData)
+  public readonly editPaymentEventProcess = new BoundProcess(
+    (data: {
+      paymentEventId: number,
+      data: CreatePaymentEventData
+    }) => this.nameSpaceService.editPaymentEvent(data.paymentEventId, data.data)
       .pipe(
         tap(() => this.routingService.goToNamespaceView()),
       ),
@@ -58,38 +62,33 @@ export class EditRecordView {
     ).pipe(
       mergeMap(() => this.loadProcess.execute()),
       map(data => {
-        const form = getRecordForm({
-          benefitors: data.record.data.benefitors
-            .map(b => b.id),
-          cost: data.record.data.cost,
-          createdBy: data.record.createdBy.id,
-          currency: data.record.data.currency,
-          paidBy: data.record.data.paidBy
-            .map(pb => pb.id),
-        });
+        const form = getPaymentEventForm(
+          data.namespace.ownerUsers[0].id,
+          data.paymentEvent,
+        );
 
         return {
           namespace: data.namespace,
           form,
-          recordId: data.record.id,
+          recordId: data.paymentEvent.id,
         };
       }),
       share({ connector: () => new ReplaySubject<{
         namespace: NamespaceView,
-        form: RecordFormGroup,
+        form: PaymentEventFormGroup,
         recordId: number,
       }>() }),
     );
 
   public readonly isLoading = combineLoaders([
     this.loadProcess.inProgress$,
-    this.editRecordProcess.inProgress$,
+    this.editPaymentEventProcess.inProgress$,
   ]);
 
   public readonly notification$: Observable<Notification>
     = merge(
       this.loadProcess.error$,
-      this.editRecordProcess.error$,
+      this.editPaymentEventProcess.error$,
     )
       .pipe(
         filter(err => err !== null),
@@ -98,18 +97,14 @@ export class EditRecordView {
         }),
       );
 
-  public addExpense (data: CreateRecordData) {
+  public addExpense (data: CreatePaymentEventData) {
     this.formData$
       .pipe(take(1))
       .subscribe(formData => {
-        this.editRecordProcess
+        this.editPaymentEventProcess
           .execute({
-            benefitors: data.benefitors,
-            cost: data.cost,
-            createdBy: data.createdBy,
-            currency: data.currency,
-            paidBy: data.paidBy,
-            recordId: formData.recordId,
+            paymentEventId: formData.recordId,
+            data,
           })
           .subscribe();
       });

@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CreatePaymentEventData, NamespaceView, PaymentNode, User } from '@angular-monorepo/entities';
+import { CreatePaymentEventData, NamespaceView, PaymentEvent, PaymentNode, User } from '@angular-monorepo/entities';
 import { PaymentEventFormGroup, PaymentNodeFormGroup } from '../../../../types';
 import { PaymentUserFormComponent } from '../payment-user-form/payment-user-form.component';
 
@@ -59,10 +59,19 @@ export function getPaymentNodeFormGroup (
 
 export function getPaymentEventForm (
   createdBy: number,
+  data?: PaymentEvent,
 ): PaymentEventFormGroup {
   return new FormGroup({
-    paidBy: new FormArray<PaymentNodeFormGroup>([]),
-    benefitors: new FormArray<PaymentNodeFormGroup>([]),
+    paidBy: new FormArray<PaymentNodeFormGroup>(
+      data ? data.paidBy.map(item => {
+        return getPaymentNodeFormGroup(item.userId, item.amount, item.currency);
+      }) : [],
+    ),
+    benefitors: new FormArray<PaymentNodeFormGroup>(
+      data ? data.benefitors.map(item => {
+        return getPaymentNodeFormGroup(item.userId, item.amount, item.currency);
+      }) : [],
+    ),
     createdBy: new FormControl<number>(
       createdBy,
       {
