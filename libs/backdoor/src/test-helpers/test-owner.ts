@@ -92,6 +92,20 @@ export class TestOwner {
     );
   }
 
+  getNamespace (namespaceId: number) {
+    return DATA_PROVIDER_API.getNamespaceViewApi.callPromise(
+      null,
+      { ownerKey: this.owner.key, namespaceId },
+      async (endpoint) => {
+        const res = await axios.get<NamespaceView>(
+          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+          this.authHeaders(),
+        );
+        return res.data;
+      },
+    );
+  }
+
   acceptInvitation (
     name: string,
     invitationKey: string,
@@ -135,20 +149,10 @@ export class TestOwner {
   async getUserForNamespace (
     namespaceId: number,
   ) {
-    const namespace
-      = await DATA_PROVIDER_API.getNamespaceViewApi.callPromise(
-        null,
-        { namespaceId, ownerKey: this.owner.key },
-        async (endpoint) => {
-          const res = await axios.get<NamespaceView>(
-            `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
-            this.authHeaders(),
-          );
-          return res.data;
-        },
-      );
+    const namespaceView
+      = await this.getNamespace(namespaceId);
 
-    const user = namespace.users.find(u => u.ownerId === this.owner.id);
+    const user = namespaceView.users.find(u => u.ownerId === this.owner.id);
     if (!user) throw Error('Test owner - user not found');
     return user;
   }

@@ -1,0 +1,118 @@
+<header>
+  <h1>
+    MOCK DATA
+  </h1>
+</header>
+<main>
+  <section>
+    <p>
+        {{ error }}
+    </p>
+    <p>
+        {{ actionDetails }}
+    </p>
+  </section>
+  <section>
+    <h2>
+      Clusters
+    </h2>
+    <ul> 
+      <li *ngFor="let cluster of clusters">
+        <button (click)="selectCluster(cluster)">
+          {{ cluster.username }}
+        </button>
+      </li>
+    </ul>
+  </section>
+    <article>
+        <section>
+            <div class="input-group">
+              <button (click)="createNewCluster()">CREATE NEW CLUSTER</button>
+            </div>
+            <div class="input-group">
+              <label for="username">Username</label>
+              <input 
+                  type="text"
+                  [(ngModel)]="username"
+              >
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input 
+                type="text"
+                [(ngModel)]="password"
+            >
+        </div>
+        </section>
+    </article>
+    <article>
+      <section>
+        <h2>
+          Namespaces
+        </h2>
+        <ul> 
+          <li *ngFor="let namespace of namespaces">
+            <button (click)="selectNamespace(namespace)">
+              {{ namespace.name }}
+            </button>
+          </li>
+        </ul>
+      </section>
+      <section>
+            <div class="input-group">
+              <button (click)="createNewNamespace()">CREATE NEW NAMESPACE</button>
+            </div>
+            <div class="input-group">
+              <label for="namespace">Namespace</label>
+              <input 
+                  type="text"
+                  [(ngModel)]="namespaceName"
+              >
+          </div>
+        </section>
+    </article>
+    <article>
+      <section>
+        <h2>
+          INVITATIONS
+        </h2>
+        <ul> 
+          <li *ngFor="let invitation of invitations">
+            {{ invitation.email }}
+            <button
+              *ngIf="!invitation.accepted"
+              (click)="acceptInvitation(invitation)"
+            >
+              ACCEPT
+            </button>
+          </li>
+        </ul>
+      </section>
+      <section>
+            <div class="input-group">
+              <button (click)="createNewInvitation()">CREATE NEW INVITATION</button>
+            </div>
+            <div class="input-group">
+              <label for="email">email</label>
+              <input 
+                  type="text"
+                  [(ngModel)]="email"
+              >
+          </div>
+        </section>
+    </article>
+    <article
+    *ngIf="selectedNamespace"
+    >
+      <section>
+        <h2>
+          USERS
+        </h2>
+        <ul> 
+          <li *ngFor="let user of selectedNamespace.users">
+            {{ user.name }}
+          </li>
+        </ul>
+      </section>
+    </article>
+</main>
