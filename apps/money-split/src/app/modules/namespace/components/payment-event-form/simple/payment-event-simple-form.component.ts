@@ -4,12 +4,17 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
-import { RecordFormGroup } from '../../../../types';
+import { PaymentEventSimpleFormGroup } from '../../../../../types';
 import { CheckboxGroupComponent, CheckboxRadioGroupComponent } from '@angular-monorepo/components';
+
+export interface PaymentEventSimpleFormData {
+  form: PaymentEventSimpleFormGroup,
+  namespace: NamespaceView,
+}
 
 export function getRecordForm (
   data?: Partial<CreateRecordData>,
-): RecordFormGroup {
+): PaymentEventSimpleFormGroup {
   return new FormGroup({
     currency: new FormControl<string>(
       data?.currency || 'EUR',
@@ -106,17 +111,14 @@ export function getRecordForm (
     CheckboxGroupComponent,
     CheckboxRadioGroupComponent,
   ],
-  selector: 'record-form',
-  templateUrl: './record-form.component.html',
+  selector: 'payment-event-simple-form',
+  templateUrl: './payment-event-simple-form.component.html',
 })
-export class RecordFormComponent {
+export class PaymentEventSimpleFormComponent {
 
   @Input() submitButtonText = '';
   @Input()
-  set formData (data: {
-    form: RecordFormGroup,
-    namespace: NamespaceView,
-  } | null) {
+  set formData (data: PaymentEventSimpleFormData | null) {
     if (data !== null) {
       this.form = data.form;
       this.usersOptions = data.namespace.users
@@ -128,7 +130,7 @@ export class RecordFormComponent {
 
 
   @Output() formSubmit = new EventEmitter<CreateRecordData>();
-  public form: RecordFormGroup | null = null;
+  public form: PaymentEventSimpleFormGroup | null = null;
   public usersOptions: { label: string, value: number }[] = [];
   public ownerUsersOptions: { label: string, value: number }[] = [];
 

@@ -4,9 +4,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormArray } from '@angular/forms';
 import { User } from '@angular-monorepo/entities';
-import { PaymentNodeFormGroup } from '../../../../types';
-import { AmountFormComponent } from '../amount-form/amount-form.component';
-import { AvatarComponent } from '../../../../components/avatar.component';
+import { PaymentNodeFormGroup } from '../../../../../../types';
+import { AmountFormComponent } from '../../amount-form/amount-form.component';
+import { AvatarComponent } from '../../../../../../components/avatar.component';
 
 @Component({
   standalone: true,

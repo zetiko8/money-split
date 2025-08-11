@@ -1,10 +1,11 @@
+import { RecordDataView } from '@angular-monorepo/entities';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 
 export * from './config.types';
 export * from './app.error.types';
 export * from './type.helpers';
 
-export type RecordFormGroup = FormGroup<{
+export type PaymentEventSimpleFormGroup = FormGroup<{
     currency: FormControl<string>;
     cost: FormControl<number>;
     benefitors: FormControl<number[]>;
@@ -23,3 +24,8 @@ export type PaymentNodeFormGroup = FormGroup<{
     amount: FormControl<number>;
     currency: FormControl<string>;
 }>
+
+export interface PaymentEventSimple {
+  id: number,
+  data: RecordDataView,
+}

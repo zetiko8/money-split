@@ -10,7 +10,7 @@ import { combineLoaders } from '../../../../../helpers';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { CreatePaymentEventData } from '@angular-monorepo/entities';
 import { TranslateModule } from '@ngx-translate/core';
-import { getPaymentEventForm, PaymentEventFormComponent, PaymentEventFormData } from '../../components/payment-event-form/payment-event-form.component';
+import { PaymentEventFormComponent, PaymentEventFormData } from '../../components/payment-event-form/payment-event-form.component';
 
 @Component({
   standalone: true,
@@ -49,10 +49,7 @@ export class AddExpenseView {
     ).pipe(
       mergeMap(() => this.loadProcess.execute()),
       map(namespace => {
-        const form = getPaymentEventForm(
-          namespace.ownerUsers[0].id,
-        );
-        return { namespace, form };
+        return { namespace, paymentEvent: null };
       }),
       share({ connector: () => new ReplaySubject<PaymentEventFormData>() }),
     );

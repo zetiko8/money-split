@@ -8,11 +8,9 @@ import { Notification } from '../../../../components/notifications/notifications
 import { NamespaceService } from '../../services/namespace.service';
 import { combineLoaders } from '../../../../../helpers';
 import { RoutingService } from '../../../../services/routing/routing.service';
-import { CreatePaymentEventData, NamespaceView } from '@angular-monorepo/entities';
-import { PaymentEventFormGroup } from '../../../../types';
+import { CreatePaymentEventData, NamespaceView, PaymentEvent } from '@angular-monorepo/entities';
 import { TranslateModule } from '@ngx-translate/core';
 import { PaymentEventFormComponent } from '../../components/payment-event-form/payment-event-form.component';
-import { getPaymentEventForm } from '../../components/payment-event-form/payment-event-form.component';
 
 @Component({
   standalone: true,
@@ -62,20 +60,15 @@ export class EditRecordView {
     ).pipe(
       mergeMap(() => this.loadProcess.execute()),
       map(data => {
-        const form = getPaymentEventForm(
-          data.namespace.ownerUsers[0].id,
-          data.paymentEvent,
-        );
-
         return {
           namespace: data.namespace,
-          form,
+          paymentEvent: data.paymentEvent,
           recordId: data.paymentEvent.id,
         };
       }),
       share({ connector: () => new ReplaySubject<{
         namespace: NamespaceView,
-        form: PaymentEventFormGroup,
+        paymentEvent: PaymentEvent,
         recordId: number,
       }>() }),
     );
