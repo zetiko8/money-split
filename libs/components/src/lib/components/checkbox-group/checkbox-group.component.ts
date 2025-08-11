@@ -1,9 +1,9 @@
 import { randomHtmlName } from '@angular-monorepo/utils';
 import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Input } from '@angular/core';
-import { 
-  ControlValueAccessor, 
-  FormsModule, 
+import {
+  ControlValueAccessor,
+  FormsModule,
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { CheckboxInputComponent } from '../checkbox-input/checkbox-input.component';
@@ -18,7 +18,7 @@ import { CheckboxInputComponent } from '../checkbox-input/checkbox-input.compone
   selector: 'checkbox-group',
   templateUrl: './checkbox-group.component.html',
   providers: [
-    { 
+    {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CheckboxGroupComponent),
       multi: true,
@@ -28,7 +28,7 @@ import { CheckboxInputComponent } from '../checkbox-input/checkbox-input.compone
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
   host: { class: 'input-group' },
 })
-export class CheckboxGroupComponent 
+export class CheckboxGroupComponent
 implements ControlValueAccessor {
 
   @Input() boxes = true;
@@ -39,26 +39,26 @@ implements ControlValueAccessor {
   @Input() overrideStyles = false;
   @Input() error: string | null = null;
   @Input()
-  set options (value: { 
-    value: string | number, 
-    label: string 
+  set options (value: {
+    value: string | number,
+    label: string
   }[]) {
     this._options = value.map(option => {
       return {
         bool: this._value.includes(option.value),
         label: option.label,
-        value: option.value
-      }
+        value: option.value,
+      };
     });
   }
-  
+
   _disabled = false;
   _value: (string | number)[] = [];
-  _options: { 
-    value: string | number, 
+  _options: {
+    value: string | number,
     label: string,
     bool: boolean,
-  }[] = []; 
+  }[] = [];
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   propagateChange = (_: any) => {};
@@ -82,8 +82,8 @@ implements ControlValueAccessor {
       return {
         bool: this._value.includes(option.value),
         label: option.label,
-        value: option.value
-      }
+        value: option.value,
+      };
     });
   }
 
