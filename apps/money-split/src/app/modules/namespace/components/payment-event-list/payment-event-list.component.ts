@@ -56,7 +56,6 @@ export class PaymentEventListComponent {
 
     this._items
       = items.filter(item => !!(item.contents.length));
-    console.log(this._items);
   };
 
   @Output() selectPaymentEvent = new EventEmitter<PaymentEventView>();
