@@ -16,11 +16,11 @@ export function getRandomColor () {
 
 export async function asyncMap<T, R> (
   array: T[],
-  cb: (t: T) => Promise<R>,
+  cb: (t: T, i: number) => Promise<R>,
 ) {
   const result: R[] = [];
-  for (const item of array) {
-    const mapped = await cb(item);
+  for (let i = 0; i < array.length; i += 1) {
+    const mapped = await cb(array[i], i);
     result.push(mapped);
   }
 

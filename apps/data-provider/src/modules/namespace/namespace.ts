@@ -117,7 +117,7 @@ async function getNamespaceViewForOwner (
     .getNamespaceOwnerUsers(ownerId, namespaceId);
 
   const namespace = await getNamespaceById(namespaceId);
-  const paymentEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEvents(namespaceId, ownerId);
+  const paymentEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(namespaceId, ownerId);
 
   const hasRecordsToSettle = (() => {
     if (!paymentEvents.length) return false;

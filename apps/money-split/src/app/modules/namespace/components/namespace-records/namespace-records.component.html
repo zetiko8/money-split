@@ -13,13 +13,12 @@
 >
     {{ 'settle' | translate }}
 </button>
-<records-list
-    [records]="{ 
-        records: namespace.records, 
-        settlements: namespace.settlements, 
+<payment-event-list
+    [paymentEvents]="{ 
+        paymentEvents: namespace.paymentEvents,
     }"
-    (selectRecord)="routingService
+    (selectPaymentEvent)="routingService
         .goToEditRecordView($event.id)"
     (markAsSettled)="markAsSettled.emit($event)"
     (markAsUnSettled)="markAsUnSettled.emit($event)"
-></records-list>
+></payment-event-list>

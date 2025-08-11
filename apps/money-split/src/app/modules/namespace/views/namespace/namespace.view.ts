@@ -88,7 +88,7 @@ export class NamespaceView {
           this.activeTab$.next(tab);
         } else {
           this.activeTab$.next((
-            namespace.records.length === 0
+            namespace.paymentEvents.length === 0
             && namespace.users.length < 2
           ) ? this.routingService.NAMESPACE_VIEW_TAB.users
             : this.routingService.NAMESPACE_VIEW_TAB.recordsList);

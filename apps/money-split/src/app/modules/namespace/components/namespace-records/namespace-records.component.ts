@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { RoutingService } from '../../../../services/routing/routing.service';
 import { NamespaceView } from '@angular-monorepo/entities';
-import { RecordsListComponent } from '../records-list/records-list.component';
+import { PaymentEventListComponent } from '../payment-event-list/payment-event-list.component';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   standalone: true,
   imports: [
-    RecordsListComponent,
+    PaymentEventListComponent,
     TranslateModule,
   ],
   selector: 'namespace-records',

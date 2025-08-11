@@ -1,0 +1,42 @@
+<section>
+    <ul>
+        <ng-container
+            *ngFor="let item of _items"
+        >
+            <li
+                data-test="records-day"
+            >
+                <p
+                    data-test="records-day-label"
+                >
+                    {{ item.date | date }}
+                </p>
+                <ul>
+                    <ng-container
+                        *ngFor="let content of item.contents"
+                    >
+                        <payment-event-item
+                            *ngIf="content.isRecord"
+                            data-test="namespace-record"
+                            class="list-item box"
+                            (click)="selectPaymentEvent.emit(content.data)"
+                            [paymentEventView]="content.data"
+                        ></payment-event-item>
+                        <!-- <settlement-item
+                            *ngIf="!content.isRecord"
+                            [settlement]="content.data"
+                            data-test="settlement-record"
+                            class="list-item box"
+                            [class.is-all-settled]="
+                                content.data.isAllSettled"
+                            (markAsSettled)="markAsSettled
+                                .emit($event)"
+                            (markAsUnSettled)="markAsUnSettled
+                                .emit($event)"
+                        ></settlement-item> -->
+                    </ng-container>
+                </ul>
+            </li>
+        </ng-container>
+    </ul>
+</section>

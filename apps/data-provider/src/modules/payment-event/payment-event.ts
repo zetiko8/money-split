@@ -1,14 +1,16 @@
-import { CreatePaymentEventData, PaymentEvent } from '@angular-monorepo/entities';
+import { CreatePaymentEventData, PaymentEvent, PaymentEventView, PaymentEventViewFromDb, PaymentNode, PaymentNodeView } from '@angular-monorepo/entities';
 import { jsonProcedure } from '../../connection/helper';
 import { appErrorWrap } from '../../helpers';
+import { asyncMap } from '@angular-monorepo/utils';
+import { USER_SERVICE } from '../user/user';
 
 export const PAYMENT_EVENT_SERVICE = {
-  getNamespacePaymentEvents: async (
+  getNamespacePaymentEventsView: async (
     namespaceId: number,
     ownerId: number,
-  ): Promise<PaymentEvent[]> => {
+  ): Promise<PaymentEventView[]> => {
     return await appErrorWrap('getNamespacePaymentEvents', async () => {
-      const res = await jsonProcedure<PaymentEvent[]>(
+      const res = await jsonProcedure<PaymentEventViewFromDb[]>(
         `
         call getNamespacePaymentEvents(
           ${namespaceId},
@@ -17,12 +19,36 @@ export const PAYMENT_EVENT_SERVICE = {
         `,
       );
 
-      res.forEach((paymentEvent) => {
-        paymentEvent.paidBy = JSON.parse(paymentEvent.paidBy as unknown as string);
-        paymentEvent.benefitors = JSON.parse(paymentEvent.benefitors as unknown as string);
+      const paymentEventsViews = await asyncMap(res, async (paymentEventFromDb) => {
+        const paymentEventView: PaymentEventView = {
+          ...paymentEventFromDb,
+          paidBy: [],
+          benefitors: [],
+        };
+        paymentEventView.paidBy = await asyncMap(
+          JSON.parse(paymentEventFromDb.paidBy) as PaymentNode[],
+          async (paidByFromDb) => {
+            const paidBy: PaymentNodeView = {
+              amount: paidByFromDb.amount,
+              currency: paidByFromDb.currency,
+              user: await USER_SERVICE.getUserById(paidByFromDb.userId),
+            };
+            return paidBy;
+          });
+        paymentEventView.benefitors = await asyncMap(
+          JSON.parse(paymentEventFromDb.benefitors) as PaymentNode[],
+          async (benefitorFromDb) => {
+            const benefitor: PaymentNodeView = {
+              amount: benefitorFromDb.amount,
+              currency: benefitorFromDb.currency,
+              user: await USER_SERVICE.getUserById(benefitorFromDb.userId),
+            };
+            return benefitor;
+          });
+        return paymentEventView;
       });
 
-      return res;
+      return paymentEventsViews;
     });
   },
 

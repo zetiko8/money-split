@@ -113,6 +113,141 @@ describe(API_NAME, () => {
     });
   });
 
+  describe('payment event view', () => {
+    const firstDate = moment().set({
+      year: 2024,
+      month: 2,
+      date: 15,
+    }).toDate();
+
+    let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+    let scenario!: TestScenarioNamespace;
+
+    beforeEach(async () => {
+      try {
+        scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+          testEnv().DATA_PROVIDER_URL,
+          testEnv().BACKDOOR_USERNAME,
+          testEnv().BACKDOOR_PASSWORD,
+          'testnamespace',
+          {  username: 'testuser'},
+          [
+            {  username: 'atestuser1'},
+            {  username: 'btestuser2'},
+            {  username: 'ctestuser3'},
+          ],
+          [
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 4,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: firstDate,
+                edited: firstDate,
+              },
+            },
+          ],
+        );
+
+        creatorOwner = scenario.creator.owner;
+        namespaceId = scenario.namespaceId;
+      } catch (error) {
+        throwBeforeEachError(error);
+      }
+    });
+
+    it('verify payment event view data', async () => {
+
+      await fnCall(API_NAME,
+        async () => await axios.get(
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}`,
+          creatorOwner.authHeaders(),
+        ))
+        .result((result => {
+          expect(result.paymentEvents).toHaveLength(1);
+          expect(result.paymentEvents[0]).toEqual({
+            id: expect.any(Number),
+            benefitors: [
+              {
+                amount: expect.closeTo(1.33),
+                currency: 'SIT',
+                user: {
+                  id: expect.any(Number),
+                  name: 'atestuser1',
+                  ownerId: expect.any(Number),
+                  avatarId: expect.any(Number),
+                  namespaceId: namespaceId,
+                },
+              },
+              {
+                amount: expect.closeTo(1.33),
+                currency: 'SIT',
+                user: {
+                  id: expect.any(Number),
+                  name: 'btestuser2',
+                  ownerId: expect.any(Number),
+                  avatarId: expect.any(Number),
+                  namespaceId: namespaceId,
+                },
+              },
+              {
+                amount: expect.closeTo(1.33),
+                currency: 'SIT',
+                user: {
+                  id: expect.any(Number),
+                  name: 'ctestuser3',
+                  ownerId: expect.any(Number),
+                  avatarId: expect.any(Number),
+                  namespaceId: namespaceId,
+                },
+              },
+            ],
+            created: expect.any(String),
+            edited: expect.any(String),
+            createdBy: {
+              id: expect.any(Number),
+              name: 'testuser',
+              ownerId: expect.any(Number),
+              avatarId: expect.any(Number),
+              namespaceId: namespaceId,
+            },
+            editedBy: {
+              id: expect.any(Number),
+              name: 'testuser',
+              ownerId: expect.any(Number),
+              avatarId: expect.any(Number),
+              namespaceId: namespaceId,
+            },
+            description: null,
+            notes: null,
+            namespaceId,
+            paidBy: [
+              {
+                amount: 4,
+                currency: 'SIT',
+                user: {
+                  id: expect.any(Number),
+                  name: 'testuser',
+                  ownerId: expect.any(Number),
+                  avatarId: expect.any(Number),
+                  namespaceId: namespaceId,
+                },
+              },
+            ],
+            settlementId: null,
+            settledOn: null,
+          });
+        }));
+    });
+  });
+
   describe('settled records', () => {
     const firstDate = moment().set({
       year: 2024,
@@ -249,10 +384,6 @@ describe(API_NAME, () => {
           });
 
           expect(result.paymentEvents).toHaveLength(4);
-
-          expect(result.paymentEvents).toEqual(
-            scenario.addedPaymentEvents,
-          );
         }));
     });
 

@@ -40,11 +40,24 @@ BEGIN
       JSON_OBJECT(
         'id', pe.id,
         'namespaceId', pe.namespaceId,
+        'createdBy', JSON_OBJECT(
+                    'id', created_u.id,
+                    'namespaceId', pe.namespaceId,
+                    'ownerId', created_u.ownerId,
+                    'name', created_u.name,
+                    'avatarId', created_u.avatarId
+                   ),
+        'editedBy', JSON_OBJECT(
+                    'id', edited_u.id,
+                    'namespaceId', pe.namespaceId,
+                    'ownerId', edited_u.ownerId,
+                    'name', edited_u.name,
+                    'avatarId', edited_u.avatarId
+                   ),
         'created', pe.created,
         'edited', pe.edited,
-        'createdBy', pe.createdBy,
-        'editedBy', pe.editedBy,
         'settlementId', pe.settlementId,
+        'settledOn', settlement.createdBy,
         'paidBy', pe.paidBy,
         'benefitors', pe.benefitors,
         'description', pe.description,
@@ -54,6 +67,16 @@ BEGIN
     '[]'
   ) as jsonResult
   FROM PaymentEvent pe
+  JOIN `User` created_u
+    ON pe.createdBy = created_u.id
+  JOIN `Owner` created_o
+    ON created_u.ownerId = created_o.id
+  JOIN `User` edited_u
+    ON pe.editedBy = edited_u.id
+  JOIN `Owner` edited_o
+    ON edited_u.ownerId = edited_o.id
+  LEFT JOIN Settlement settlement
+    ON pe.settlementId = settlement.id
   WHERE pe.namespaceId = p_namespaceId
   ORDER BY pe.created DESC;
 END //

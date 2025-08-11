@@ -8,7 +8,7 @@ export interface NamespaceView extends MNamespace {
     invitations: Invitation[],
     users: User[],
     ownerUsers: User[],
-    paymentEvents: PaymentEvent[]
+    paymentEvents: PaymentEventView[]
     hasRecordsToSettle: boolean,
     settlements: SettlementListView[],
 }
@@ -35,7 +35,7 @@ export interface CreateNamespacePayload {
 
 export interface User {
     id: number,
-    key: string,
+    namespaceId: number,
     ownerId: number,
     name: string,
     avatarId: number,
@@ -157,6 +157,36 @@ export interface PaymentEvent {
   notes: string,
 }
 
+export interface PaymentEventView {
+  paidBy: PaymentNodeView[],
+  benefitors: PaymentNodeView[],
+  id: number,
+  created: Date,
+  edited: Date,
+  createdBy: User,
+  editedBy: User,
+  namespace: MNamespace,
+  settlementId: number | null,
+  settledOn: Date | null,
+  description: string,
+  notes: string,
+}
+
+export interface PaymentEventViewFromDb {
+  paidBy: string,
+  benefitors: string,
+  id: number,
+  created: Date,
+  edited: Date,
+  createdBy: User,
+  editedBy: User,
+  namespace: MNamespace,
+  settlementId: number | null,
+  settledOn: Date | null,
+  description: string,
+  notes: string,
+}
+
 export interface CreatePaymentEventData {
   paidBy: PaymentNode[];
   benefitors: PaymentNode[];
@@ -167,6 +197,12 @@ export interface CreatePaymentEventData {
 
 export interface PaymentNode {
   userId: number,
+  amount: number,
+  currency: string,
+}
+
+export interface PaymentNodeView {
+  user: User,
   amount: number,
   currency: string,
 }
