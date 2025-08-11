@@ -79,6 +79,12 @@ export function getPaymentEventForm (
         nonNullable: true,
       },
     ),
+    description: new FormControl<string>(
+      data?.description || '',
+    ),
+    notes: new FormControl<string>(
+      data?.notes || '',
+    ),
   }, {
     validators: [
       (control) => {

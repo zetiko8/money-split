@@ -55,6 +55,8 @@ export class PaymentEventFormComponent {
             currency,
             paidBy: data.paymentEvent.paidBy.map(item => item.userId),
             benefitors: data.paymentEvent.benefitors.map(item => item.userId),
+            description: data.paymentEvent.description,
+            notes: data.paymentEvent.notes,
           }),
           namespace: data.namespace,
         };
@@ -79,8 +81,8 @@ export class PaymentEventFormComponent {
         amount: data.cost / data.benefitors.length,
         currency: data.currency,
       })),
-      description: '',
-      notes: '',
+      description: data.description,
+      notes: data.notes,
       createdBy: data.createdBy,
     };
     this.formSubmit.emit(createPaymentEventData);

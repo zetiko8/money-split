@@ -45,5 +45,7 @@
   "FILE_UPLOAD_ERROR": "Napaka pri nalaganju datoteke",
   "FILE_TO_BIG": "Datoteka je prevelika",
   "FILE_TYPE_NOT_SUPPORTED": "Vrsta datoteke je nepodprta",
-  "INPUT_VALUE_TO_LONG": "Predolg vnos"
+  "INPUT_VALUE_TO_LONG": "Predolg vnos",
+  "currency": "Valuta",
+  "cost": "Strošek"
 }

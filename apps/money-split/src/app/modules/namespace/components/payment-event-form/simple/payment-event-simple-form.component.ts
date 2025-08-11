@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
 import { PaymentEventSimpleFormGroup } from '../../../../../types';
-import { CheckboxGroupComponent, CheckboxRadioGroupComponent } from '@angular-monorepo/components';
+import { CheckboxGroupComponent, CheckboxRadioGroupComponent, SlideSwitcherComponent } from '@angular-monorepo/components';
+import { RoutingService } from '../../../../../services/routing/routing.service';
+import { AvatarComponent } from '../../../../../components/avatar.component';
 
 export interface PaymentEventSimpleFormData {
   form: PaymentEventSimpleFormGroup,
@@ -98,6 +100,16 @@ export function getRecordForm (
         ],
       },
     ),
+    description: new FormControl<string | null>(
+      data?.description || null,
+      {
+      },
+    ),
+    notes: new FormControl<string | null>(
+      data?.notes || null,
+      {
+      },
+    ),
   });
 }
 
@@ -110,11 +122,16 @@ export function getRecordForm (
     ReactiveFormsModule,
     CheckboxGroupComponent,
     CheckboxRadioGroupComponent,
+    AvatarComponent,
+    SlideSwitcherComponent,
   ],
   selector: 'payment-event-simple-form',
   templateUrl: './payment-event-simple-form.component.html',
 })
 export class PaymentEventSimpleFormComponent {
+
+  public readonly routingService = inject(RoutingService);
+  public complexFormControl = new FormControl<boolean>(false);
 
   @Input() submitButtonText = '';
   @Input()
@@ -122,17 +139,32 @@ export class PaymentEventSimpleFormComponent {
     if (data !== null) {
       this.form = data.form;
       this.usersOptions = data.namespace.users
-        .map(user => ({ value: user.id, label: user.name }));
+        .map(user => ({
+          value: user.id,
+          label: user.name,
+          data: {
+            avatarId: user.avatarId,
+            name: user.name,
+          },
+        }));
       this.ownerUsersOptions = data.namespace.ownerUsers
         .map(user => ({ value: user.id, label: user.name }));
     }
   }
 
 
+  @Output() complexModeChange = new EventEmitter<boolean>();
   @Output() formSubmit = new EventEmitter<CreateRecordData>();
   public form: PaymentEventSimpleFormGroup | null = null;
-  public usersOptions: { label: string, value: number }[] = [];
+  public usersOptions: {
+    label: string,
+    value: number,
+    data: {
+      avatarId: number,
+      name: string
+    } }[] = [];
   public ownerUsersOptions: { label: string, value: number }[] = [];
+  public notesOpen = false;
 
   public submit () {
     if (this.form) {

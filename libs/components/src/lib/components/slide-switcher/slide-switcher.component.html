@@ -1,0 +1,14 @@
+<div 
+    class="slide-switcher"
+    [class.disabled]="disabled"
+    [class.active]="_value"
+    (click)="toggle()"
+>
+    <div class="slider">
+        <div class="handle"></div>
+    </div>
+    <span 
+        class="placeholder"
+        *ngIf="placeholder"
+    >{{ placeholder }}</span>
+</div>

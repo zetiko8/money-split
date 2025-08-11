@@ -4,18 +4,13 @@
     [notifications$]="notification$"
     class="with-page-header"
 >
-    <h4
-        page-header
-        *ngIf="formData$ | async as formData"
-    >
-        <button
-            class="icon-btn"
-            (click)="routingService.goToNamespaceView()"
-        >
-            <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        {{ formData.namespace.name }}
-    </h4>
+  <namespace-header
+    page-header
+    *ngIf="formData$ | async as formData"
+    [name]="formData.namespace.name"
+    [avatarId]="formData.namespace.avatarId"
+    (backNavigation)="routingService.goToNamespaceView()"
+  ></namespace-header>
     <ng-container
         *ngIf="formData$ | async as formData"
     >

@@ -1,9 +1,9 @@
 import { randomHtmlName } from '@angular-monorepo/utils';
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input } from '@angular/core';
-import { 
-  ControlValueAccessor, 
-  FormsModule, 
+import { Component, forwardRef, Input, TemplateRef } from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormsModule,
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 
@@ -16,7 +16,7 @@ import {
   selector: 'checkbox-input',
   templateUrl: './checkbox-input.component.html',
   providers: [
-    { 
+    {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CheckboxInputComponent),
       multi: true,
@@ -24,7 +24,7 @@ import {
   ],
   styles: [ ':host { display: block }' ],
 })
-export class CheckboxInputComponent 
+export class CheckboxInputComponent
 implements ControlValueAccessor {
 
   @Input() name = randomHtmlName();
@@ -33,7 +33,9 @@ implements ControlValueAccessor {
   @Input() readonly = false;
   @Input() overrideStyles = false;
   @Input() error: string | null = null;
-  
+  @Input() customTemplate?: TemplateRef<{ $implicit: string, data: unknown }>;
+  @Input() customData?: unknown;
+
   _disabled = false;
   _value: boolean | null = null;
 

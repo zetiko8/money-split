@@ -1,6 +1,6 @@
 import { randomHtmlName } from '@angular-monorepo/utils';
 import { CommonModule } from '@angular/common';
-import { Component, forwardRef, Input } from '@angular/core';
+import { Component, forwardRef, Input, ContentChild, TemplateRef } from '@angular/core';
 import {
   ControlValueAccessor,
   FormsModule,
@@ -38,18 +38,20 @@ implements ControlValueAccessor {
   @Input() readonly = false;
   @Input() overrideStyles = false;
   @Input() error: string | null = null;
+  @ContentChild('checkboxTemplate') checkboxTemplate?: TemplateRef<{ $implicit: string, data: unknown }>;
   @Input()
   set options (value: {
     value: string | number,
-    label: string
+    label: string,
+    data?: unknown,
   }[]) {
-    this._options = value.map(option => {
-      return {
-        bool: this._value.includes(option.value),
-        label: option.label,
-        value: option.value,
-      };
-    });
+    this._options = value.map(option => ({
+      bool: this._value.includes(option.value),
+      label: option.label,
+      value: option.value,
+      data: option.data,
+    }));
+    console.log(this._options);
   }
 
   _disabled = false;
@@ -58,6 +60,7 @@ implements ControlValueAccessor {
     value: string | number,
     label: string,
     bool: boolean,
+    data: unknown,
   }[] = [];
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -78,13 +81,12 @@ implements ControlValueAccessor {
       this._value = obj;
     }
 
-    this._options = this._options.map(option => {
-      return {
-        bool: this._value.includes(option.value),
-        label: option.label,
-        value: option.value,
-      };
-    });
+    this._options = this._options.map(option => ({
+      bool: this._value.includes(option.value),
+      label: option.label,
+      value: option.value,
+      data: option.data,
+    }));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

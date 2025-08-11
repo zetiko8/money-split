@@ -11,12 +11,16 @@ export type PaymentEventSimpleFormGroup = FormGroup<{
     benefitors: FormControl<number[]>;
     paidBy: FormControl<number[]>;
     createdBy: FormControl<number | null>;
+    description: FormControl<string | null>;
+    notes: FormControl<string | null>;
 }>
 
 export type PaymentEventFormGroup = FormGroup<{
     paidBy: FormArray<PaymentNodeFormGroup>;
     benefitors: FormArray<PaymentNodeFormGroup>;
     createdBy: FormControl<number>;
+    description: FormControl<string | null>;
+    notes: FormControl<string | null>;
 }>
 
 export type PaymentNodeFormGroup = FormGroup<{

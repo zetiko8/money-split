@@ -37,6 +37,7 @@ ul {
     --color-secondary: #8360c3;
     --color-disabled: #cec6dd;
     --text-color-inverted: white;
+    --text-color-light: #a2a2a2;
     --text-color: #271d3b;
     --text-title-color: black;
     --font-size-text: 14px;
@@ -76,8 +77,13 @@ ul {
             line-height: var(--line-height-title);
             text-align: center;
         }
-        input {
+        input,textarea {
             border-color: var(--color-primary);
+            outline: none;
+
+            &:focus {
+              border-color: var(--color-secondary);
+            }
         }
         h3 {
             color: var(--text-title-color);
@@ -157,6 +163,10 @@ ul {
     
     p {
         margin-bottom: var(--gap-small);
+
+      &.text-light {
+        color: var(--text-color-light);
+      }
     }
     
     .text-input {
@@ -170,6 +180,46 @@ ul {
         border-radius: var(--border-radius-normal);
         padding: var(--gap-small) var(--gap-small);
         text-align: center;
+
+        &.error {
+          border-color: var(--color-error);
+        }
+
+        border-width: 1px;
+        border-bottom-width: 2px;
+        border-right-width: 2px;
+    }
+    textarea {
+        background-color: inherit;
+        color: inherit;
+        border: 1px solid;
+        border-radius: var(--border-radius-normal);
+        padding: var(--gap-small) var(--gap-small);
+        text-align: left;
+
+        &.error {
+          border-color: var(--color-error);
+        }
+        border-width: 1px;
+        border-bottom-width: 2px;
+        border-right-width: 2px;
+    }
+    checkbox-input {
+      
+      &.box {
+        border-color: transparent;
+        border-width: 1px;
+        border-bottom-width: 2px;
+        border-right-width: 2px;
+      }
+
+      &.checked {
+        border-color: var(--color-secondary);
+
+        i {
+          color: var(--color-secondary);
+        }
+      }
     }
 
     .radio-boxes {
@@ -283,6 +333,10 @@ ul {
     .p-lr-normal {
         padding-left: var(--gap-normal);
         padding-right: var(--gap-normal);
+    }
+    .p-lr-small {
+        padding-left: var(--gap-small);
+        padding-right: var(--gap-small);
     }
 
     .form-control {
@@ -487,7 +541,22 @@ ul {
           width: 60%;
         }
 
+        &.w-7 {
+          width: 70%;
+        }
+
+        &.w-8 {
+          width: 80%;
+        }
+
+        &.w-9 {
+          width: 90%;
+        }
+
         margin-right: var(--gap-small);
+        &:last-child {
+          margin-right: 0;
+        }
 
         input {
           text-align: left;

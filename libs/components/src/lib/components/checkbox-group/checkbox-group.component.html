@@ -9,6 +9,9 @@
             [(ngModel)]="option.bool"
             (ngModelChange)="handleChange()"
             [class.box]="boxes"
+            [customTemplate]="checkboxTemplate"
+            [customData]="option.data"
+            [class.checked]="option.bool"
         ></checkbox-input>
     </li>
 </ul>

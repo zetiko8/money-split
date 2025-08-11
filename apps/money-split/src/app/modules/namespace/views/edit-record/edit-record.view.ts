@@ -11,6 +11,7 @@ import { RoutingService } from '../../../../services/routing/routing.service';
 import { CreatePaymentEventData, NamespaceView, PaymentEvent } from '@angular-monorepo/entities';
 import { TranslateModule } from '@ngx-translate/core';
 import { PaymentEventFormComponent } from '../../components/payment-event-form/payment-event-form.component';
+import { NamespaceHeaderComponent } from '../../components/namespace.header.component';
 
 @Component({
   standalone: true,
@@ -20,6 +21,7 @@ import { PaymentEventFormComponent } from '../../components/payment-event-form/p
     PageComponent,
     TranslateModule,
     PaymentEventFormComponent,
+    NamespaceHeaderComponent,
   ],
   selector: 'edit-record',
   templateUrl: './edit-record.view.html',

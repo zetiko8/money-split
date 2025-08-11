@@ -1,39 +1,84 @@
 <form
     (submit)="$event.preventDefault(); submit()"
-    *ngIf="form"
+    *ngIf="form && !notesOpen"
 >
-    <div class="input-group">
-        <label>{{ 'currency' | translate }}</label>
-        <input
-            [formControl]="form.controls.currency" 
-            type="text"
-            name="currency"
-            data-testid="currency-input" 
-        >
-        <p
-            class="error"
-            *ngIf="form.controls.currency.errors"
-            data-cy="addExpenseCurrencyError"
-        >
-            {{ 'addExpenseCurrencyError' | translate }}
-        </p>
+  <div
+    *ngIf="form"
+    class="inline-form-group"
+  >
+    <div class="input-group w-9">
+      <input
+        [formControl]="form.controls.description" 
+        type="text"
+        name="description"
+        data-testid="description-input"
+        [class.error]="form.controls.description.errors"
+        placeholder="{{ 'addExpenseDescription' | translate }}"
+      >
     </div>
     <div class="input-group">
-        <label>{{ 'cost' | translate }}</label>
-        <input
-            [formControl]="form.controls.cost" 
-            type="number"
-            name="cost"
-            data-testid="cost-input" 
-        >
-        <p
-            class="error"
-            *ngIf="form.controls.cost.errors"
-            data-cy="addExpenseCostError"
-        >
-            {{ 'addExpenseCostError' | translate }}
-        </p>
+      <slide-switcher
+        (ngModelChange)="complexModeChange.emit($event)"
+        [formControl]="complexFormControl"
+      ></slide-switcher>
+      <!-- <button
+          type="button"
+          data-test="remove-amount-btn"
+          class="icon-btn"
+          (click)="notesOpen = true"
+      >
+         <i class="fa fa-edit"></i>
+      </button> -->
     </div>
+  </div>
+  <div
+    *ngIf="form.controls.notes.value"
+    style="display: flex; align-items: center;"
+  >
+    <p 
+      class="text-light" 
+      style="
+        max-width: 90%;
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        white-space: nowrap;"
+    >
+      {{ form.controls.notes.value }}
+    </p>
+    <div>
+      <button
+          type="button"
+          data-test="remove-amount-btn"
+          class="icon-btn"
+          (click)="notesOpen = true"
+      >
+         <i class="fa fa-edit"></i>
+      </button>
+    </div>
+  </div>
+  <div
+      *ngIf="form"
+      class="inline-form-group"
+  >
+      <div class="input-group w-3">
+          <input
+              [formControl]="form.controls.currency" 
+              type="text"
+              name="currency"
+              data-testid="currency-input"
+              [class.error]="form.controls.currency.errors"
+          >
+      </div>
+      <div class="input-group w-7">
+          <input
+              [formControl]="form.controls.cost" 
+              type="number"
+              name="amount"
+              data-testid="amount-input" 
+              [class.error]="form.controls.cost.errors"
+          >
+      </div>
+  </div>
     <checkbox-group
         data-testid="add-benefitor"
         [formControl]="form.controls.benefitors"
@@ -41,7 +86,14 @@
         [label]="'addExpenseBenefitors' | translate"
         [error]="(form.controls.benefitors.errors 
             ? 'addExpenseBenefitorsError' : '') | translate"
-    ></checkbox-group>
+    >
+    <ng-template #checkboxTemplate let-label let-data="data">
+      <avatar
+        [avatarId]="data?.avatarId"
+        [name]="data?.name || ''"
+      ></avatar>
+    </ng-template>
+    </checkbox-group>
     <checkbox-group
         data-testid="add-paid-by"
         [formControl]="form.controls.paidBy"
@@ -58,6 +110,45 @@
         [error]="(form.controls.createdBy.errors 
             ? 'addExpenseCreatedByError' : '') | translate"
     ></checkbox-radio-group>
+    <div class="input-group">
+        <button
+            type="submit"
+            data-test="add-expense-confirm-btn"
+            [disabled]="!form.valid"
+        >
+        {{ submitButtonText}}
+        </button>
+    </div>
+</form>
+<form
+    (submit)="$event.preventDefault(); notesOpen = false"
+    *ngIf="form && notesOpen"
+>
+    <div
+        *ngIf="form"
+    >
+      <div class="input-group">
+        <input
+          [formControl]="form.controls.description" 
+          type="text"
+          name="description"
+          data-testid="description-input"
+          [class.error]="form.controls.description.errors"
+          placeholder="{{ 'addExpenseDescription' | translate }}"
+        >
+      </div>
+      <div class="input-group">
+        <textarea
+          [formControl]="form.controls.notes" 
+          type="text"
+          name="notes"
+          data-testid="notes-input"
+          [class.error]="form.controls.notes.errors"
+          placeholder="{{ 'addExpenseNotes' | translate }}"
+          style="height: 60vh;"
+        ></textarea>
+      </div>
+    </div>
     <div class="input-group">
         <button
             type="submit"

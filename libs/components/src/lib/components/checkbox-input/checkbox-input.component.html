@@ -1,5 +1,6 @@
 <div
     (click)="change(!_value)"
+    style="display: flex; align-items: center;"
 >
     <input
         type="checkbox"
@@ -21,9 +22,14 @@
         style="font-size: 20px;"
         *ngIf="!_value"    
     ></i>
-    <label
-    >
-        {{ label }}
+    <ng-container *ngTemplateOutlet="customTemplate || defaultTemplate; context: { $implicit: label, data: customData }"></ng-container>
+    
+    <ng-template #defaultTemplate let-label>
+        &nbsp;
+    </ng-template>
+
+    <label for="{{ name }}">
+      {{ label }}
     </label>
 </div>
 <div 

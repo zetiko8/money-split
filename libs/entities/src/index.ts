@@ -116,6 +116,8 @@ export interface CreateRecordData {
     currency: string,
     paidBy: number[],
     createdBy: number,
+    description: string | null,
+    notes: string | null,
 }
 
 export interface EditRecordData {
@@ -153,8 +155,8 @@ export interface PaymentEvent {
   editedBy: number,
   namespaceId: number,
   settlementId: number | null,
-  description: string,
-  notes: string,
+  description: string | null,
+  notes: string | null,
 }
 
 export interface PaymentEventView {

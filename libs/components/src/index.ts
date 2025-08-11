@@ -5,3 +5,4 @@ export * from './lib/components/checkbox-group/checkbox-group.component';
 export * from './lib/components/checkbox-radio-group/checkbox-radio-group.component';
 export * from './lib/ng-helpers';
 export * from './lib/validators';
+export * from './lib/components/slide-switcher/slide-switcher.component';
