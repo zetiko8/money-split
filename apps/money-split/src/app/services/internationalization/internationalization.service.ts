@@ -13,7 +13,6 @@ export class InternationalizationService {
      * setup translations
      */
     this.translateService.addLangs(['sl']);
-  
     /**
      * setup initial page title and language change listener
      */
