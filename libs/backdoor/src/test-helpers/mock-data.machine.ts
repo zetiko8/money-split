@@ -36,6 +36,26 @@ export class MockDataMachine {
     const lastProfile = localStorage.getItem(this.LAST_PROFILE_KEY) || 'default';
     this.currentProfile = lastProfile;
     await this.load(undefined);
+
+    // Restore last selected items if present
+    const lastSelectedClusterId = localStorage.getItem(this.getStorageKey('lastSelectedCluster'));
+    const lastSelectedNamespaceId = localStorage.getItem(this.getStorageKey('lastSelectedNamespace'));
+
+    if (lastSelectedClusterId && this.clusters.length > 0) {
+      const cluster = this.clusters.find(c => c.owner.id.toString() === lastSelectedClusterId);
+      if (cluster) {
+        await this.selectCluster(cluster);
+        if (lastSelectedNamespaceId && this.namespaces.length > 0) {
+          const namespace = this.namespaces.find(n => n.id.toString() === lastSelectedNamespaceId);
+          if (namespace) {
+            await this.selectNamespace(namespace);
+          }
+        }
+      }
+    } else if (this.clusters.length > 0) {
+      await this.selectCluster(this.clusters[0]);
+    }
+
     if (this.selectedNamespace) {
       this.currentNamespaceInvitations = this.loadNamespaceInvitations(this.selectedNamespace.id);
     }
@@ -200,6 +220,14 @@ export class MockDataMachine {
   private save(): void {
     localStorage.setItem(this.getStorageKey('testOwner'), JSON.stringify(this.clusters.map(this.serialize)));
     localStorage.setItem(this.getStorageKey('invitations'), JSON.stringify(this.allInvitations));
+
+    // Save last selected items
+    if (this.selectedTestOwner) {
+      localStorage.setItem(this.getStorageKey('lastSelectedCluster'), this.selectedTestOwner.owner.id.toString());
+    }
+    if (this.selectedNamespace) {
+      localStorage.setItem(this.getStorageKey('lastSelectedNamespace'), this.selectedNamespace.id.toString());
+    }
   }
 
   private async load(selectedTestOwner?: TestOwner): Promise<void> {
