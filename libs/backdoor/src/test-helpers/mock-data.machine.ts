@@ -79,6 +79,7 @@ export class MockDataMachine {
       if (!this.selectedNamespace) throw new Error('No namespace selected');
       const invitation = await this.selectedTestOwner.inviteToNamespace(email, this.selectedNamespace.id);
       this.allInvitations.push(invitation);
+      this.currentNamespaceInvitations.push(invitation);
       this.save();
       return this.getState();
     } catch (error) {
@@ -93,6 +94,15 @@ export class MockDataMachine {
       await this.loginIfNeccessary(testOwner);
       await testOwner.acceptInvitation(invitation.email, invitation.invitationKey);
       invitation.accepted = true;
+      // Update both allInvitations and currentNamespaceInvitations
+      const invIndex = this.allInvitations.findIndex(inv => inv.invitationKey === invitation.invitationKey);
+      if (invIndex !== -1) {
+        this.allInvitations[invIndex] = invitation;
+      }
+      const currentInvIndex = this.currentNamespaceInvitations.findIndex(inv => inv.invitationKey === invitation.invitationKey);
+      if (currentInvIndex !== -1) {
+        this.currentNamespaceInvitations[currentInvIndex] = invitation;
+      }
       this.save();
       await this.load();
       return this.getState();
