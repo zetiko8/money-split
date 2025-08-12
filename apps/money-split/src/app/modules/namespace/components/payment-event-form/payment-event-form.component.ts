@@ -25,9 +25,95 @@ export interface PaymentEventFormData {
 })
 export class PaymentEventFormComponent {
 
+  private _data: PaymentEventFormData | null = null;
   @Input() submitButtonText = '';
   @Input()
   set formData (data: PaymentEventFormData) {
+    this._data = data;
+    this.handleDataChange(data);
+  }
+
+  @Output() formSubmit = new EventEmitter<CreatePaymentEventData>();
+  public paymentEventFormData: PaymentEventComplexFormData | null = null;
+  public recordForm: PaymentEventSimpleFormData | null = null;
+  public complex = false;
+
+  submitRecordSimple (data: CreateRecordData) {
+    const createPaymentEventData: CreatePaymentEventData = {
+      paidBy: data.paidBy.map(item => ({
+        userId: item,
+        amount: data.cost / data.paidBy.length,
+        currency: data.currency,
+      })),
+      benefitors: data.benefitors.map(item => ({
+        userId: item,
+        amount: data.cost / data.benefitors.length,
+        currency: data.currency,
+      })),
+      description: data.description,
+      notes: data.notes,
+      createdBy: data.createdBy,
+    };
+    this.formSubmit.emit(createPaymentEventData);
+  }
+
+  changeToComplexMode (data: CreateRecordData) {
+    if (!this._data) {
+      throw new Error('Error: 345111:1');
+    }
+
+    this.complex = true;
+    if (this._data.paymentEvent !== null) {
+      const paymentEvent: PaymentEvent = {
+        ...this._data.paymentEvent,
+        benefitors: data.benefitors.map(item => ({
+          userId: item,
+          amount: data.cost / data.benefitors.length,
+          currency: data.currency,
+        })),
+        paidBy: data.paidBy.map(item => ({
+          userId: item,
+          amount: data.cost / data.paidBy.length,
+          currency: data.currency,
+        })),
+      };
+      this.paymentEventFormData = {
+        form: getPaymentEventForm(
+          this._data.namespace.ownerUsers[0].id,
+          paymentEvent,
+        ),
+        namespace: this._data.namespace,
+      };
+    } else {
+      this.paymentEventFormData = {
+        form: getPaymentEventForm(
+          this._data.namespace.ownerUsers[0].id,
+        ),
+        namespace: this._data.namespace,
+      };
+    }
+  }
+
+  changeToSimpleMode (complexData: CreatePaymentEventData) {
+    this.complex = false;
+    const data = this._data;
+    if (!data) throw new Error('Error: 345111:2');
+    const { cost, currency } = PaymentEventViewHelpers.getComplexPaymentEventCostAndCurrencyForSimpleConversion(complexData);
+    this.recordForm = {
+      form: getRecordForm({
+        createdBy: data.namespace.ownerUsers[0].id,
+        cost,
+        currency,
+        paidBy: complexData.paidBy.map(item => item.userId),
+        benefitors: complexData.benefitors.map(item => item.userId),
+        description: complexData.description,
+        notes: complexData.notes,
+      }),
+      namespace: data.namespace,
+    };
+  }
+
+  private handleDataChange (data: PaymentEventFormData) {
     if (data.paymentEvent === null) {
       this.complex = false;
       this.recordForm = {
@@ -62,29 +148,5 @@ export class PaymentEventFormComponent {
         };
       }
     }
-  }
-
-  @Output() formSubmit = new EventEmitter<CreatePaymentEventData>();
-  public paymentEventFormData: PaymentEventComplexFormData | null = null;
-  public recordForm: PaymentEventSimpleFormData | null = null;
-  public complex = false;
-
-  submitRecordSimple (data: CreateRecordData) {
-    const createPaymentEventData: CreatePaymentEventData = {
-      paidBy: data.paidBy.map(item => ({
-        userId: item,
-        amount: data.cost / data.paidBy.length,
-        currency: data.currency,
-      })),
-      benefitors: data.benefitors.map(item => ({
-        userId: item,
-        amount: data.cost / data.benefitors.length,
-        currency: data.currency,
-      })),
-      description: data.description,
-      notes: data.notes,
-      createdBy: data.createdBy,
-    };
-    this.formSubmit.emit(createPaymentEventData);
   }
 }

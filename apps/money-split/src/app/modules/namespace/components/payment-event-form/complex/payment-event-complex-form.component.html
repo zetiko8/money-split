@@ -1,7 +1,14 @@
 <form
     (submit)="$event.preventDefault(); submit()"
-    *ngIf="form"
+    *ngIf="form && !notesOpen"
 >
+    <description-and-notes-form
+      [descriptionFormControl]="form.controls.description"
+      [notesFormControl]="form.controls.notes"
+      (complexModeChange)="onComplexModeChange()"
+      (openNotes)="notesOpen = true"
+      [sliderState]="true"
+    ></description-and-notes-form>
     <div>
       <h5>
         {{ 'addExpensePaidBy' | translate }}
@@ -36,3 +43,24 @@
         </button>
     </div>
 </form>
+<notes-open-component
+    *ngIf="form && notesOpen"
+    [descriptionFormControl]="form.controls.description"
+    [notesFormControl]="form.controls.notes"
+    (closeNotes)="notesOpen = false"
+></notes-open-component>
+<full-screen-loader
+    *ngIf="isLoading"
+></full-screen-loader>
+<modal [open]="complexModeChangeModalOpen">
+  <h2 slot="heading">{{ 'complexModeChangeModalTitle' | translate }}</h2>
+  <div slot="content">{{ 'complexModeChangeModalContent' | translate }}</div>
+  <div slot="actions">
+    <button (click)="complexModeChangeModalOpen = false">
+      {{ 'cancel' | translate }}
+    </button>
+    <button (click)="confirmComplexModeChange()" style="margin-left: 5px;">
+      {{ 'confirm' | translate }}
+    </button>
+  </div>
+</modal>

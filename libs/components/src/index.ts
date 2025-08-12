@@ -6,3 +6,4 @@ export * from './lib/components/checkbox-radio-group/checkbox-radio-group.compon
 export * from './lib/ng-helpers';
 export * from './lib/validators';
 export * from './lib/components/slide-switcher/slide-switcher.component';
+export * from './lib/components/modal/modal.component';

@@ -1,4 +1,4 @@
-import { PaymentEvent, PaymentEventView, PaymentNodeView } from '@angular-monorepo/entities';
+import { CreatePaymentEventData, PaymentEvent, PaymentEventView, PaymentNodeView } from '@angular-monorepo/entities';
 import { Observable, ReplaySubject, combineLatest, map } from 'rxjs';
 import { PaymentEventSimple } from './app/types';
 
@@ -106,26 +106,40 @@ function separateByCurrency (
  * Returns true if every paidBy and every benefitor has same cost and currency
  */
 function isSimple (
-  paymentEventView: PaymentEventView | PaymentEvent,
+  paymentEventView: PaymentEventView | PaymentEvent | CreatePaymentEventData,
 ): boolean {
+  const cost: number | null = paymentEventView.paidBy[0]?.amount || null;
+  let allCostsAreTheSame = true;
   const paidBy = paymentEventView.paidBy.reduce((acc, item) => {
     if (acc[item.currency]) {
       acc[item.currency].push(item);
     } else {
       acc[item.currency] = [item];
     }
+    if (cost !== item.amount) {
+      allCostsAreTheSame = false;
+    }
     return acc;
   }, {} as { [key: string]: { amount: number, currency: string }[] });
+  const debt: number | null = paymentEventView.benefitors[0]?.amount || null;
+  let allDebtsAreTheSame = true;
   const benefitors = paymentEventView.benefitors.reduce((acc, item) => {
     if (acc[item.currency]) {
       acc[item.currency].push(item);
     } else {
       acc[item.currency] = [item];
     }
+    if (debt !== item.amount) {
+      allDebtsAreTheSame = false;
+    }
     return acc;
   }, {} as { [key: string]: { amount: number, currency: string }[] });
 
-  return Object.values(paidBy).every(item => item.every(i => i.amount === item[0].amount && i.currency === item[0].currency)) && Object.values(benefitors).every(item => item.every(i => i.amount === item[0].amount && i.currency === item[0].currency));
+
+  return Object.keys(paidBy).length === 1
+    && Object.keys(benefitors).length === 1
+    && allCostsAreTheSame
+    && allDebtsAreTheSame;
 }
 
 /**
@@ -151,11 +165,27 @@ function getSimplePaymentEventCostAndCurrency (
   };
 }
 
+/**
+ * Returns first cost and currency of complex payment event
+ */
+function getComplexPaymentEventCostAndCurrencyForSimpleConversion (
+  createPaymentEventData: CreatePaymentEventData,
+): { cost: number, currency: string } {
+  const costForOne = createPaymentEventData.paidBy[0]?.amount || 0;
+  const currency = createPaymentEventData.paidBy[0]?.currency || 'EUR';
+
+  return {
+    cost: (createPaymentEventData.paidBy.length || 0) * costForOne,
+    currency,
+  };
+}
+
 export const PaymentEventViewHelpers = {
   separateByCurrency,
   getUniqueCurrencies,
   isSimple,
   getSimplePaymentEventCostAndCurrency,
+  getComplexPaymentEventCostAndCurrencyForSimpleConversion,
 };
 
 

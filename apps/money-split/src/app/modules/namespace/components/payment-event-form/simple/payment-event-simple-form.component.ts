@@ -5,9 +5,12 @@ import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { CreateRecordData, NamespaceView } from '@angular-monorepo/entities';
 import { PaymentEventSimpleFormGroup } from '../../../../../types';
-import { CheckboxGroupComponent, CheckboxRadioGroupComponent, SlideSwitcherComponent } from '@angular-monorepo/components';
+import { CheckboxGroupComponent, CheckboxRadioGroupComponent } from '@angular-monorepo/components';
 import { RoutingService } from '../../../../../services/routing/routing.service';
 import { AvatarComponent } from '../../../../../components/avatar.component';
+import { FullScreenLoaderComponent } from '../../../../../components/full-screen-loader/full-screen-loader.component';
+import { DescriptionAndNotesFormComponent } from '../description-and-notes-form/description-and-notes-form.component';
+import { NotesOpenComponent } from '../notes-open-component';
 
 export interface PaymentEventSimpleFormData {
   form: PaymentEventSimpleFormGroup,
@@ -123,7 +126,9 @@ export function getRecordForm (
     CheckboxGroupComponent,
     CheckboxRadioGroupComponent,
     AvatarComponent,
-    SlideSwitcherComponent,
+    FullScreenLoaderComponent,
+    DescriptionAndNotesFormComponent,
+    NotesOpenComponent,
   ],
   selector: 'payment-event-simple-form',
   templateUrl: './payment-event-simple-form.component.html',
@@ -131,7 +136,8 @@ export function getRecordForm (
 export class PaymentEventSimpleFormComponent {
 
   public readonly routingService = inject(RoutingService);
-  public complexFormControl = new FormControl<boolean>(false);
+
+  public isLoading = false;
 
   @Input() submitButtonText = '';
   @Input()
@@ -153,7 +159,7 @@ export class PaymentEventSimpleFormComponent {
   }
 
 
-  @Output() complexModeChange = new EventEmitter<boolean>();
+  @Output() complexModeChange = new EventEmitter<CreateRecordData>();
   @Output() formSubmit = new EventEmitter<CreateRecordData>();
   public form: PaymentEventSimpleFormGroup | null = null;
   public usersOptions: {
@@ -172,5 +178,17 @@ export class PaymentEventSimpleFormComponent {
         this.form.value as CreateRecordData,
       );
     }
+  }
+
+  public onComplexModeChange () {
+    this.isLoading = true;
+    // allow animation to run
+    setTimeout(() => {
+      if (this.form) {
+        this.complexModeChange.emit(
+          this.form.value as CreateRecordData,
+        );
+      }
+    }, 200);
   }
 }

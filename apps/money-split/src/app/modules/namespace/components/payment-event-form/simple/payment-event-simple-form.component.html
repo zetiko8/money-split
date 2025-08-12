@@ -2,60 +2,12 @@
     (submit)="$event.preventDefault(); submit()"
     *ngIf="form && !notesOpen"
 >
-  <div
-    *ngIf="form"
-    class="inline-form-group"
-  >
-    <div class="input-group w-9">
-      <input
-        [formControl]="form.controls.description" 
-        type="text"
-        name="description"
-        data-testid="description-input"
-        [class.error]="form.controls.description.errors"
-        placeholder="{{ 'addExpenseDescription' | translate }}"
-      >
-    </div>
-    <div class="input-group">
-      <slide-switcher
-        (ngModelChange)="complexModeChange.emit($event)"
-        [formControl]="complexFormControl"
-      ></slide-switcher>
-      <!-- <button
-          type="button"
-          data-test="remove-amount-btn"
-          class="icon-btn"
-          (click)="notesOpen = true"
-      >
-         <i class="fa fa-edit"></i>
-      </button> -->
-    </div>
-  </div>
-  <div
-    *ngIf="form.controls.notes.value"
-    style="display: flex; align-items: center;"
-  >
-    <p 
-      class="text-light" 
-      style="
-        max-width: 90%;
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        white-space: nowrap;"
-    >
-      {{ form.controls.notes.value }}
-    </p>
-    <div>
-      <button
-          type="button"
-          data-test="remove-amount-btn"
-          class="icon-btn"
-          (click)="notesOpen = true"
-      >
-         <i class="fa fa-edit"></i>
-      </button>
-    </div>
-  </div>
+  <description-and-notes-form
+    [descriptionFormControl]="form.controls.description"
+    [notesFormControl]="form.controls.notes"
+    (complexModeChange)="onComplexModeChange()"
+    (openNotes)="notesOpen = true"
+  ></description-and-notes-form>
   <div
       *ngIf="form"
       class="inline-form-group"
@@ -80,6 +32,21 @@
       </div>
   </div>
     <checkbox-group
+        data-testid="add-paid-by"
+        [formControl]="form.controls.paidBy"
+        [options]="usersOptions"
+        [label]="'addExpensePaidBy' | translate "
+        [error]="(form.controls.paidBy.errors 
+            ? 'addExpensePaidByError' : '') | translate"
+    >
+      <ng-template #checkboxTemplate let-label let-data="data">
+        <avatar
+          [avatarId]="data?.avatarId"
+          [name]="data?.name || ''"
+        ></avatar>
+      </ng-template>  
+    </checkbox-group>
+    <checkbox-group
         data-testid="add-benefitor"
         [formControl]="form.controls.benefitors"
         [options]="usersOptions"
@@ -87,21 +54,13 @@
         [error]="(form.controls.benefitors.errors 
             ? 'addExpenseBenefitorsError' : '') | translate"
     >
-    <ng-template #checkboxTemplate let-label let-data="data">
-      <avatar
-        [avatarId]="data?.avatarId"
-        [name]="data?.name || ''"
-      ></avatar>
-    </ng-template>
+      <ng-template #checkboxTemplate let-label let-data="data">
+        <avatar
+          [avatarId]="data?.avatarId"
+          [name]="data?.name || ''"
+        ></avatar>
+      </ng-template>
     </checkbox-group>
-    <checkbox-group
-        data-testid="add-paid-by"
-        [formControl]="form.controls.paidBy"
-        [options]="usersOptions"
-        [label]="'addExpensePaidBy' | translate "
-        [error]="(form.controls.paidBy.errors 
-            ? 'addExpensePaidByError' : '') | translate"
-    ></checkbox-group>
     <checkbox-radio-group
         *ngIf="ownerUsersOptions.length > 1"
         [formControl]="form.controls.createdBy"
@@ -109,46 +68,14 @@
         [label]="'addExpenseCreatedBy' | translate "
         [error]="(form.controls.createdBy.errors 
             ? 'addExpenseCreatedByError' : '') | translate"
-    ></checkbox-radio-group>
-    <div class="input-group">
-        <button
-            type="submit"
-            data-test="add-expense-confirm-btn"
-            [disabled]="!form.valid"
-        >
-        {{ submitButtonText}}
-        </button>
-    </div>
-</form>
-<form
-    (submit)="$event.preventDefault(); notesOpen = false"
-    *ngIf="form && notesOpen"
->
-    <div
-        *ngIf="form"
     >
-      <div class="input-group">
-        <input
-          [formControl]="form.controls.description" 
-          type="text"
-          name="description"
-          data-testid="description-input"
-          [class.error]="form.controls.description.errors"
-          placeholder="{{ 'addExpenseDescription' | translate }}"
-        >
-      </div>
-      <div class="input-group">
-        <textarea
-          [formControl]="form.controls.notes" 
-          type="text"
-          name="notes"
-          data-testid="notes-input"
-          [class.error]="form.controls.notes.errors"
-          placeholder="{{ 'addExpenseNotes' | translate }}"
-          style="height: 60vh;"
-        ></textarea>
-      </div>
-    </div>
+      <ng-template #checkboxTemplate let-label let-data="data">
+        <avatar
+          [avatarId]="data?.avatarId"
+          [name]="data?.name || ''"
+        ></avatar>
+      </ng-template>  
+    </checkbox-radio-group>
     <div class="input-group">
         <button
             type="submit"
@@ -159,3 +86,12 @@
         </button>
     </div>
 </form>
+<notes-open-component
+    *ngIf="form && notesOpen"
+    [descriptionFormControl]="form.controls.description"
+    [notesFormControl]="form.controls.notes"
+    (closeNotes)="notesOpen = false"
+></notes-open-component>
+<full-screen-loader
+    *ngIf="isLoading"
+></full-screen-loader>

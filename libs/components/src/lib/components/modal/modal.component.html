@@ -1,0 +1,13 @@
+<div class="modal-backdrop" *ngIf="open" (click)="$event.stopPropagation()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <ng-content select="[slot=heading]"></ng-content>
+    </div>
+    <div class="modal-content">
+      <ng-content select="[slot=content]"></ng-content>
+    </div>
+    <div class="modal-actions">
+      <ng-content select="[slot=actions]"></ng-content>
+    </div>
+  </div>
+</div>

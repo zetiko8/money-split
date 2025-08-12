@@ -3,6 +3,7 @@
     [formData]="paymentEventFormData"
     (formSubmit)="formSubmit.emit($event)"
     [submitButtonText]="'confirm' | translate"
+    (complexModeChange)="changeToSimpleMode($event)"
   >
   </payment-event-complex-form>
 </ng-container>
@@ -11,6 +12,7 @@
     [formData]="recordForm"
     (formSubmit)="submitRecordSimple($event)"
     [submitButtonText]="'confirm' | translate"
+    (complexModeChange)="changeToComplexMode($event)"
   >
   </payment-event-simple-form>
 </ng-container>

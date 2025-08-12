@@ -1,0 +1,46 @@
+<div
+  *ngIf="descriptionFormControl && notesFormControl"
+  class="inline-form-group"
+>
+  <div class="input-group w-9">
+    <input
+      [formControl]="descriptionFormControl" 
+      type="text"
+      name="description"
+      data-testid="description-input"
+      [class.error]="descriptionFormControl.errors"
+      placeholder="{{ 'addExpenseDescription' | translate }}"
+    >
+  </div>
+  <div class="input-group">
+    <slide-switcher
+      (ngModelChange)="complexModeChange.emit()"
+      [formControl]="complexFormControl"
+    ></slide-switcher>
+  </div>
+</div>
+<div
+  style="display: flex; align-items: center;"
+>
+  <p 
+    class="text-light" 
+    style="
+      max-width: 90%;
+      width: 90%;
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap;"
+  >
+    {{ notesFormControl?.value || ('no_description' | translate) }}
+  </p>
+  <div>
+    <button
+        type="button"
+        data-test="remove-amount-btn"
+        class="icon-btn"
+        (click)="openNotes.emit()"
+    >
+        <i class="fa fa-edit"></i>
+    </button>
+  </div>
+</div>

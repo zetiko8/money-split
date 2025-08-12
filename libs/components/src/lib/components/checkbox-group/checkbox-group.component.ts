@@ -51,7 +51,6 @@ implements ControlValueAccessor {
       value: option.value,
       data: option.data,
     }));
-    console.log(this._options);
   }
 
   _disabled = false;

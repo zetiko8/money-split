@@ -6,6 +6,11 @@ import { FormControl, FormGroup, FormArray, ReactiveFormsModule, Validators } fr
 import { CreatePaymentEventData, NamespaceView, PaymentEvent, PaymentNode, User } from '@angular-monorepo/entities';
 import { PaymentEventFormGroup, PaymentNodeFormGroup } from '../../../../../types';
 import { PaymentUserFormComponent } from './payment-user-form/payment-user-form.component';
+import { DescriptionAndNotesFormComponent } from '../description-and-notes-form/description-and-notes-form.component';
+import { FullScreenLoaderComponent } from '../../../../../components/full-screen-loader/full-screen-loader.component';
+import { PaymentEventViewHelpers } from '../../../../../../helpers';
+import { ModalComponent } from '@angular-monorepo/components';
+import { NotesOpenComponent } from '../notes-open-component';
 
 export interface PaymentEventComplexFormData {
   form: PaymentEventFormGroup,
@@ -110,6 +115,10 @@ export function getPaymentEventForm (
     TranslateModule,
     ReactiveFormsModule,
     PaymentUserFormComponent,
+    DescriptionAndNotesFormComponent,
+    FullScreenLoaderComponent,
+    ModalComponent,
+    NotesOpenComponent,
   ],
   selector: 'payment-event-complex-form',
   templateUrl: './payment-event-complex-form.component.html',
@@ -130,16 +139,14 @@ export class PaymentEventComplexFormComponent {
   public form: PaymentEventFormGroup | null = null;
   public usersOptions: User[] = [];
   public ownerUsersOptions: User[] = [];
+  @Output() complexModeChange = new EventEmitter<CreatePaymentEventData>();
+  public notesOpen = false;
+  public isLoading = false;
+  public complexModeChangeModalOpen = false;
 
   public submit () {
-    if (this.form) {
-      const createPaymentEventData: CreatePaymentEventData = {
-        paidBy: this.form.controls.paidBy.value as PaymentNode[],
-        benefitors: this.form.controls.benefitors.value as PaymentNode[],
-        description: '',
-        notes: '',
-        createdBy: this.form.controls.createdBy.value,
-      };
+    const createPaymentEventData = this.getPaymentEventData();
+    if (createPaymentEventData) {
       this.formSubmit.emit(
         createPaymentEventData,
       );
@@ -171,6 +178,51 @@ export class PaymentEventComplexFormComponent {
   removeUserBenefit (payment: PaymentNodeFormGroup) {
     if (this.form) {
       this.form.controls.benefitors.removeAt(this.form.controls.benefitors.controls.indexOf(payment));
+    }
+  }
+
+  private getPaymentEventData () {
+    if (this.form) {
+      const createPaymentEventData: CreatePaymentEventData = {
+        paidBy: this.form.controls.paidBy.value as PaymentNode[],
+        benefitors: this.form.controls.benefitors.value as PaymentNode[],
+        description: this.form.controls.description.value,
+        notes: this.form.controls.notes.value,
+        createdBy: this.form.controls.createdBy.value,
+      };
+      return createPaymentEventData;
+    }
+    return null;
+  }
+
+  public onComplexModeChange () {
+
+    const createPaymentEventData = this.getPaymentEventData();
+    if (createPaymentEventData) {
+      if (PaymentEventViewHelpers.isSimple(createPaymentEventData)) {
+        this.isLoading = true;
+        // allow animation to run
+        setTimeout(() => {
+          if (this.form) {
+            this.complexModeChange.emit(createPaymentEventData);
+          }
+        }, 200);
+      } else {
+        this.complexModeChangeModalOpen = true;
+      }
+    }
+  }
+
+  public confirmComplexModeChange () {
+    const createPaymentEventData = this.getPaymentEventData();
+    if (createPaymentEventData) {
+      this.isLoading = true;
+      // allow animation to run
+      setTimeout(() => {
+        if (this.form) {
+          this.complexModeChange.emit(createPaymentEventData);
+        }
+      }, 200);
     }
   }
 }
