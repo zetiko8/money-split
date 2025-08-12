@@ -51,9 +51,62 @@
 
 .clusters, .namespaces, .invitations, .users, .profiles {
   margin-bottom: 30px;
-  padding: 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+.profiles {
+  padding: 0;
+  background: #f8f9fa;
+}
+
+.profile-header {
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.profile-header:hover {
+  background: #f0f0f0;
+}
+
+.profile-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-header h2 strong {
+  color: #2196f3;
+}
+
+.expand-icon {
+  font-size: 1.2rem;
+  color: #666;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-content {
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  background: white;
+}
+
+.profile-info {
+  margin-bottom: 1rem;
+}
+
+.profile-info select {
+  width: 100%;
 }
 
 .profiles {

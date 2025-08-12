@@ -31,10 +31,15 @@ export class MockData2Component implements OnInit {
   public newProfileName = '';
   public availableProfiles: string[] = [];
   public currentProfile = '';
+  public profileExpanded = false;
 
   public dismissError(): void {
     this.error = '';
     this.actionDetails = '';
+  }
+
+  public toggleProfileExpanded(): void {
+    this.profileExpanded = !this.profileExpanded;
   }
   public loading = {
     cluster: false,

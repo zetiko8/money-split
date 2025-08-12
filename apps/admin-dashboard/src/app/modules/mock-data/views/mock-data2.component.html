@@ -8,18 +8,22 @@
 
 <div class="container">
   <div class="profiles">
-    <h2>Mock Data Profile</h2>
-    <div class="profile-info">
-      <span class="current-profile">Current Profile: <strong>{{ currentProfile }}</strong></span>
-      <select [(ngModel)]="currentProfile" (ngModelChange)="selectProfile($event)">
-        <option *ngFor="let profile of availableProfiles" [value]="profile">{{ profile }}</option>
-      </select>
+    <div class="profile-header" (click)="toggleProfileExpanded()">
+      <h2>Mock Data Profile: <strong>{{ currentProfile }}</strong></h2>
+      <span class="expand-icon">{{ profileExpanded ? '−' : '+' }}</span>
     </div>
-    <div class="form">
-      <input type="text" [(ngModel)]="newProfileName" placeholder="New Profile Name">
-      <button (click)="createProfile()" [disabled]="loading.profile || !newProfileName">
-        {{ loading.profile ? 'Creating...' : 'Create Profile' }}
-      </button>
+    <div class="profile-content" *ngIf="profileExpanded">
+      <div class="profile-info">
+        <select [(ngModel)]="currentProfile" (ngModelChange)="selectProfile($event)">
+          <option *ngFor="let profile of availableProfiles" [value]="profile">{{ profile }}</option>
+        </select>
+      </div>
+      <div class="form">
+        <input type="text" [(ngModel)]="newProfileName" placeholder="New Profile Name">
+        <button (click)="createProfile()" [disabled]="loading.profile || !newProfileName">
+          {{ loading.profile ? 'Creating...' : 'Create Profile' }}
+        </button>
+      </div>
     </div>
   </div>
 
