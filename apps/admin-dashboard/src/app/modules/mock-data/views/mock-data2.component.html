@@ -152,22 +152,31 @@
       <div class="event-list">
         <div *ngFor="let event of state?.selectedNamespace?.paymentEvents || []" class="event-item">
           <div class="event-header">
-            <span class="event-description">{{ event.description || 'No description' }}</span>
-            <span class="event-date">{{ event.created | date }}</span>
+            <div class="event-main">
+              <span class="event-description">{{ event.description || 'No description' }}</span>
+              <div class="event-meta">
+                <span class="event-author">Created by {{ event.createdBy.name || 'Unknown' }}</span>
+                <span class="event-date">{{ event.created | date }}</span>
+                <ng-container *ngIf="event.editedBy">
+                  <span class="event-editor">Edited by {{ event.editedBy.name }}</span>
+                  <span class="event-edit-date">{{ event.edited | date }}</span>
+                </ng-container>
+              </div>
+            </div>
           </div>
           <div class="event-details">
             <div class="payers">
               <h4>Payers</h4>
               <div *ngFor="let payer of event.paidBy" class="payment-node">
                 <span class="user">{{ payer.user.name }}</span>
-                <span class="amount">{{ payer.amount }} {{ payer.currency }}</span>
+                <span class="amount">{{ payer.amount | number:'1.2-2' }} {{ payer.currency }}</span>
               </div>
             </div>
             <div class="benefitors">
               <h4>Benefitors</h4>
               <div *ngFor="let benefitor of event.benefitors" class="payment-node">
                 <span class="user">{{ benefitor.user.name }}</span>
-                <span class="amount">{{ benefitor.amount }} {{ benefitor.currency }}</span>
+                <span class="amount">{{ benefitor.amount | number:'1.2-2' }} {{ benefitor.currency }}</span>
               </div>
             </div>
           </div>

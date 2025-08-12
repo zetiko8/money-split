@@ -251,8 +251,9 @@
 
 .event-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .event-item {
@@ -260,13 +261,32 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 15px;
+
+  width: 45%;
 }
 
 .event-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 15px;
+}
+
+.event-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.85em;
+  color: #666;
+}
+
+.event-author,
+.event-editor {
+  color: #444;
+  font-weight: 500;
 }
 
 .event-description {
