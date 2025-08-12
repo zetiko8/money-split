@@ -1,6 +1,7 @@
 <div class="notification" *ngIf="error">
   <div class="notification-content">
     <div class="error-message">{{ error }}</div>
+    <div class="error-code" *ngIf="errorCode">{{ errorCode }}</div>
     <div class="error-details" *ngIf="actionDetails">{{ actionDetails }}</div>
   </div>
   <button class="dismiss-button" (click)="dismissError()">✕</button>

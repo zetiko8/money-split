@@ -27,6 +27,7 @@ export class MockData2Component implements OnInit {
   public namespaceName = '';
   public email = '';
   public error = '';
+  public errorCode = '';
   public actionDetails = '';
   public newProfileName = '';
   public availableProfiles: string[] = [];
@@ -35,6 +36,7 @@ export class MockData2Component implements OnInit {
 
   public dismissError(): void {
     this.error = '';
+    this.errorCode = '';
     this.actionDetails = '';
   }
 
@@ -126,6 +128,7 @@ export class MockData2Component implements OnInit {
     console.error('Error:', error);
     if (error instanceof Error) {
       this.error = error.message;
+      this.errorCode = (error as unknown as { code: string }).code ?? '';
       this.actionDetails = error.stack ?? '';
     } else {
       this.error = 'An unknown error occurred';
