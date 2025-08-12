@@ -30,7 +30,7 @@ export class MockDataMachine {
   }
 
   async initialize(): Promise<MockDataState> {
-    await this.load();
+    await this.load(undefined);
     if (this.selectedNamespace) {
       this.currentNamespaceInvitations = this.loadNamespaceInvitations(this.selectedNamespace.id);
     }
@@ -104,7 +104,12 @@ export class MockDataMachine {
         this.currentNamespaceInvitations[currentInvIndex] = invitation;
       }
       this.save();
-      await this.load();
+      // Load while preserving current cluster selection
+      await this.load(this.selectedTestOwner);
+      // Refresh namespace data to get updated users list
+      if (this.selectedNamespace && this.selectedTestOwner) {
+        await this.selectNamespace(this.selectedNamespace);
+      }
       return this.getState();
     } catch (error) {
       throw this.normalizeError(error);
@@ -128,6 +133,7 @@ export class MockDataMachine {
 
   async selectNamespace(namespace: MNamespace): Promise<MockDataState> {
     if (!this.selectedTestOwner) throw new Error('No cluster selected');
+    // Always fetch fresh namespace data to get updated users list
     this.selectedNamespace = await this.selectedTestOwner.getNamespace(namespace.id);
     this.currentNamespaceInvitations = this.loadNamespaceInvitations(namespace.id);
     return this.getState();
@@ -152,11 +158,17 @@ export class MockDataMachine {
     localStorage.setItem('invitations', JSON.stringify(this.allInvitations));
   }
 
-  private async load(): Promise<void> {
+  private async load(selectedTestOwner?: TestOwner): Promise<void> {
     const data = localStorage.getItem('testOwner');
     if (!data) return;
     this.clusters = JSON.parse(data).map((obj: SerializedTestOwner) => this.deserialize(obj));
-    if (this.clusters.length > 0) {
+
+    if (selectedTestOwner) {
+      const clusterIndex = this.clusters.findIndex(c => c.owner === selectedTestOwner.owner);
+      if (clusterIndex !== -1) {
+        await this.selectCluster(this.clusters[clusterIndex]);
+      }
+    } else if (this.clusters.length > 0) {
       await this.selectCluster(this.clusters[0]);
     }
   }
