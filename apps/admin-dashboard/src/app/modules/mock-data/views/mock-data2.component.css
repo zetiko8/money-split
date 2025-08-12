@@ -99,6 +99,152 @@
   background-color: #bb2d3b;
 }
 
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f8f9fa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-btn {
+  padding: 4px 8px;
+  font-size: 0.85em;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn:disabled {
+  background-color: #28a74580;
+  cursor: not-allowed;
+}
+
+.add-btn:not(:disabled):hover {
+  background-color: #218838;
+}
+
+.payment-event-form {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.payment-event-form h3 {
+  margin: 0 0 15px;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.payers-section,
+.benefitors-section {
+  margin-bottom: 20px;
+}
+
+.payer-list,
+.benefitor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payer-item,
+.benefitor-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.amount-inputs {
+  display: flex;
+  gap: 8px;
+  margin: 0 10px;
+}
+
+.amount-inputs input[type="number"] {
+  width: 100px;
+}
+
+.amount-inputs input[type="text"] {
+  width: 60px;
+}
+
+.remove-btn {
+  padding: 4px 8px;
+  font-size: 0.85em;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background-color: #bb2d3b;
+}
+
+.form-footer {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-footer input,
+.form-footer textarea,
+.amount-inputs input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.form-footer textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-footer button {
+  padding: 8px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.form-footer button:disabled {
+  background-color: #28a74580;
+  cursor: not-allowed;
+}
+
+.form-footer button:not(:disabled):hover {
+  background-color: #218838;
+}
+
 .profiles {
   padding: 0;
   background: #f8f9fa;

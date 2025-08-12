@@ -1,5 +1,5 @@
 import { TestOwner } from './test-owner';
-import { MNamespace, Invitation, NamespaceView, Owner } from '@angular-monorepo/entities';
+import { MNamespace, Invitation, NamespaceView, Owner, CreatePaymentEventData } from '@angular-monorepo/entities';
 
 export interface SerializedTestOwner {
   username: string;
@@ -257,7 +257,24 @@ export class MockDataMachine {
         this.currentNamespaceInvitations = [];
       }
       return this.getState();
-    } catch (error) {
+    } catch (error: unknown) {
+      throw this.normalizeError(error);
+    }
+  }
+
+  public async addPaymentEventToNamespace(
+    namespaceId: number,
+    userId: number,
+    record: CreatePaymentEventData,
+  ): Promise<MockDataState> {
+    try {
+      if (!this.selectedTestOwner) {
+        throw new Error('No cluster selected');
+      }
+      await this.loginIfNeccessary(this.selectedTestOwner);
+      await this.selectedTestOwner.addPaymentEventToNamespace(namespaceId, userId, record);
+      return this.getState();
+    } catch (error: unknown) {
       throw this.normalizeError(error);
     }
   }

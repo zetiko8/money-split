@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ConfigService } from '../../../services/config.service';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
-import { Invitation, MNamespace } from '@angular-monorepo/entities';
+import { Invitation, MNamespace, User, CreatePaymentEventData } from '@angular-monorepo/entities';
 
 @Component({
   standalone: true,
@@ -49,6 +49,14 @@ export class MockData2Component implements OnInit {
     invitation: false,
     acceptInvitation: false,
     profile: false,
+    paymentEvent: false,
+  };
+
+  public paymentEvent = {
+    paidBy: [] as { user: User; amount: number; currency: string }[],
+    benefitors: [] as { user: User; amount: number; currency: string }[],
+    description: '',
+    notes: '',
   };
 
   async ngOnInit(): Promise<void> {
@@ -129,8 +137,76 @@ export class MockData2Component implements OnInit {
       if (this.state.selectedNamespace) {
         this.namespaceName = this.state.selectedNamespace.name;
       }
+      // Reset payment event form when changing namespace
+      this.paymentEvent.paidBy = [];
+      this.paymentEvent.benefitors = [];
+      this.paymentEvent.description = '';
+      this.paymentEvent.notes = '';
     } catch (error) {
       this.handleError(error);
+    }
+  }
+
+  addToPaidBy(user: User): void {
+    this.paymentEvent.paidBy.push({ user, amount: 0, currency: 'EUR' });
+  }
+
+  removeFromPaidBy(user: User, index: number): void {
+    this.paymentEvent.paidBy.splice(index, 1);
+  }
+
+  addToBenefitors(user: User): void {
+    this.paymentEvent.benefitors.push({ user, amount: 0, currency: 'EUR' });
+  }
+
+  removeFromBenefitors(user: User, index: number): void {
+    this.paymentEvent.benefitors.splice(index, 1);
+  }
+
+  isPaymentValid(): boolean {
+    return !this.loading.paymentEvent &&
+           this.paymentEvent.paidBy.length > 0 &&
+           this.paymentEvent.benefitors.length > 0 &&
+           !this.paymentEvent.paidBy.some(p => !p.amount) &&
+           !this.paymentEvent.benefitors.some(b => !b.amount);
+  }
+
+  async addPaymentEvent(): Promise<void> {
+    if (!this.state?.selectedNamespace || !this.paymentEvent.paidBy.length || !this.paymentEvent.benefitors.length) return;
+
+    this.loading.paymentEvent = true;
+    try {
+      const record: CreatePaymentEventData = {
+        paidBy: this.paymentEvent.paidBy.map(p => ({
+          userId: p.user.id,
+          amount: p.amount,
+          currency: p.currency,
+        })),
+        benefitors: this.paymentEvent.benefitors.map(b => ({
+          userId: b.user.id,
+          amount: b.amount,
+          currency: b.currency,
+        })),
+        description: this.paymentEvent.description || null,
+        notes: this.paymentEvent.notes || null,
+        createdBy: this.paymentEvent.paidBy[0].user.id,
+      };
+
+      this.state = await this.mockData.addPaymentEventToNamespace(
+        this.state.selectedNamespace.id,
+        record.createdBy,
+        record,
+      );
+
+      // Reset form
+      this.paymentEvent.paidBy = [];
+      this.paymentEvent.benefitors = [];
+      this.paymentEvent.description = '';
+      this.paymentEvent.notes = '';
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.loading.paymentEvent = false;
     }
   }
 

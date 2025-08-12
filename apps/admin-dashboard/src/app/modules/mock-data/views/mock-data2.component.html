@@ -90,8 +90,60 @@
   <div class="users" *ngIf="state?.selectedNamespace">
     <h2>Users</h2>
     <div class="list">
-      <div *ngFor="let user of state?.selectedNamespace?.users">
-        {{ user.name }}
+      <div class="users-list">
+        <div *ngFor="let user of state?.selectedNamespace?.users || []"
+             class="user-item">
+          <span>{{ user.name }}</span>
+          <div class="user-actions">
+            <button (click)="addToPaidBy(user)" 
+                    class="add-btn">
+              Add as Payer
+            </button>
+            <button (click)="addToBenefitors(user)"
+                    class="add-btn">
+              Add as Benefitor
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="payment-event-form" *ngIf="paymentEvent.paidBy.length || paymentEvent.benefitors.length">
+        <div class="payers-section" *ngIf="paymentEvent.paidBy.length">
+          <h3>Payers</h3>
+          <div class="payer-list">
+            <div *ngFor="let payer of paymentEvent.paidBy; let i = index" class="payer-item">
+              <span>{{ payer.user.name }}</span>
+              <div class="amount-inputs">
+                <input type="number" [(ngModel)]="payer.amount" placeholder="Amount">
+                <input type="text" [(ngModel)]="payer.currency" placeholder="Currency">
+              </div>
+              <button (click)="removeFromPaidBy(payer.user, i)" class="remove-btn">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="benefitors-section" *ngIf="paymentEvent.benefitors.length">
+          <h3>Benefitors</h3>
+          <div class="benefitor-list">
+            <div *ngFor="let benefitor of paymentEvent.benefitors; let i = index" class="benefitor-item">
+              <span>{{ benefitor.user.name }}</span>
+              <div class="amount-inputs">
+                <input type="number" [(ngModel)]="benefitor.amount" placeholder="Amount">
+                <input type="text" [(ngModel)]="benefitor.currency" placeholder="Currency">
+              </div>
+              <button (click)="removeFromBenefitors(benefitor.user, i)" class="remove-btn">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <input type="text" [(ngModel)]="paymentEvent.description" placeholder="Description">
+          <textarea [(ngModel)]="paymentEvent.notes" placeholder="Notes"></textarea>
+          <button (click)="addPaymentEvent()" 
+                  [disabled]="!isPaymentValid()">
+            {{ loading.paymentEvent ? 'Adding...' : 'Add Payment Event' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
