@@ -20,6 +20,7 @@ export class MockDataMachine {
   private clusters: TestOwner[] = [];
   private namespaces: MNamespace[] = [];
   private allInvitations: Invitation[] = [];
+  private currentNamespaceInvitations: Invitation[] = [];
   private selectedTestOwner?: TestOwner;
   private selectedNamespace?: NamespaceView;
   private dataProviderUrl: string;
@@ -30,14 +31,10 @@ export class MockDataMachine {
 
   async initialize(): Promise<MockDataState> {
     await this.load();
-    return {
-      clusters: this.clusters,
-      namespaces: this.namespaces,
-      allInvitations: this.allInvitations,
-      selectedTestOwner: this.selectedTestOwner,
-      selectedNamespace: this.selectedNamespace,
-      currentNamespaceInvitations: this.loadInvitations(),
-    };
+    if (this.selectedNamespace) {
+      this.currentNamespaceInvitations = this.loadNamespaceInvitations(this.selectedNamespace.id);
+    }
+    return this.getState();
   }
 
   private getState(): MockDataState {
@@ -47,7 +44,7 @@ export class MockDataMachine {
       allInvitations: this.allInvitations,
       selectedTestOwner: this.selectedTestOwner,
       selectedNamespace: this.selectedNamespace,
-      currentNamespaceInvitations: this.loadInvitations(),
+      currentNamespaceInvitations: this.currentNamespaceInvitations,
     };
   }
 
@@ -110,6 +107,11 @@ export class MockDataMachine {
     this.namespaces = await testOwner.getNamespaces();
     if (this.namespaces.length > 0) {
       await this.selectNamespace(this.namespaces[0]);
+    } else {
+      // Clear state when there are no namespaces
+      this.selectedNamespace = undefined;
+      this.currentNamespaceInvitations = [];
+      this.save();
     }
     return this.getState();
   }
@@ -117,7 +119,7 @@ export class MockDataMachine {
   async selectNamespace(namespace: MNamespace): Promise<MockDataState> {
     if (!this.selectedTestOwner) throw new Error('No cluster selected');
     this.selectedNamespace = await this.selectedTestOwner.getNamespace(namespace.id);
-    this.loadInvitations();
+    this.currentNamespaceInvitations = this.loadNamespaceInvitations(namespace.id);
     return this.getState();
   }
 
@@ -149,16 +151,16 @@ export class MockDataMachine {
     }
   }
 
-  private loadInvitations(): Invitation[] {
+  private loadNamespaceInvitations(namespaceId: number): Invitation[] {
     const data = localStorage.getItem('invitations');
     if (!data) {
       this.allInvitations = [];
       return [];
     }
     this.allInvitations = JSON.parse(data) as Invitation[];
-    // Return only invitations for the current namespace
+    // Return only invitations for the specified namespace
     return this.allInvitations.filter((inv: Invitation) =>
-      inv.namespaceId === this.selectedNamespace?.id,
+      inv.namespaceId === namespaceId,
     );
   }
 
