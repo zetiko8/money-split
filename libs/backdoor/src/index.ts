@@ -41,3 +41,4 @@ export class NamespaceTestResource {
 
 export * from './test-helpers/test-owner';
 export * from './test-helpers/backdoor-actions';
+export * from './test-helpers/mock-data.machine';

@@ -1,0 +1,73 @@
+<div class="container">
+  <div class="error" *ngIf="error">
+    {{ error }}
+    <div class="details" *ngIf="actionDetails">
+      {{ actionDetails }}
+    </div>
+  </div>
+
+  <div class="clusters">
+    <h2>Clusters</h2>
+    <div class="form">
+      <input type="text" [(ngModel)]="username" placeholder="Username">
+      <input type="password" [(ngModel)]="password" placeholder="Password">
+      <button (click)="createNewCluster()" [disabled]="loading.cluster">
+        {{ loading.cluster ? 'Creating...' : 'Create New Cluster' }}
+      </button>
+    </div>
+    <div class="list">
+      <div *ngFor="let cluster of state?.clusters"
+           [class.selected]="cluster === state?.selectedTestOwner"
+           (click)="selectCluster(cluster)">
+        {{ cluster.username }}
+      </div>
+    </div>
+  </div>
+
+  <div class="namespaces" *ngIf="state?.selectedTestOwner">
+    <h2>Namespaces</h2>
+    <div class="form">
+      <input type="text" [(ngModel)]="namespaceName" placeholder="Namespace Name">
+      <button (click)="createNewNamespace()" [disabled]="loading.namespace">
+        {{ loading.namespace ? 'Creating...' : 'Create New Namespace' }}
+      </button>
+    </div>
+    <div class="list">
+      <div *ngFor="let namespace of state?.namespaces"
+           [class.selected]="namespace.id === state?.selectedNamespace?.id"
+           (click)="selectNamespace(namespace)">
+        {{ namespace.name }}
+      </div>
+    </div>
+  </div>
+
+  <div class="invitations" *ngIf="state?.selectedNamespace">
+    <h2>Invitations</h2>
+    <div class="form">
+      <input type="email" [(ngModel)]="email" placeholder="Email">
+      <button (click)="createNewInvitation()" [disabled]="loading.invitation">
+        {{ loading.invitation ? 'Creating...' : 'Create New Invitation' }}
+      </button>
+    </div>
+    <div class="list">
+      <div *ngFor="let invitation of state?.currentNamespaceInvitations"
+           [class.accepted]="invitation.accepted">
+        {{ invitation.email }}
+        <button *ngIf="!invitation.accepted"
+                (click)="acceptInvitation(invitation)"
+                [disabled]="loading.acceptInvitation">
+          {{ loading.acceptInvitation ? 'Accepting...' : 'Accept' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="users" *ngIf="state?.selectedNamespace">
+    <h2>Users</h2>
+    <div class="list">
+      <div *ngFor="let user of state?.selectedNamespace?.users">
+        {{ user.name }}
+      </div>
+    </div>
+  </div>
+</div>
