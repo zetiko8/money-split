@@ -1,10 +1,12 @@
-<div class="container">
-  <div class="error" *ngIf="error">
-    {{ error }}
-    <div class="details" *ngIf="actionDetails">
-      {{ actionDetails }}
-    </div>
+<div class="notification" *ngIf="error">
+  <div class="notification-content">
+    <div class="error-message">{{ error }}</div>
+    <div class="error-details" *ngIf="actionDetails">{{ actionDetails }}</div>
   </div>
+  <button class="dismiss-button" (click)="dismissError()">✕</button>
+</div>
+
+<div class="container">
 
   <div class="clusters">
     <h2>Clusters</h2>

@@ -28,6 +28,11 @@ export class MockData2Component implements OnInit {
   public email = '';
   public error = '';
   public actionDetails = '';
+
+  public dismissError(): void {
+    this.error = '';
+    this.actionDetails = '';
+  }
   public loading = {
     cluster: false,
     namespace: false,
