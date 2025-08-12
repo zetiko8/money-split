@@ -313,3 +313,4 @@ export interface MNamespaceSettings {
 
 export * from './error';
 export * from './constants';
+export * from './domain-helpers';

@@ -12,6 +12,7 @@ describe(API_NAME, () => {
   let namespaceId!: number;
   let userId!: number;
   let creatorUserId!: number;
+  let anotherUserId!: number;
   let testOwner!: TestOwner;
   let machineState!: MockDataState;
   beforeEach(async () => {
@@ -21,20 +22,25 @@ describe(API_NAME, () => {
       // dispose any existing owners with the same name
       await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
       await MockDataMachine.dispose(DATA_PROVIDER_URL, 'test@email.com');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'another@email.com');
 
       /**
-       * 'creator' creates a namespace and invites 'test@email.com'
+       * 'creator' creates a namespace and invites 'test@email.com' and 'another@email.com'
        * 'test@email.com' accepts the invitation
+       * 'another@email.com' accepts the invitation
        */
       await machine.createNewCluster('creator', 'testpassword');
       await machine.createNewNamespace('testnamespace');
       machineState = await machine.createNewInvitation('test@email.com');
       await machine.acceptInvitation(machineState.getInvitationByEmail('test@email.com'));
+      machineState = await machine.createNewInvitation('another@email.com');
+      await machine.acceptInvitation(machineState.getInvitationByEmail('another@email.com'));
 
       // prepare variables for the test
       namespaceId = machineState.selectedNamespace!.id;
       creatorUserId = machineState.getUserByName('creator').id;
       userId = machineState.getUserByName('test@email.com').id;
+      anotherUserId = machineState.getUserByName('another@email.com').id;
       testOwner = await machineState.getUserOwnerByName('test@email.com');
 
       // login as 'test@email.com'
@@ -396,6 +402,93 @@ describe(API_NAME, () => {
           },
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
+    });
+  });
+
+  describe.only('complex payment event validation', () => {
+    describe('amount owed must be same as amount paid', () => {
+      it('3 EUR != 4 EUR', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 4, currency: 'EUR' }],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
+      it('3 EUR == 3 EUR', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .toBe200();
+      });
+
+      it('3 EUR != 4 USD', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 4, currency: 'USD' }],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
+
+      it('4 USD == 4 USD', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 4, currency: 'USD' }],
+              benefitors: [{ userId: creatorUserId, amount: 4, currency: 'USD' }],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .toBe200();
+      });
+
+      it('3 EUR + 3 EUR != 4 EUR', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }, { userId: creatorUserId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 4, currency: 'EUR' }],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
+
+      it('3 EUR + 3 EUR == 6 EUR', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }, { userId: creatorUserId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 6, currency: 'EUR' }],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .toBe200();
+      });
     });
   });
 

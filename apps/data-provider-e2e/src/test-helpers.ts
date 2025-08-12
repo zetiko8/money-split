@@ -114,6 +114,10 @@ export function fnCall (
         throw error;
       }
     },
+
+    async toBe200 () {
+      this.result(() => {});
+    },
   };
 }
 
