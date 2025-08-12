@@ -299,6 +299,44 @@
   font-size: 0.9em;
 }
 
+.payment-event-form .form-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.form-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.creator-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.creator-select label {
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.creator-select select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.creator-select select:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+}
+
 .event-details {
   display: flex;
   gap: 30px;

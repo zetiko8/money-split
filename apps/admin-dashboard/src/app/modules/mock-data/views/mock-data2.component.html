@@ -137,8 +137,19 @@
         </div>
 
         <div class="form-footer">
-          <input type="text" [(ngModel)]="paymentEvent.description" placeholder="Description">
-          <textarea [(ngModel)]="paymentEvent.notes" placeholder="Notes"></textarea>
+          <div class="form-inputs">
+            <div class="creator-select">
+              <label>Created by:</label>
+              <select [(ngModel)]="paymentEvent.createdBy">
+                <option [ngValue]="null">Select user</option>
+                <option *ngFor="let user of state?.selectedNamespace?.users || []" [ngValue]="user">
+                  {{ user.name }}
+                </option>
+              </select>
+            </div>
+            <input type="text" [(ngModel)]="paymentEvent.description" placeholder="Description">
+            <textarea [(ngModel)]="paymentEvent.notes" placeholder="Notes"></textarea>
+          </div>
           <button (click)="addPaymentEvent()" 
                   [disabled]="!isPaymentValid()">
             {{ loading.paymentEvent ? 'Adding...' : 'Add Payment Event' }}

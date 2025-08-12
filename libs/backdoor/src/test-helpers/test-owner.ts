@@ -16,6 +16,18 @@ export class TestOwner {
     public readonly password: string,
   ) {}
 
+  public static async fromUserNameAndPassword (
+    DATA_PROVIDER_URL: string,
+    username: string,
+    password: string,
+  ): Promise<TestOwner> {
+    const te = new TestOwner(DATA_PROVIDER_URL, username, password);
+    const owner = await te.getOwnerDataByUsername(username);
+    if (!owner) throw new Error('fromUserNameAndPassword: Owner not found');
+    te.owner = owner;
+    return te;
+  }
+
   async register () {
     const res = await  axios.post<Owner>(
       this.DATA_PROVIDER_URL + '/app/register',
@@ -35,7 +47,7 @@ export class TestOwner {
     const res = await  axios.post<{ token: string }>(
       this.DATA_PROVIDER_URL + '/app/login',
       {
-        username: this.owner.username,
+        username: this.username,
         password: this.password,
       },
     );
@@ -285,25 +297,29 @@ export class TestOwner {
     return result;
   }
 
-  async dispose () {
+  private async getOwnerDataByUsername (username: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ownerArr: any = await BACKDOOR_ACTIONS.query(
       this.DATA_PROVIDER_URL,
       `
-      SELECT * FROM \`Owner\`
-      WHERE \`username\` = '${this.username}' 
-      `,
+          SELECT * FROM \`Owner\`
+          WHERE \`username\` = '${username}' 
+          `,
     );
 
     if (!ownerArr || !ownerArr.length) return;
 
     const owner = (ownerArr as unknown as Owner[])[0] as Owner;
-    const ownerId = owner.id;
+    return owner;
+  }
 
+  async dispose () {
+    const owner = await this.getOwnerDataByUsername(this.username);
+    if (!owner) return;
     await BACKDOOR_ACTIONS.query(
       this.DATA_PROVIDER_URL,
       `
-      call testDispose(${ownerId})
+      call testDispose(${owner.id})
       `,
     );
 

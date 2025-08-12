@@ -268,11 +268,14 @@ export class MockDataMachine {
     record: CreatePaymentEventData,
   ): Promise<MockDataState> {
     try {
-      if (!this.selectedTestOwner) {
-        throw new Error('No cluster selected');
+      const creator = this.getState().selectedNamespace?.users.find(user => user.id === userId);
+      if (!creator) {
+        throw new Error('No creator found');
       }
-      await this.loginIfNeccessary(this.selectedTestOwner);
-      await this.selectedTestOwner.addPaymentEventToNamespace(namespaceId, userId, record);
+      const testOwner = await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, creator.name, 'testpassword');
+      await this.loginIfNeccessary(testOwner);
+      await testOwner.addPaymentEventToNamespace(namespaceId, userId, record);
+      await this.load(this.selectedTestOwner);
       return this.getState();
     } catch (error: unknown) {
       throw this.normalizeError(error);

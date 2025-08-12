@@ -57,6 +57,7 @@ export class MockData2Component implements OnInit {
     benefitors: [] as { user: User; amount: number; currency: string }[],
     description: '',
     notes: '',
+    createdBy: null as User | null,
   };
 
   async ngOnInit(): Promise<void> {
@@ -132,6 +133,13 @@ export class MockData2Component implements OnInit {
   }
 
   async selectNamespace(namespace: MNamespace): Promise<void> {
+    this.paymentEvent = {
+      paidBy: [],
+      benefitors: [],
+      description: '',
+      notes: '',
+      createdBy: null,
+    };
     try {
       this.state = await this.mockData.selectNamespace(namespace);
       if (this.state.selectedNamespace) {
@@ -168,7 +176,8 @@ export class MockData2Component implements OnInit {
            this.paymentEvent.paidBy.length > 0 &&
            this.paymentEvent.benefitors.length > 0 &&
            !this.paymentEvent.paidBy.some(p => !p.amount) &&
-           !this.paymentEvent.benefitors.some(b => !b.amount);
+           !this.paymentEvent.benefitors.some(b => !b.amount) &&
+           this.paymentEvent.createdBy !== null;
   }
 
   async addPaymentEvent(): Promise<void> {
@@ -189,7 +198,7 @@ export class MockData2Component implements OnInit {
         })),
         description: this.paymentEvent.description || null,
         notes: this.paymentEvent.notes || null,
-        createdBy: this.paymentEvent.paidBy[0].user.id,
+        createdBy: this.paymentEvent.createdBy!.id,
       };
 
       this.state = await this.mockData.addPaymentEventToNamespace(
