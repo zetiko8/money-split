@@ -300,10 +300,14 @@ export class MockDataMachine {
       if (!creator) {
         throw new Error('No creator found');
       }
-      const testOwner = await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, creator.name, 'testpassword');
+
+      const testOwner
+        = creator.ownerId === this.selectedTestOwner?.owner.id
+          ? this.selectedTestOwner!
+          : await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, creator.name, 'testpassword');
       await this.loginIfNeccessary(testOwner);
       await testOwner.addPaymentEventToNamespace(namespaceId, userId, record);
-      await this.load(this.selectedTestOwner);
+      await this.selectNamespace(this.selectedNamespace!);
       return this.getState();
     } catch (error: unknown) {
       throw this.normalizeError(error);
