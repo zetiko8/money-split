@@ -13,6 +13,7 @@
     "docker-compose:production-local:migration-manager": "npx nx run-many -t build npm run docker-build:migration-manager && npm run docker-compose:production-local-up",
     "dev:data-provider": "nx run data-provider:serve:development",
     "dev:money-split": "nx run money-split:serve:development",
+    "dev:admin-dashboard": "nx run admin-dashboard:serve:development",
     "test:data-provider": "npx nx run data-provider-e2e:e2e --configuration=development --skip-nx-cache",
     "test:development:headless": "nx run debt-simplification:test:ci --skip-nx-cache && nx run data-provider-e2e:e2e --configuration=ci --skip-nx-cache --parallel && nx run money-split-e2e:e2e:development --skip-nx-cache",
     "test:production-local:headless": "nx run data-provider-e2e:e2e --configuration=production-local --skip-nx-cache --parallel && nx run money-split-e2e:e2e:production-local --skip-nx-cache"
