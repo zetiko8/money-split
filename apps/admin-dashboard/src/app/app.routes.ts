@@ -1,6 +1,5 @@
 import { Route } from '@angular/router';
 import { DbManagementComponent } from './modules/db-management/views/db-management/db-management.component';
-import { MockDataComponent } from './modules/mock-data/views/mock-data.component';
 import { MockData2Component } from './modules/mock-data/views/mock-data2.component';
 
 export const appRoutes: Route[] = [
@@ -15,10 +14,6 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'mock-data',
-    component: MockDataComponent,
-  },
-  {
-    path: 'mock-data2',
     component: MockData2Component,
   },
 ];
