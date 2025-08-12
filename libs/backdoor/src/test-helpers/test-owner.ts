@@ -22,7 +22,7 @@ export class TestOwner {
     password: string,
   ): Promise<TestOwner> {
     const te = new TestOwner(DATA_PROVIDER_URL, username, password);
-    const owner = await te.getOwnerDataByUsername(username);
+    const owner = await TestOwner.getOwnerDataByUsername(DATA_PROVIDER_URL, username);
     if (!owner) throw new Error('fromUserNameAndPassword: Owner not found');
     te.owner = owner;
     return te;
@@ -202,7 +202,7 @@ export class TestOwner {
       ownerToAddData.name,
       pwd,
     );
-    await owner.dispose();
+    await TestOwner.dispose(this.DATA_PROVIDER_URL, ownerToAddData.name);
     await owner.register();
     await owner.acceptInvitation(ownerToAddData.name, invitation.invitationKey);
 
@@ -297,10 +297,10 @@ export class TestOwner {
     return result;
   }
 
-  private async getOwnerDataByUsername (username: string) {
+  private static async getOwnerDataByUsername (DATA_PROVIDER_URL: string, username: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ownerArr: any = await BACKDOOR_ACTIONS.query(
-      this.DATA_PROVIDER_URL,
+      DATA_PROVIDER_URL,
       `
           SELECT * FROM \`Owner\`
           WHERE \`username\` = '${username}' 
@@ -313,11 +313,11 @@ export class TestOwner {
     return owner;
   }
 
-  async dispose () {
-    const owner = await this.getOwnerDataByUsername(this.username);
+  public static async dispose (DATA_PROVIDER_URL: string, username: string) {
+    const owner = await this.getOwnerDataByUsername(DATA_PROVIDER_URL, username);
     if (!owner) return;
     await BACKDOOR_ACTIONS.query(
-      this.DATA_PROVIDER_URL,
+      DATA_PROVIDER_URL,
       `
       call testDispose(${owner.id})
       `,

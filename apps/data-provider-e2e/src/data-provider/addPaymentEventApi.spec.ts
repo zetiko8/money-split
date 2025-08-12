@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
 import { addPaymentEventApi } from '@angular-monorepo/api-interface';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
 
 const api = addPaymentEventApi();
@@ -13,43 +13,43 @@ describe(API_NAME, () => {
   let userId!: number;
   let creatorUserId!: number;
   let testOwner!: TestOwner;
-  let creatorOwner!: TestOwner;
+  let machineState!: MockDataState;
   beforeEach(async () => {
     try {
-      creatorOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'creator',
-        'testpassword',
-      );
-      await creatorOwner.dispose();
-      await creatorOwner.register();
-      const namespace = await creatorOwner.createNamespace('testnamespace');
-      namespaceId = namespace.id;
-      const invitation =
-        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'invitedowner',
-        'testpassword,',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
-      await testOwner.acceptInvitation('inviteduser', invitation.invitationKey);
-      const user
-        = await testOwner.getUserForNamespace(namespaceId);
-      userId = user.id;
-      const creatorUser
-          = await testOwner.getUserForNamespace(namespaceId);
-      creatorUserId = creatorUser.id;
+      const machine = new MockDataMachine(DATA_PROVIDER_URL);
+
+      // dispose any existing owners with the same name
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'test@email.com');
+
+      /**
+       * 'creator' creates a namespace and invites 'test@email.com'
+       * 'test@email.com' accepts the invitation
+       */
+      await machine.createNewCluster('creator', 'testpassword');
+      await machine.createNewNamespace('testnamespace');
+      machineState = await machine.createNewInvitation('test@email.com');
+      await machine.acceptInvitation(machineState.getInvitationByEmail('test@email.com'));
+
+      // prepare variables for the test
+      namespaceId = machineState.selectedNamespace!.id;
+      creatorUserId = machineState.getUserByName('creator').id;
+      userId = machineState.getUserByName('test@email.com').id;
+      testOwner = await machineState.getUserOwnerByName('test@email.com');
+
+      // login as 'test@email.com'
+      await testOwner.login();
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
     }
   });
 
-  it('smoke', async () => {
-    await smoke(API_NAME, async () => await axios.post(
-      `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
-    ));
+  describe('smoke', () => {
+    it('smoke', async () => {
+      await smoke(API_NAME, async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+      ));
+    });
   });
 
   describe('validation', () => {

@@ -61,7 +61,7 @@ export class MockData2Component implements OnInit {
   };
 
   async ngOnInit(): Promise<void> {
-    this.mockData = new MockDataMachine(this.config.getConfig().dataProviderUrl);
+    this.mockData = new MockDataMachine(this.config.getConfig().dataProviderUrl, localStorage);
     this.state = await this.mockData.initialize();
     this.availableProfiles = this.mockData.getAvailableProfiles();
     this.currentProfile = this.mockData.getCurrentProfile();

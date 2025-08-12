@@ -41,7 +41,7 @@ export async function prepareNamespace (
     creator.username,
     creator.password || 'testpassword',
   );
-  await creatorOwner.dispose();
+  await TestOwner.dispose(DATA_PROVIDER_URL, creator.username);
   await creatorOwner.register();
 
   const namespace = await creatorOwner.createNamespace(namespaceName);
