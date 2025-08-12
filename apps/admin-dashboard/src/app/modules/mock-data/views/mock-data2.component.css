@@ -49,11 +49,39 @@
   color: #333;
 }
 
-.clusters, .namespaces, .invitations, .users {
+.clusters, .namespaces, .invitations, .users, .profiles {
   margin-bottom: 30px;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
+}
+
+.profiles {
+  background: #f8f9fa;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.current-profile {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.current-profile strong {
+  color: #333;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  min-width: 150px;
 }
 
 h2 {

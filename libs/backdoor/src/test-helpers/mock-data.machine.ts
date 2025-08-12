@@ -24,12 +24,17 @@ export class MockDataMachine {
   private selectedTestOwner?: TestOwner;
   private selectedNamespace?: NamespaceView;
   private dataProviderUrl: string;
+  private currentProfile = 'default';
+  private readonly STORAGE_PREFIX = 'mock-data-';
+  private readonly LAST_PROFILE_KEY = 'mock-data-last-profile';
 
   constructor(dataProviderUrl: string) {
     this.dataProviderUrl = dataProviderUrl;
   }
 
   async initialize(): Promise<MockDataState> {
+    const lastProfile = localStorage.getItem(this.LAST_PROFILE_KEY) || 'default';
+    this.currentProfile = lastProfile;
     await this.load(undefined);
     if (this.selectedNamespace) {
       this.currentNamespaceInvitations = this.loadNamespaceInvitations(this.selectedNamespace.id);
@@ -153,13 +158,39 @@ export class MockDataMachine {
     return testOwner;
   }
 
+  public getAvailableProfiles(): string[] {
+    const profiles: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(this.STORAGE_PREFIX + 'testOwner-')) {
+        profiles.push(key.replace(this.STORAGE_PREFIX + 'testOwner-', ''));
+      }
+    }
+    return profiles;
+  }
+
+  public getCurrentProfile(): string {
+    return this.currentProfile;
+  }
+
+  public async switchProfile(profile: string): Promise<MockDataState> {
+    this.currentProfile = profile;
+    localStorage.setItem(this.LAST_PROFILE_KEY, profile);
+    await this.load(undefined);
+    return this.getState();
+  }
+
+  private getStorageKey(key: string): string {
+    return this.STORAGE_PREFIX + key + '-' + this.currentProfile;
+  }
+
   private save(): void {
-    localStorage.setItem('testOwner', JSON.stringify(this.clusters.map(this.serialize)));
-    localStorage.setItem('invitations', JSON.stringify(this.allInvitations));
+    localStorage.setItem(this.getStorageKey('testOwner'), JSON.stringify(this.clusters.map(this.serialize)));
+    localStorage.setItem(this.getStorageKey('invitations'), JSON.stringify(this.allInvitations));
   }
 
   private async load(selectedTestOwner?: TestOwner): Promise<void> {
-    const data = localStorage.getItem('testOwner');
+    const data = localStorage.getItem(this.getStorageKey('testOwner'));
     if (!data) return;
     this.clusters = JSON.parse(data).map((obj: SerializedTestOwner) => this.deserialize(obj));
 
@@ -174,7 +205,7 @@ export class MockDataMachine {
   }
 
   private loadNamespaceInvitations(namespaceId: number): Invitation[] {
-    const data = localStorage.getItem('invitations');
+    const data = localStorage.getItem(this.getStorageKey('invitations'));
     if (!data) {
       this.allInvitations = [];
       return [];

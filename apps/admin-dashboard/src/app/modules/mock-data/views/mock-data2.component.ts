@@ -28,6 +28,9 @@ export class MockData2Component implements OnInit {
   public email = '';
   public error = '';
   public actionDetails = '';
+  public newProfileName = '';
+  public availableProfiles: string[] = [];
+  public currentProfile = '';
 
   public dismissError(): void {
     this.error = '';
@@ -38,11 +41,14 @@ export class MockData2Component implements OnInit {
     namespace: false,
     invitation: false,
     acceptInvitation: false,
+    profile: false,
   };
 
   async ngOnInit(): Promise<void> {
     this.mockData = new MockDataMachine(this.config.getConfig().dataProviderUrl);
     this.state = await this.mockData.initialize();
+    this.availableProfiles = this.mockData.getAvailableProfiles();
+    this.currentProfile = this.mockData.getCurrentProfile();
   }
 
   async createNewCluster(): Promise<void> {
@@ -112,17 +118,37 @@ export class MockData2Component implements OnInit {
 
   private handleError(error: unknown): void {
     // eslint-disable-next-line no-console
-    console.log(error);
+    console.error('Error:', error);
     if (error instanceof Error) {
       this.error = error.message;
-      this.actionDetails = '';
-    } else if (typeof error === 'object' && error && 'message' in error) {
-      this.error = String(error.message);
-      if ('code' in error) {
-        this.actionDetails = String(error.code);
-      }
+      this.actionDetails = error.stack ?? '';
     } else {
-      this.error = 'ERROR';
+      this.error = 'An unknown error occurred';
+    }
+  }
+
+  public async createProfile(): Promise<void> {
+    if (!this.newProfileName) return;
+    try {
+      this.loading.profile = true;
+      await this.mockData.switchProfile(this.newProfileName);
+      this.availableProfiles = this.mockData.getAvailableProfiles();
+      this.currentProfile = this.mockData.getCurrentProfile();
+      this.state = await this.mockData.initialize();
+      this.newProfileName = '';
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.loading.profile = false;
+    }
+  }
+
+  public async selectProfile(profile: string): Promise<void> {
+    try {
+      this.state = await this.mockData.switchProfile(profile);
+      this.currentProfile = this.mockData.getCurrentProfile();
+    } catch (error) {
+      this.handleError(error);
     }
   }
 }
