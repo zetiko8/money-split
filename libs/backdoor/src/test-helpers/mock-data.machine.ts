@@ -173,6 +173,19 @@ export class MockDataMachine {
     return this.currentProfile;
   }
 
+  public async createProfile(profile: string): Promise<MockDataState> {
+    this.currentProfile = profile;
+    localStorage.setItem(this.LAST_PROFILE_KEY, profile);
+    // Save empty state for new profile
+    this.clusters = [];
+    this.allInvitations = [];
+    this.currentNamespaceInvitations = [];
+    this.selectedTestOwner = undefined;
+    this.selectedNamespace = undefined;
+    this.save();
+    return this.getState();
+  }
+
   public async switchProfile(profile: string): Promise<MockDataState> {
     this.currentProfile = profile;
     localStorage.setItem(this.LAST_PROFILE_KEY, profile);

@@ -131,10 +131,11 @@ export class MockData2Component implements OnInit {
     if (!this.newProfileName) return;
     try {
       this.loading.profile = true;
-      await this.mockData.switchProfile(this.newProfileName);
+      // Create new profile with empty state
+      this.state = await this.mockData.createProfile(this.newProfileName);
+      // Update UI
       this.availableProfiles = this.mockData.getAvailableProfiles();
       this.currentProfile = this.mockData.getCurrentProfile();
-      this.state = await this.mockData.initialize();
       this.newProfileName = '';
     } catch (error) {
       this.handleError(error);
