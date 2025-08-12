@@ -34,14 +34,17 @@
       <input type="text" [(ngModel)]="username" placeholder="Username">
       <input type="password" [(ngModel)]="password" placeholder="Password">
       <button (click)="createNewCluster()" [disabled]="loading.cluster">
-        {{ loading.cluster ? 'Creating...' : 'Create New Cluster' }}
+        {{ loading.cluster ? 'Creating...' : 'Create Cluster' }}
       </button>
     </div>
-    <div class="list">
-      <div *ngFor="let cluster of state?.clusters"
-           [class.selected]="cluster === state?.selectedTestOwner"
-           (click)="selectCluster(cluster)">
-        {{ cluster.username }}
+    <div class="cluster-list list" *ngIf="state?.clusters?.length">
+      <div class="cluster-item" *ngFor="let cluster of state?.clusters">
+        <div class="cluster-info" [class.selected]="cluster === state?.selectedTestOwner" (click)="selectCluster(cluster)">
+          <span class="cluster-name">{{ cluster.username }}</span>
+          <button (click)="disposeCluster(cluster); $event.stopPropagation()" [disabled]="loading.cluster">
+            {{ loading.cluster ? 'Disposing...' : 'Dispose' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

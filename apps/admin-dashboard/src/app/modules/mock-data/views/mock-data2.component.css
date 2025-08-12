@@ -56,6 +56,49 @@
   border-radius: 4px;
 }
 
+.cluster-list {
+  margin-top: 15px;
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
+
+.cluster-item {
+  margin-bottom: 10px;
+}
+
+.cluster-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  background: #f8f9fa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.cluster-name {
+  font-weight: 500;
+}
+
+.cluster-info button {
+  padding: 4px 8px;
+  font-size: 0.9em;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cluster-info button:disabled {
+  background-color: #dc354580;
+  cursor: not-allowed;
+}
+
+.cluster-info button:not(:disabled):hover {
+  background-color: #bb2d3b;
+}
+
 .profiles {
   padding: 0;
   background: #f8f9fa;
@@ -185,7 +228,7 @@ button:disabled {
   background-color: #e9ecef;
 }
 
-.list > div.selected {
+.list > div.selected, .list .cluster-info.selected {
   background-color: #cce5ff;
 }
 

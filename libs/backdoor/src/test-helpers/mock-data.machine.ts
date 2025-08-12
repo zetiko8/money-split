@@ -242,4 +242,23 @@ export class MockDataMachine {
     }
     return new Error('Unknown error occurred');
   }
+
+  public async disposeCluster(testOwner: TestOwner): Promise<MockDataState> {
+    try {
+      await testOwner.dispose();
+      // Remove disposed cluster from storage
+      this.clusters = this.clusters.filter(c => c.owner !== testOwner.owner);
+      this.save();
+      // Reset selected cluster if it was disposed
+      if (this.selectedTestOwner?.owner === testOwner.owner) {
+        this.selectedTestOwner = undefined;
+        this.selectedNamespace = undefined;
+        this.namespaces = [];
+        this.currentNamespaceInvitations = [];
+      }
+      return this.getState();
+    } catch (error) {
+      throw this.normalizeError(error);
+    }
+  }
 }

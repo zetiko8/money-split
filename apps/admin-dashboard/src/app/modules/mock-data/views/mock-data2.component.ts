@@ -112,6 +112,17 @@ export class MockData2Component implements OnInit {
     }
   }
 
+  public async disposeCluster(testOwner: TestOwner): Promise<void> {
+    try {
+      this.loading.cluster = true;
+      this.state = await this.mockData.disposeCluster(testOwner);
+    } catch (error) {
+      this.handleError(error);
+    } finally {
+      this.loading.cluster = false;
+    }
+  }
+
   async selectNamespace(namespace: MNamespace): Promise<void> {
     try {
       this.state = await this.mockData.selectNamespace(namespace);

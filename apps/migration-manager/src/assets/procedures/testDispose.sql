@@ -34,7 +34,21 @@ BEGIN
         WHERE ns.namespaceId = nso.namespaceId
         );
 
+    DELETE FROM `PaymentEvent` nso
+    WHERE nso.namespaceId = (
+        SELECT ns.namespaceId
+        FROM namespaceIds ns
+        WHERE ns.namespaceId = nso.namespaceId
+        );
+
     DELETE FROM `SettlementDebt` nso
+    WHERE nso.namespaceId = (
+        SELECT ns.namespaceId
+        FROM namespaceIds ns
+        WHERE ns.namespaceId = nso.namespaceId
+        );
+
+    DELETE FROM `Settlement` nso
     WHERE nso.namespaceId = (
         SELECT ns.namespaceId
         FROM namespaceIds ns
@@ -61,6 +75,9 @@ BEGIN
         FROM namespaceIds ns
         WHERE ns.namespaceId = nso.id
         );
+
+    DELETE FROM `OwnerRole`
+    WHERE ownerId = argOwnerId;
 
     DELETE FROM `Owner`
     WHERE id = argOwnerId;
