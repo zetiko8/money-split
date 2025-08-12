@@ -35,11 +35,11 @@ export class MockDataMachine {
   async initialize(): Promise<MockDataState> {
     const lastProfile = localStorage.getItem(this.LAST_PROFILE_KEY) || 'default';
     this.currentProfile = lastProfile;
-    await this.load(undefined);
-
     // Restore last selected items if present
     const lastSelectedClusterId = localStorage.getItem(this.getStorageKey('lastSelectedCluster'));
     const lastSelectedNamespaceId = localStorage.getItem(this.getStorageKey('lastSelectedNamespace'));
+
+    await this.load(undefined);
 
     if (lastSelectedClusterId && this.clusters.length > 0) {
       const cluster = this.clusters.find(c => c.owner.id.toString() === lastSelectedClusterId);
@@ -151,8 +151,8 @@ export class MockDataMachine {
       // Clear state when there are no namespaces
       this.selectedNamespace = undefined;
       this.currentNamespaceInvitations = [];
-      this.save();
     }
+    this.save();
     return this.getState();
   }
 
@@ -161,6 +161,7 @@ export class MockDataMachine {
     // Always fetch fresh namespace data to get updated users list
     this.selectedNamespace = await this.selectedTestOwner.getNamespace(namespace.id);
     this.currentNamespaceInvitations = this.loadNamespaceInvitations(namespace.id);
+    this.save();
     return this.getState();
   }
 
