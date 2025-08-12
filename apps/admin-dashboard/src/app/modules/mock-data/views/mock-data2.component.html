@@ -146,5 +146,36 @@
         </div>
       </div>
     </div>
+
+    <div class="payment-events" *ngIf="state?.selectedNamespace?.paymentEvents?.length">
+      <h2>Payment Events</h2>
+      <div class="event-list">
+        <div *ngFor="let event of state?.selectedNamespace?.paymentEvents || []" class="event-item">
+          <div class="event-header">
+            <span class="event-description">{{ event.description || 'No description' }}</span>
+            <span class="event-date">{{ event.created | date }}</span>
+          </div>
+          <div class="event-details">
+            <div class="payers">
+              <h4>Payers</h4>
+              <div *ngFor="let payer of event.paidBy" class="payment-node">
+                <span class="user">{{ payer.user.name }}</span>
+                <span class="amount">{{ payer.amount }} {{ payer.currency }}</span>
+              </div>
+            </div>
+            <div class="benefitors">
+              <h4>Benefitors</h4>
+              <div *ngFor="let benefitor of event.benefitors" class="payment-node">
+                <span class="user">{{ benefitor.user.name }}</span>
+                <span class="amount">{{ benefitor.amount }} {{ benefitor.currency }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="event-notes" *ngIf="event.notes">
+            <strong>Notes:</strong> {{ event.notes }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
