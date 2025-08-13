@@ -375,6 +375,10 @@ export class MockDataMachine {
   }
 
   private async getUserOwnerByName (name: string) {
+
+    if (this.selectedTestOwner && this.selectedTestOwner.owner.username === name) {
+      return this.selectedTestOwner;
+    }
     const creator = this.getState().selectedNamespace?.users.find(user => user.name === name);
     if (!creator) {
       throw new Error('No creator found');

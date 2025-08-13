@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { DATA_PROVIDER_URL, expectEqual, fnCall, queryDb, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { createNamespaceApi } from '@angular-monorepo/api-interface';
 
 const api = createNamespaceApi();
@@ -10,122 +10,155 @@ const API_NAME = api.ajax.method
 
 describe(API_NAME, () => {
   let testOwner!: TestOwner;
+  let machineState!: MockDataState;
+
   beforeEach(async () => {
-    testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testowner',
-      'testpassword',
-    );
-    await testOwner.dispose();
-    await testOwner.register();
+    try {
+      const machine = new MockDataMachine(DATA_PROVIDER_URL);
+
+      // dispose any existing owners with the same name
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+
+      // Create new cluster
+      machineState = await machine.createNewCluster('testowner', 'testpassword');
+
+      // Get owner
+      testOwner = await machineState.getUserOwnerByName('testowner');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw Error('beforeEach error: ' + error.message);
+      }
+      throw Error('beforeEach error: ' + String(error));
+    }
   });
 
-  it('smoke', async () => {
-    await smoke(API_NAME, async () => await axios.post(
-      `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`));
-  });
-  it('requires namespaceName to be provided', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {
-          avatarUrl: 'http://url.com',
-        },
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {
-          avatarUrl: 'http://url.com',
-          namespaceName: '  ',
-        },
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
-  });
-  it('requires either avatarUrl or avatarColor to be provided', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
+  describe('smoke', () => {
+    it('should handle basic namespace creation', async () => {
+      await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
         {
           namespaceName: 'testnamespace',
+          avatarColor: 'green',
         },
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+        testOwner.authHeaders(),
+      ));
+    });
   });
-  it('throws 401 with invalid token', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-      ))
-      .throwsError(ERROR_CODE.UNAUTHORIZED);
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {},
-        {
-          headers: {
-            'Authorization': 'Bearer invalid',
+
+  describe('validation', () => {
+    it('requires namespaceName to be provided', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            avatarUrl: 'http://url.com',
           },
-        },
-      ))
-      .throwsError(ERROR_CODE.UNAUTHORIZED);
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            avatarUrl: 'http://url.com',
+            namespaceName: '  ',
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('requires either avatarUrl or avatarColor to be provided', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: 'testnamespace',
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('throws 401 with invalid token', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+        ))
+        .throwsError(ERROR_CODE.UNAUTHORIZED);
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {},
+          {
+            headers: {
+              'Authorization': 'Bearer invalid',
+            },
+          },
+        ))
+        .throwsError(ERROR_CODE.UNAUTHORIZED);
+    });
+
+    it.todo('throws 401 with invalid ownerKey');
   });
-  it.todo('throws 401 with invalid ownerKey');
-  it('returns a namespace', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {
-          namespaceName: 'testnamespace',
-          avatarColor: 'green',
-        },
-        testOwner.authHeaders(),
-      ))
-      .result((result => {
-        expect(result).toHaveProperty('avatarId');
-        expect(typeof result.avatarId).toBe('number');
-        expect(result).toHaveProperty('id');
-        expect(typeof result.id).toBe('number');
-        expect(result).toHaveProperty('name');
-        expect(typeof result.name).toBe('string');
-      }));
+
+  describe('happy path', () => {
+    it('returns a namespace', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: 'testnamespace',
+            avatarColor: 'green',
+          },
+          testOwner.authHeaders(),
+        ))
+        .result((result => {
+          expect(result).toHaveProperty('avatarId');
+          expect(typeof result.avatarId).toBe('number');
+          expect(result).toHaveProperty('id');
+          expect(typeof result.id).toBe('number');
+          expect(result).toHaveProperty('name');
+          expect(typeof result.name).toBe('string');
+        }));
+    });
+
+    it('trims the namespace name', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: '  testnamespace  ',
+            avatarColor: 'green',
+          },
+          testOwner.authHeaders(),
+        ))
+        .result((result => {
+          expect(result.name).toBe('testnamespace');
+        }));
+    });
+    it('can not have two namespaces with same name', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: 'testnamespace',
+            avatarColor: 'green',
+          },
+          testOwner.authHeaders(),
+        ))
+        .result((() => void 0));
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+          {
+            namespaceName: 'testnamespace',
+            avatarColor: 'green',
+          },
+          testOwner.authHeaders(),
+        )).throwsError(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
+    });
   });
-  it('trims the namespace name', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {
-          namespaceName: '  testnamespace  ',
-          avatarColor: 'green',
-        },
-        testOwner.authHeaders(),
-      ))
-      .result((result => {
-        expect(result.name).toBe('testnamespace');
-      }));
-  });
-  it('can not have two namespaces with same name', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {
-          namespaceName: 'testnamespace',
-          avatarColor: 'green',
-        },
-        testOwner.authHeaders(),
-      ))
-      .result((() => {}));
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
-        {
-          namespaceName: 'testnamespace',
-          avatarColor: 'green',
-        },
-        testOwner.authHeaders(),
-      )).throwsError('RESOURCE_ALREADY_EXISTS');
-  });
+
   describe('db state', () => {
     let namespaceId!: number;
     let avatarId!: number;
