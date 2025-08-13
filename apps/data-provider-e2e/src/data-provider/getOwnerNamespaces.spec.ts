@@ -2,7 +2,7 @@ import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { getOwnerNamespacesApi } from '@angular-monorepo/api-interface';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 
 const api = getOwnerNamespacesApi();
 const API_NAME = api.ajax.method
@@ -11,26 +11,23 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
   let namespaces!: { namespaceId: number }[];
   let testOwner!: TestOwner;
-  let otherOwner!: TestOwner;
+  let machine!: MockDataMachine;
+
   beforeEach(async () => {
-    testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testowner',
-      'testpassword',
-    );
-    await testOwner.dispose();
-    await testOwner.register();
-    otherOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'otherOwner',
-      'testpassword',
-    );
-    await otherOwner.dispose();
-    await otherOwner.register();
+    // Clean up existing test data
+    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+
+    // Create test owners and namespaces using MockDataMachine
+    machine = new MockDataMachine(DATA_PROVIDER_URL);
+    await machine.initialize();
+
+    // Create test owner with multiple namespaces
+    const testOwnerState = await machine.createNewCluster('testowner', 'testpassword');
+    testOwner = await testOwnerState.getUserOwnerByName('testowner');
     const namespace1 = await testOwner.createNamespace('testnamespace1');
     const namespace2 = await testOwner.createNamespace('testnamespace2');
     const namespace3 = await testOwner.createNamespace('testnamespace3');
-    namespaces = [ namespace1, namespace2, namespace3 ]
+    namespaces = [namespace1, namespace2, namespace3]
       .map(ns => ({ namespaceId: ns.id }));
   });
 
@@ -84,16 +81,19 @@ describe(API_NAME, () => {
   });
 });
 
-describe(API_NAME + 'bugs', () => {
+describe(API_NAME + ' bugs', () => {
   let testOwner!: TestOwner;
+  let machine!: MockDataMachine;
+
   beforeEach(async () => {
-    testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testowner',
-      'testpassword',
-    );
-    await testOwner.dispose();
-    await testOwner.register();
+    // Clean up existing test data
+    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+
+    // Create test owner using MockDataMachine
+    machine = new MockDataMachine(DATA_PROVIDER_URL);
+    await machine.initialize();
+    const testOwnerState = await machine.createNewCluster('testowner', 'testpassword');
+    testOwner = await testOwnerState.getUserOwnerByName('testowner');
   });
 
   it('should not throw when there are no namespaces created', async () => {
