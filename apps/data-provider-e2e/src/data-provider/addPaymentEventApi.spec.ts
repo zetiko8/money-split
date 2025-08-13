@@ -407,6 +407,67 @@ describe(API_NAME, () => {
 
   describe.only('complex payment event validation', () => {
     describe('amount owed must be same as amount paid', () => {
+      it('multiple payers must equal benefitors - 2EUR + 3EUR != 4EUR', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [
+                { userId, amount: 2, currency: 'EUR' },
+                { userId: creatorUserId, amount: 3, currency: 'EUR' },
+              ],
+              benefitors: [{ userId: anotherUserId, amount: 4, currency: 'EUR' }],
+              description: 'test description',
+              notes: 'test notes',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
+
+      it('multiple benefitors must equal payers - 5EUR != 2EUR + 2EUR', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 5, currency: 'EUR' }],
+              benefitors: [
+                { userId: creatorUserId, amount: 2, currency: 'EUR' },
+                { userId: anotherUserId, amount: 2, currency: 'EUR' },
+              ],
+              description: 'test description',
+              notes: 'test notes',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
+
+      it('amounts must be positive - negative payer amount', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: -3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
+              description: 'test description',
+              notes: 'test notes',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
+
+      it('amounts must be positive - negative benefitor amount', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: -3, currency: 'EUR' }],
+              description: 'test description',
+              notes: 'test notes',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      });
       it('3 EUR != 4 EUR', async () => {
         await fnCall(API_NAME,
           async () => await axios.post(
@@ -488,6 +549,46 @@ describe(API_NAME, () => {
             },
             testOwner.authHeaders()))
           .toBe200();
+      });
+
+      it('allows multiple currencies if sums match - EUR and USD', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [
+                { userId, amount: 10, currency: 'EUR' },
+                { userId: creatorUserId, amount: 20, currency: 'USD' },
+              ],
+              benefitors: [
+                { userId: creatorUserId, amount: 10, currency: 'EUR' },
+                { userId: anotherUserId, amount: 20, currency: 'USD' },
+              ],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .toBe200();
+      });
+
+      it('fails if any currency sum does not match - EUR matches but USD does not', async () => {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [
+                { userId, amount: 10, currency: 'EUR' },
+                { userId: creatorUserId, amount: 20, currency: 'USD' },
+              ],
+              benefitors: [
+                { userId: creatorUserId, amount: 10, currency: 'EUR' },
+                { userId: anotherUserId, amount: 25, currency: 'USD' },
+              ],
+              description: 'a',
+              notes: 'a',
+            },
+            testOwner.authHeaders()))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
     });
   });
