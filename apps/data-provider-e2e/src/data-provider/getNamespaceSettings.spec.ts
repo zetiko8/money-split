@@ -1,55 +1,53 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, fnCall, smoke, testEnv } from '../test-helpers';
+import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE, MNamespaceSettings } from '@angular-monorepo/entities';
 import { getNamespaceSettingsApi } from '@angular-monorepo/api-interface';
-import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
+import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 
 const api = getNamespaceSettingsApi();
 const API_NAME = api.ajax.method + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
 
-  describe('basics', () => {
-    let ownerKey!: string;
-    let ownerKeyOtherOwner!: string;
-    let testOwner!: TestOwner;
-    let otherOwner!: TestOwner;
-    let namespaceId!: number;
-    let scenario!: TestScenarioNamespace;
+  let ownerKey!: string;
+  let ownerKeyOtherOwner!: string;
+  let testOwner!: TestOwner;
+  let otherOwner!: TestOwner;
+  let namespaceId!: number;
+  let machine!: MockDataMachine;
+  let machineState!: MockDataState;
 
-    beforeEach(async () => {
-      scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
-        testEnv().DATA_PROVIDER_URL,
-        testEnv().BACKDOOR_USERNAME,
-        testEnv().BACKDOOR_PASSWORD,
-        'testnamespace',
-        {  username: 'testuser'},
-        [
-          {  username: 'atestuser1'},
-          {  username: 'btestuser2'},
-          {  username: 'ctestuser3'},
-        ],
-      );
+  beforeEach(async () => {
+    try {
+      machine = new MockDataMachine(DATA_PROVIDER_URL);
 
-      testOwner = scenario.creator.owner;
-      namespaceId = scenario.namespaceId;
+      // Dispose existing test data
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'otherowner');
+
+      // Create cluster and namespace with creator
+      machineState = await machine.createNewCluster('creator', 'testpassword');
+      machineState = await machine.createNewNamespace('testnamespace');
+      namespaceId = machineState.selectedNamespace!.id;
+      testOwner = await machineState.getUserOwnerByName('creator');
       ownerKey = testOwner.owner.key;
 
-      otherOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'otherOwner',
-        'testpassword',
-      );
-      await otherOwner.dispose();
-      await otherOwner.register();
+      // Create other owner for validation tests
+      otherOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'otherowner', 'testpassword');
       ownerKeyOtherOwner = otherOwner.owner.key;
-    });
+    } catch (error) {
+      throw Error('beforeEach error: ' + error.message);
+    }
+  });
 
+  describe('smoke', () => {
     it('smoke', async () => {
       await smoke(API_NAME, async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`));
     });
+  });
 
+  describe('validation', () => {
     it('throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
@@ -86,7 +84,9 @@ describe(API_NAME, () => {
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
+  });
 
+  describe('happy path', () => {
     it('returns namespace settings', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
@@ -104,4 +104,5 @@ describe(API_NAME, () => {
     });
   });
 });
+
 
