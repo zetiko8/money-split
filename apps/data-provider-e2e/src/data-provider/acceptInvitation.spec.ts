@@ -2,7 +2,7 @@ import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { acceptInvitationApi } from '@angular-monorepo/api-interface';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 
 const api = acceptInvitationApi();
 const API_NAME = api.ajax.method
@@ -11,130 +11,140 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
   let namespaceId!: number;
   let testOwner!: TestOwner;
-  let creatorOwner!: TestOwner;
+  let inviterOwnerId!: number;
   let invitationKey!: string;
+  let machineState!: MockDataState;
+
   beforeEach(async () => {
     try {
-      creatorOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'creator',
-        'testpassword',
-      );
-      await creatorOwner.dispose();
-      await creatorOwner.register();
-      const namespace = await creatorOwner.createNamespace('testnamespace');
-      namespaceId = namespace.id;
-      const invitation =
-        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+      const machine = new MockDataMachine(DATA_PROVIDER_URL);
+
+      // dispose any existing owners with the same name
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'test@email.com');
+
+      // Create new cluster and namespace
+      await machine.createNewCluster('creator', 'testpassword');
+      await machine.createNewNamespace('testnamespace');
+
+      // Create invitation for inviteduser
+      machineState = await machine.createNewInvitation('test@email.com');
+      const invitation = machineState.getInvitationByEmail('test@email.com');
       invitationKey = invitation.invitationKey;
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'invitedowner',
-        'testpassword,',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
+
+      // Get namespace ID and owners
+      namespaceId = machineState.selectedNamespace!.id;
+      inviterOwnerId = (await machineState.getUserOwnerByName('creator')).owner.id;
+
+      testOwner = await MockDataMachine
+        .createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'test@email.com');
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
     }
   });
 
-  it('smoke', async () => {
-    await smoke(API_NAME, async () => await axios.post(
-      `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-    ));
-  });
-  it('requires name to be provided', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
+  describe('smoke', () => {
+    it('smoke', async () => {
+      await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        {},
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+      ));
+    });
   });
-  it('requires name to be a string', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        { name: 3 },
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
-  });
-  it('not found invitation key', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}/accept`,
-        { name: 'invitedowner' },
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
-  });
-  it('throws 401 with invalid token', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        { name: 'invitedowner' },
-      ))
-      .throwsError(ERROR_CODE.UNAUTHORIZED);
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        { name: 'invitedowner' },
-        {
-          headers: {
-            'Authorization': 'Bearer invalid',
-          },
-        },
-      ))
-      .throwsError(ERROR_CODE.UNAUTHORIZED);
-  });
-  it('returns an invitation', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        { name: 'invitedowner' },
-        testOwner.authHeaders()))
-      .result((result => {
-        expect(result).toEqual({
-          namespaceId: namespaceId,
-          accepted: true,
-          rejected: false,
-          id: expect.any(Number),
-          email: 'test@email.com',
-          created: expect.any(String),
-          edited: expect.any(String),
-          createdBy: creatorOwner.owner.id,
-          editedBy: testOwner.owner.id,
-          invitationKey: invitationKey,
-        });
-      }));
-  });
-  it('trims the name and does not allow empty after trimming', async () => {
-    // Should save trimmed name
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        { name: '   inviteduser   ' },
-        testOwner.authHeaders()))
-      .result(() => {});
 
-    // Check by querying the DB
-    const userRes = await queryDb(
-      `SELECT * FROM \`User\` 
+  describe('validation', () => {
+    it('requires name to be provided', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          {},
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+    it('requires name to be a string', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          { name: 3 },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+    it('not found invitation key', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}/accept`,
+          { name: 'invitedowner' },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
+    });
+    it('throws 401 with invalid token', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          { name: 'invitedowner' },
+        ))
+        .throwsError(ERROR_CODE.UNAUTHORIZED);
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          { name: 'invitedowner' },
+          {
+            headers: {
+              'Authorization': 'Bearer invalid',
+            },
+          },
+        ))
+        .throwsError(ERROR_CODE.UNAUTHORIZED);
+    });
+    it('returns an invitation', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          { name: 'invitedowner' },
+          testOwner.authHeaders()))
+        .result((result => {
+          expect(result).toEqual({
+            namespaceId: namespaceId,
+            accepted: true,
+            rejected: false,
+            id: expect.any(Number),
+            email: 'test@email.com',
+            created: expect.any(String),
+            edited: expect.any(String),
+            createdBy: inviterOwnerId,
+            editedBy: testOwner.owner.id,
+            invitationKey: invitationKey,
+          });
+        }));
+    });
+    it('trims the name and does not allow empty after trimming', async () => {
+    // Should save trimmed name
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          { name: '   inviteduser   ' },
+          testOwner.authHeaders()))
+        .result(() => {});
+
+      // Check by querying the DB
+      const userRes = await queryDb(
+        `SELECT * FROM \`User\` 
                 WHERE namespaceId = ${namespaceId} 
                 AND ownerId = ${testOwner.owner.id}`,
-    );
-    expect(userRes[0].name).toBe('inviteduser');
+      );
+      expect(userRes[0].name).toBe('inviteduser');
 
-    // Should not allow name with only spaces
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
-        { name: '   ' },
-        testOwner.authHeaders()))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+      // Should not allow name with only spaces
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          { name: '   ' },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+    it.todo('edited date is corrected');
+    it.todo('the owner accepting the invite can not be the same as the inviter');
+
   });
-  it.todo('edited date is corrected');
-  it.todo('the owner accepting the invite can not be the same as the inviter');
 
   describe('dbState', () => {
     let invitationId!: number;
@@ -163,7 +173,7 @@ describe(API_NAME, () => {
         email: 'test@email.com',
         created: expect.any(String),
         edited: expect.any(String),
-        createdBy: creatorOwner.owner.id,
+        createdBy: inviterOwnerId,
         editedBy: testOwner.owner.id,
         invitationKey: expect.any(String),
       });

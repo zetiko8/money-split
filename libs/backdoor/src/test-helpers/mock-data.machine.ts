@@ -390,4 +390,11 @@ export class MockDataMachine {
   public static dispose(dataProviderUrl: string, name: string) {
     return TestOwner.dispose(dataProviderUrl, name);
   }
+
+  public static async createNewOwnerAndLogHimIn(dataProviderUrl: string, name: string, password = 'testpassword') {
+    const testOwner = new TestOwner(dataProviderUrl, name, password);
+    await testOwner.register();
+    await testOwner.login();
+    return testOwner;
+  }
 }
