@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
 import { editPaymentEventApi } from '@angular-monorepo/api-interface';
-import { TestOwner } from '@angular-monorepo/backdoor';
-import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
+import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { ERROR_CODE } from '@angular-monorepo/entities';
 
 const api = editPaymentEventApi();
 const API_NAME = api.ajax.method + ':' + api.ajax.endpoint;
@@ -12,38 +12,36 @@ describe(API_NAME, () => {
   let userId!: number;
   let creatorUserId!: number;
   let testOwner!: TestOwner;
-  let creatorOwner!: TestOwner;
-  let paymentEvent!: PaymentEvent;
   let paymentEventId!: number;
+  let machine!: MockDataMachine;
+  let machineState!: MockDataState;
 
   beforeEach(async () => {
     try {
-      creatorOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'creator',
-        'testpassword',
-      );
-      await creatorOwner.dispose();
-      await creatorOwner.register();
-      const namespace = await creatorOwner.createNamespace('testnamespace');
-      namespaceId = namespace.id;
-      const invitation =
-        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'invitedowner',
-        'testpassword,',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
-      await testOwner.acceptInvitation('inviteduser', invitation.invitationKey);
-      const user
-        = await testOwner.getUserForNamespace(namespaceId);
+      machine = new MockDataMachine(DATA_PROVIDER_URL);
+
+      // Dispose existing test data
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'test@email.com');
+
+      // Create cluster and namespace with creator
+      machineState = await machine.createNewCluster('creator', 'testpassword');
+      machineState = await machine.createNewNamespace('testnamespace');
+      namespaceId = machineState.selectedNamespace!.id;
+
+      // Create and accept invitation for test owner
+      machineState = await machine.createNewInvitation('test@email.com');
+      machineState = await machine.acceptInvitation(machineState.getInvitationByEmail('test@email.com'));
+      testOwner = await machineState.getUserOwnerByName('test@email.com');
+
+      // Get user IDs
+      const user = machineState.getUserByName('test@email.com');
       userId = user.id;
-      const creatorUser
-          = await testOwner.getUserForNamespace(namespaceId);
+      const creatorUser = machineState.getUserByName('creator');
       creatorUserId = creatorUser.id;
-      paymentEvent = await testOwner.addPaymentEventToNamespace(
+
+      // Create test payment event
+      const { paymentEvent } = await machine.addPaymentEventToNamespace(
         namespaceId, userId, {
           paidBy: [{ userId, amount: 3, currency: 'EUR' }],
           benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
@@ -52,14 +50,11 @@ describe(API_NAME, () => {
           createdBy: userId,
         });
       paymentEventId = paymentEvent.id;
+
+      await testOwner.login();
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
     }
-  });
-
-  afterEach(async () => {
-    await testOwner?.dispose();
-    await creatorOwner?.dispose();
   });
 
   describe('smoke', () => {

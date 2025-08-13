@@ -1,5 +1,5 @@
 import { TestOwner } from './test-owner';
-import { MNamespace, Invitation, NamespaceView, Owner, CreatePaymentEventData, User } from '@angular-monorepo/entities';
+import { MNamespace, Invitation, NamespaceView, Owner, CreatePaymentEventData, User, PaymentEvent } from '@angular-monorepo/entities';
 
 export interface SerializedTestOwner {
   username: string;
@@ -354,7 +354,7 @@ export class MockDataMachine {
     namespaceId: number,
     userId: number,
     record: CreatePaymentEventData,
-  ): Promise<MockDataState> {
+  ): Promise<{ paymentEvent: PaymentEvent, state: MockDataState }> {
     try {
       const creator = this.getState().selectedNamespace?.users.find(user => user.id === userId);
       if (!creator) {
@@ -366,9 +366,9 @@ export class MockDataMachine {
           ? this.selectedTestOwner!
           : await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, creator.name, 'testpassword');
       await this.loginIfNeccessary(testOwner);
-      await testOwner.addPaymentEventToNamespace(namespaceId, userId, record);
+      const paymentEvent = await testOwner.addPaymentEventToNamespace(namespaceId, userId, record);
       await this.selectNamespace(this.selectedNamespace!);
-      return this.getState();
+      return { paymentEvent, state: this.getState() };
     } catch (error: unknown) {
       throw this.normalizeError(error);
     }
