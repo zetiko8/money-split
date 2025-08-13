@@ -2,7 +2,7 @@ import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, smoke, testEnv, throwBeforeEachError } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { getNamespaceViewApi } from '@angular-monorepo/api-interface';
-import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
+import { BACKDOOR_ACTIONS, MockDataMachine, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
 import moment from 'moment';
 
 const api = getNamespaceViewApi();
@@ -12,45 +12,48 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
 
   describe('basics', () => {
-    let ownerKey!: string;
-    let ownerKeyOtherOwner!: string;
-    let testOwner!: TestOwner;
-    let otherOwner!: TestOwner;
     let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+    let otherOwner!: TestOwner;
+    let scenario!: TestScenarioNamespace;
+
     beforeEach(async () => {
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'testowner',
-        'testpassword',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
-      otherOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'otherOwner',
-        'testpassword',
-      );
-      await otherOwner.dispose();
-      await otherOwner.register();
-      const namespace = await testOwner.createNamespace('testnamespace');
-      namespaceId = namespace.id;
-      ownerKey = testOwner.owner.key;
-      ownerKeyOtherOwner = otherOwner.owner.key;
+      try {
+        scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+          testEnv().DATA_PROVIDER_URL,
+          testEnv().BACKDOOR_USERNAME,
+          testEnv().BACKDOOR_PASSWORD,
+          'testnamespace',
+          { username: 'testuser' },
+          [],
+          [],
+        );
+
+        creatorOwner = scenario.creator.owner;
+        namespaceId = scenario.namespaceId;
+
+        // Create other owner for validation tests
+        await MockDataMachine.dispose(DATA_PROVIDER_URL, 'otherowner');
+        otherOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'otherowner', 'testpassword');
+      } catch (error) {
+        throwBeforeEachError(error);
+      }
     });
 
     it('smoke', async () => {
       await smoke(API_NAME, async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}`));
+        `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}`));
     });
+
     it('throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}`,
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}`,
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}`,
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}`,
           {
             headers: {
               'Authorization': 'Bearer invalid',
@@ -59,48 +62,51 @@ describe(API_NAME, () => {
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
+
     it('throws 401 with invalid ownerKey', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/namespace/${namespaceId}`,
-          testOwner.authHeaders(),
+          `${DATA_PROVIDER_URL}/app/${otherOwner.owner.key}/namespace/${namespaceId}`,
+          creatorOwner.authHeaders(),
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
+
     it('namespace does not exist', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/20000000`,
-          testOwner.authHeaders(),
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/20000000`,
+          creatorOwner.authHeaders(),
         ))
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
+
     it('returns a namespace view', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}`,
-          testOwner.authHeaders(),
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}`,
+          creatorOwner.authHeaders(),
         ))
         .result((result => {
-          expect(result).toEqual(    {
+          expect(result).toEqual({
             id: namespaceId,
             name: 'testnamespace',
             invitations: [],
             users: [
               {
                 id: expect.any(Number),
-                name: testOwner.owner.username,
+                name: 'testuser',
                 namespaceId: namespaceId,
-                ownerId: testOwner.owner.id,
+                ownerId: creatorOwner.owner.id,
                 avatarId: expect.any(Number),
               },
             ],
             ownerUsers: [
               {
                 id: expect.any(Number),
-                name: testOwner.owner.username,
+                name: 'testuser',
                 namespaceId: namespaceId,
-                ownerId: testOwner.owner.id,
+                ownerId: creatorOwner.owner.id,
                 avatarId: expect.any(Number),
               },
             ],
