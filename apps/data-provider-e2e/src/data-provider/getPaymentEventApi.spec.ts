@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { getPaymentEventApi } from '@angular-monorepo/api-interface';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
 
 const api = getPaymentEventApi();
@@ -16,32 +16,36 @@ describe(API_NAME, () => {
   let testOwner!: TestOwner;
   let creatorOwner!: TestOwner;
 
+  let machine!: MockDataMachine;
+
   beforeEach(async () => {
     try {
-      creatorOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'creator',
-        'testpassword',
-      );
-      await creatorOwner.dispose();
-      await creatorOwner.register();
+      // Clean up existing test data
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
+
+      // Create test owners and namespaces using MockDataMachine
+      machine = new MockDataMachine(DATA_PROVIDER_URL);
+      await machine.initialize();
+
+      // Create creator owner with namespace
+      const creatorState = await machine.createNewCluster('creator', 'testpassword');
+      creatorOwner = await creatorState.getUserOwnerByName('creator');
       const namespace = await creatorOwner.createNamespace('testnamespace');
       namespaceId = namespace.id;
-      const invitation =
-        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'invitedowner',
-        'testpassword,',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
+
+      // Create invitation for test owner
+      const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+
+      // Create test owner and accept invitation
+      const testOwnerState = await machine.createNewCluster('invitedowner', 'testpassword');
+      testOwner = await testOwnerState.getUserOwnerByName('invitedowner');
       await testOwner.acceptInvitation('inviteduser', invitation.invitationKey);
-      const user
-        = await testOwner.getUserForNamespace(namespaceId);
+
+      // Get user IDs
+      const user = await testOwner.getUserForNamespace(namespaceId);
       userId = user.id;
-      const creatorUser
-        = await testOwner.getUserForNamespace(namespaceId);
+      const creatorUser = await testOwner.getUserForNamespace(namespaceId);
       creatorUserId = creatorUser.id;
 
       // Create a payment event for testing

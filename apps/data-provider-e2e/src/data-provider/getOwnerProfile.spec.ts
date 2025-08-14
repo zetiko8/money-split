@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { getOwnerProfileApi } from '@angular-monorepo/api-interface';
 
 const api = getOwnerProfileApi();
@@ -14,24 +14,27 @@ describe(API_NAME, () => {
   let testOwner!: TestOwner;
   let otherOwner!: TestOwner;
   let namespaceId!: number;
+  let machine!: MockDataMachine;
+
   beforeEach(async () => {
-    testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testowner',
-      'testpassword',
-    );
-    await testOwner.dispose();
-    await testOwner.register();
-    otherOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'otherOwner',
-      'testpassword',
-    );
-    await otherOwner.dispose();
-    await otherOwner.register();
+    // Clean up existing test data
+    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'otherowner');
+
+    // Create test owners and namespaces using MockDataMachine
+    machine = new MockDataMachine(DATA_PROVIDER_URL);
+    await machine.initialize();
+
+    // Create test owner with namespace
+    const testOwnerState = await machine.createNewCluster('testowner', 'testpassword');
+    testOwner = await testOwnerState.getUserOwnerByName('testowner');
     const namespace = await testOwner.createNamespace('testnamespace');
     namespaceId = namespace.id;
     ownerKey = testOwner.owner.key;
+
+    // Create other owner
+    const otherOwnerState = await machine.createNewCluster('otherowner', 'testpassword');
+    otherOwner = await otherOwnerState.getUserOwnerByName('otherowner');
     ownerKeyOtherOwner = otherOwner.owner.key;
   });
 

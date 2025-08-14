@@ -1,21 +1,22 @@
 import axios from 'axios';
 import { fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine } from '@angular-monorepo/backdoor';
 
 const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
 const API_NAME = '/login';
 
 describe(API_NAME, () => {
+  let machine!: MockDataMachine;
 
   beforeAll(async () => {
-    const testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testusername',
-      'testpassword',
-    );
-    await testOwner.dispose();
-    await testOwner.register();
+    // Clean up existing test data
+    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testusername');
+
+    // Create test owner using MockDataMachine
+    machine = new MockDataMachine(DATA_PROVIDER_URL);
+    await machine.initialize();
+    await machine.createNewCluster('testusername', 'testpassword');
   });
 
   it('smoke', async () => {
