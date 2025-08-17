@@ -252,6 +252,26 @@ export class TestOwner {
     return result;
   }
 
+  async addPaymentEventToNamespaceBackdoor (
+    record: PaymentEvent,
+  ) {
+    const result
+    = await DATA_PROVIDER_API.addPaymentEventApiBackdoor.callPromise(
+      record,
+      null,
+      async (endpoint, method, payload) => {
+        const res = await axios.post<PaymentEvent>(
+          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+          payload,
+          this.backdoorAuthHeaders(),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
+  }
+
   async settleRecords (
     namespaceId: number,
     byUser: number,

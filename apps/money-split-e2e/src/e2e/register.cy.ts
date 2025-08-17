@@ -1,4 +1,4 @@
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine } from '@angular-monorepo/backdoor';
 import { APP, LOGIN_FORM, REGISTER_FORM } from '../support/app.po';
 import { ENV } from '../support/config';
 
@@ -7,12 +7,7 @@ const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 describe('Register Component', () => {
 
   beforeEach(async () => {
-    const testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testuser',
-      'testpassword',
-    );
-    await testOwner.dispose();
+    MockDataMachine.dispose(DATA_PROVIDER_URL, 'testuser');
   });
 
   it('displays the register form', () => {

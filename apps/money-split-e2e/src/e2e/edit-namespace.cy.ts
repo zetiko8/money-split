@@ -1,5 +1,5 @@
 import { EDIT_NAMESPACE_FORM, NAMESPACE_SCREEN } from '../support/app.po';
-import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
+import { BACKDOOR_ACTIONS, MockDataMachine, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
 import { ENV } from '../support/config';
 import { ACTIONS } from '../support/actions';
 
@@ -11,7 +11,6 @@ describe('Edit a namespace', () => {
     let namespaceId!: number;
     let creatorOwner!: TestOwner;
     let scenario!: TestScenarioNamespace;
-    // let avatarData!: AvatarData;
     before(async () => {
       scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
         DATA_PROVIDER_URL,
@@ -28,9 +27,6 @@ describe('Edit a namespace', () => {
 
       creatorOwner = scenario.creator.owner;
       namespaceId = scenario.namespaceId;
-
-      // avatarData = await creatorOwner
-      //   .getAvatar(creatorOwner.owner.avatarId);
 
       await ACTIONS.loginTestOwner(creatorOwner);
       EDIT_NAMESPACE_FORM.visit(creatorOwner.owner.key, namespaceId);
@@ -78,6 +74,7 @@ describe('Edit a namespace', () => {
     let creatorOwner!: TestOwner;
     let scenario!: TestScenarioNamespace;
     before(async () => {
+      MockDataMachine.dispose(DATA_PROVIDER_URL, 'testuser');
       scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
         DATA_PROVIDER_URL,
         ENV().BACKDOOR_USERNAME,

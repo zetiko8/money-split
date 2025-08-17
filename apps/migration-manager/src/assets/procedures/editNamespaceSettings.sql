@@ -1,6 +1,7 @@
 DROP PROCEDURE IF EXISTS `main`.`editNamespaceSettings`;
 
 CREATE PROCEDURE `main`.`editNamespaceSettings`(
+   inOwnerId    BIGINT,
    inNamespaceId    BIGINT,
    inNamespaceName VARCHAR(100),
    inAvatarColor    VARCHAR(100),
@@ -9,21 +10,26 @@ CREATE PROCEDURE `main`.`editNamespaceSettings`(
 BEGIN
   DECLARE jsonResult TEXT;
   DECLARE procedureError TEXT;
+  DECLARE procedureErrorDetails TEXT;
 
   DECLARE avatarId BIGINT;
 
   if (
+    -- check if another namespace of this owner has the same name
     (SELECT COUNT(*)  FROM NamespaceOwner no2
     INNER JOIN Namespace n
     ON n.id = no2.namespaceId
-    WHERE no2.ownerId = ownerId
+    WHERE no2.ownerId = inOwnerId
     AND n.name = inNamespaceName
     AND n.id != inNamespaceId) > 0
   ) THEN
     SELECT JSON_OBJECT('procedureError', 'RESOURCE_ALREADY_EXISTS')
-    INTO procedureError;
+      INTO procedureError;
+    SELECT JSON_OBJECT('procedureErrorDetails', 'Another namespace of this owner has the same name')
+      INTO procedureErrorDetails;
     SELECT procedureError;
     SELECT jsonResult;
+    SELECT procedureErrorDetails;
   ELSE
     call createAvatar(
             inAvatarColor,

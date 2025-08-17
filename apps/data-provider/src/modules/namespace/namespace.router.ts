@@ -111,7 +111,7 @@ registerRoute(
 registerRoute(
   editNamespaceSettingApi(),
   namespaceRouter,
-  async (payload, params) => {
+  async (payload, params, context) => {
     if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (typeof payload.namespaceName !== 'string') throw Error(ERROR_CODE.INVALID_REQUEST);
@@ -123,6 +123,7 @@ registerRoute(
     payload.namespaceName = payload.namespaceName.trim();
 
     return await NAMESPACE_SERVICE.editNamespaceSettings(
+      context.owner.id,
       Number(params.namespaceId),
       payload,
     );

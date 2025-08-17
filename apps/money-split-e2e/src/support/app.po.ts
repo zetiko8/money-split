@@ -313,6 +313,17 @@ export const RECORD_LIST = {
       },
     };
   },
+  RECORD_BY_COST: (cost: string) => {
+    const $el = () => cy
+      .get('[data-test="namespace-record"]')
+      .find('[data-test="record-cost"]')
+      .contains(cost);
+    return {
+      exists () {
+        $el().should('exist');
+      },
+    };
+  },
   RECORD: (
     index: number,
     inSection?: () =>  Cypress.Chainable<JQuery>,
@@ -736,6 +747,14 @@ export const RECORD_FORM = {
         .find('.error')
         .should('contain.text', message);
     },
+    shouldHaveErrorOutline () {
+      cy.get('[data-testid="currency-input"]')
+        .should('have.class', 'error');
+    },
+    shouldNotHaveErrorOutline () {
+      cy.get('[data-testid="currency-input"]')
+        .should('not.have.class', 'error');
+    },
     shouldNotHaveError () {
       cy.get('[data-testid="currency-input"]')
         .parent()
@@ -756,6 +775,14 @@ export const RECORD_FORM = {
         .parent()
         .find('.error')
         .should('not.exist');
+    },
+    shouldHaveErrorOutline () {
+      cy.get('[data-testid="cost-input"]')
+        .should('have.class', 'error');
+    },
+    shouldNotHaveErrorOutline () {
+      cy.get('[data-testid="cost-input"]')
+        .should('not.have.class', 'error');
     },
   },
 };

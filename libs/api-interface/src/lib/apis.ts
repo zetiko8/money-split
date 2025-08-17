@@ -254,10 +254,8 @@ export function addRecordApiBackdoor() {
 
 export function addPaymentEventApiBackdoor() {
   return apiDefinition<
-  CreatePaymentEventData,
-  {
-    namespaceId: number,
-  },
+  PaymentEvent,
+  null,
   PaymentEvent>({
     endpoint: '/backdoor/:ownerKey/namespace/:namespaceId/:userId/add-payment-event',
     method: 'POST',

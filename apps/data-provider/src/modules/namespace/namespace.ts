@@ -240,6 +240,7 @@ export async function getNamespaceSettings (
 }
 
 export async function editNamespaceSettings (
+  ownerId: number,
   namespaceId: number,
   payload: CreateNamespacePayload,
 ): Promise<MNamespaceSettings> {
@@ -247,6 +248,7 @@ export async function editNamespaceSettings (
     return await jsonProcedure<MNamespaceSettings>(
       `
       call editNamespaceSettings(
+        ${ownerId},
         ${namespaceId},
         '${payload.namespaceName}',
         '${payload.avatarColor}',

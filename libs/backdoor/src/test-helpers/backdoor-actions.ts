@@ -1,4 +1,4 @@
-import { CreatePaymentEventData, Invitation, MNamespace, Owner, PaymentEvent, PaymentNode, Record, RecordDataCy, User } from '@angular-monorepo/entities';
+import { Invitation, MNamespace, Owner, PaymentEvent, PaymentNode, Record, RecordDataCy, User } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { TestOwner } from './test-owner';
 import { asyncMap } from '@angular-monorepo/utils';
@@ -92,7 +92,7 @@ export async function prepareNamespace (
 
     if (!adder) throw Error('Adder not found: ' + rec.user);
 
-    const createPaymentEventData: CreatePaymentEventData = {
+    const createPaymentEventData: PaymentEvent = {
       benefitors: rec.record.benefitors.map(b => {
         const found = allUsers.find(u => u.user.name === b);
         if (!found) throw Error('Benefitor not found: ' + rec.user);
@@ -116,11 +116,15 @@ export async function prepareNamespace (
       createdBy: adder.user.id,
       description: '',
       notes: '',
+      created: rec.record.created,
+      namespaceId,
+      edited: rec.record.edited,
+      id: -1,
+      editedBy: -1,
+      settlementId: null,
     };
 
-    const res = await creatorOwner.addPaymentEventToNamespace(
-      namespaceId,
-      adder.user.id,
+    const res = await creatorOwner.addPaymentEventToNamespaceBackdoor(
       createPaymentEventData,
     );
 

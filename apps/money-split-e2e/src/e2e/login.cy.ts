@@ -1,4 +1,4 @@
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine } from '@angular-monorepo/backdoor';
 import { LOGIN_FORM } from '../support/app.po';
 import { ENV } from '../support/config';
 
@@ -6,13 +6,8 @@ const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Login', () => {
   beforeEach(async () => {
-    const testOwner = new TestOwner(
-      DATA_PROVIDER_URL,
-      'testuser',
-      'testpassword',
-    );
-    await testOwner.dispose();
-    await testOwner.register();
+    MockDataMachine.dispose(DATA_PROVIDER_URL, 'testuser');
+    MockDataMachine.createNewOwner(DATA_PROVIDER_URL, 'testuser', 'testpassword');
     cy.visit('/login');
   });
 

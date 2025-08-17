@@ -401,4 +401,10 @@ export class MockDataMachine {
     await testOwner.login();
     return testOwner;
   }
+
+  public static async createNewOwner(dataProviderUrl: string, name: string, password = 'testpassword') {
+    const testOwner = new TestOwner(dataProviderUrl, name, password);
+    await testOwner.register();
+    return testOwner;
+  }
 }

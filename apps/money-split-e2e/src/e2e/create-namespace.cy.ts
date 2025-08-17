@@ -1,6 +1,6 @@
 import { CREATE_NAMESPACE_FORM, NAMESPACE_SCREEN, REALM_SCREEN } from '../support/app.po';
 import { ACTIONS } from '../support/actions';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { ENV } from '../support/config';
 
 const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
@@ -12,14 +12,9 @@ describe('Create a namespace', () => {
     let token!: string;
 
     beforeEach(async () => {
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'testowner',
-        'testpassword',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
-      token = await testOwner.login();
+      MockDataMachine.dispose(DATA_PROVIDER_URL, 'testuser');
+      testOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'testuser', 'testpassword');
+      token = testOwner.token;
     });
 
     it('can create a namespace', () => {

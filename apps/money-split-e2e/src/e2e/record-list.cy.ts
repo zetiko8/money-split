@@ -102,11 +102,10 @@ describe('Record list', () => {
 
       creatorOwner = scenario.creator.owner;
       namespaceId = scenario.namespaceId;
-
-      await ACTIONS.loginTestOwner(creatorOwner);
     });
 
     it('are ordered by date', () => {
+      ACTIONS.loginTestOwnerWithToken(creatorOwner.token);
       NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
       RECORD_LIST.DATE(0).hasDate(firstDate);
       RECORD_LIST.DATE(0).shouldHaveNumberOfRecords(2);
@@ -118,6 +117,80 @@ describe('Record list', () => {
       RECORD_LIST.DATE(2).hasDate(fourthDate);
       RECORD_LIST.DATE(2).shouldHaveNumberOfRecords(1);
       RECORD_LIST.DATE(2).RECORD(0).shouldHaveCost('3');
+    });
+  });
+
+  describe.only('corectly displays records not in the same year',() => {
+    const firstDate = moment().set({
+      year: 2024,
+      month: 2,
+      date: 15,
+    }).toDate();
+    const secondDate = moment().set({
+      year: 2025,
+      month: 8,
+      date: 17,
+    }).toDate();
+
+    let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+
+    before(async () => {
+      const scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+        DATA_PROVIDER_URL,
+        ENV().BACKDOOR_USERNAME,
+        ENV().BACKDOOR_PASSWORD,
+        'testnamespace',
+        {  username: 'testuser'},
+        [
+          {  username: 'atestuser1'},
+          {  username: 'btestuser2'},
+          {  username: 'ctestuser3'},
+        ],
+        [
+          {
+            user: 'testuser',
+            record: {
+              benefitors: [
+                'atestuser1',
+                'btestuser2',
+                'ctestuser3',
+              ],
+              cost: 5.4,
+              currency: 'SIT',
+              paidBy: ['testuser'],
+              created: firstDate,
+              edited: firstDate,
+            },
+          },
+          {
+            user: 'testuser',
+            record: {
+              benefitors: [
+                'atestuser1',
+                'btestuser2',
+                'ctestuser3',
+              ],
+              cost: 10,
+              currency: 'SIT',
+              paidBy: ['testuser'],
+              created: secondDate,
+              edited: secondDate,
+            },
+          },
+        ],
+      );
+
+      creatorOwner = scenario.creator.owner;
+      namespaceId = scenario.namespaceId;
+    });
+
+    it('can add an additional expense', () => {
+      ACTIONS.loginTestOwnerWithToken(creatorOwner.token);
+
+      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      RECORD_LIST.RECORD(0).shouldHaveCost('10');
+      RECORD_LIST.RECORD(1).shouldHaveCost('5.4');
     });
   });
 

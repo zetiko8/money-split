@@ -7,6 +7,7 @@ import {
   editPaymentEventApi,
   getPaymentEventApi,
   getEditPaymentEventViewApi,
+  addPaymentEventApiBackdoor,
 } from '@angular-monorepo/api-interface';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { CreatePaymentEventData, ERROR_CODE, validatePaymentAmounts } from '@angular-monorepo/entities';
@@ -81,6 +82,20 @@ registerRoute(
     );
   },
   AUTH_SERVICE.auth,
+);
+
+registerRoute(
+  addPaymentEventApiBackdoor(),
+  paymentEventRouter,
+  async (payload) => {
+    VALIDATE.requiredPayload(payload);
+    validatePaymentEvent(payload);
+
+    return await PAYMENT_EVENT_SERVICE.addPaymentEventBackdoor(
+      payload,
+    );
+  },
+  AUTH_SERVICE.backdoorAuth,
 );
 
 function validatePaymentEvent (payload: CreatePaymentEventData) {

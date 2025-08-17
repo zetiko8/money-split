@@ -1,5 +1,5 @@
 import { CreatePaymentEventData, PaymentEvent, PaymentEventView, PaymentEventViewFromDb, PaymentNode, PaymentNodeView } from '@angular-monorepo/entities';
-import { jsonProcedure } from '../../connection/helper';
+import { jsonProcedure, mysqlDate } from '../../connection/helper';
 import { appErrorWrap } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
 import { USER_SERVICE } from '../user/user';
@@ -122,6 +122,30 @@ export const PAYMENT_EVENT_SERVICE = {
           '${JSON.stringify(data.benefitors)}',
           ${data.description ? `'${data.description}'` : 'NULL'},
           ${data.notes ? `'${data.notes}'` : 'NULL'}
+        );
+        `,
+      );
+
+      res.paidBy = JSON.parse(res.paidBy as unknown as string);
+      res.benefitors = JSON.parse(res.benefitors as unknown as string);
+
+      return res;
+    });
+  },
+
+  addPaymentEventBackdoor: async (payload: PaymentEvent) => {
+    return await appErrorWrap('addPaymentEventBackdoor', async () => {
+      const res = await jsonProcedure<PaymentEvent>(
+        `
+        call addPaymentEventBackdoor(
+          ${payload.namespaceId},
+          ${payload.createdBy},
+          '${JSON.stringify(payload.paidBy)}',
+          '${JSON.stringify(payload.benefitors)}',
+          ${payload.description ? `'${payload.description}'` : 'NULL'},
+          ${payload.notes ? `'${payload.notes}'` : 'NULL'},
+          '${mysqlDate(new Date(payload.created))}',
+          '${mysqlDate(new Date(payload.edited))}'
         );
         `,
       );

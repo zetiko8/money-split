@@ -1,6 +1,6 @@
 import { ACTIONS } from '../support/actions';
 import { INVITATION_FORM, LOGIN_FORM, NAMESPACE_SCREEN, REGISTER_FORM } from '../support/app.po';
-import { TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { ENV } from '../support/config';
 
 const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
@@ -10,26 +10,16 @@ describe('Invitation', () => {
   describe('can invite a person',() => {
     const email = 'test+0002@gmail.com';
     let testOwner!: TestOwner;
-    let otherOwner!: TestOwner;
     let namespaceId!: number;
     let ownerKey!: string;
     let token!: string;
 
     beforeEach(async () => {
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'testowner',
-        'testpassword',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
-      otherOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'otherOwner',
-        'testpassword',
-      );
-      await otherOwner.dispose();
-      await otherOwner.register();
+      // Clean up existing test data
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+
+      // Create test owner using MockDataMachine
+      testOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'testowner', 'testpassword');
       const namespace = await testOwner.createNamespace('testnamespace1');
       namespaceId = namespace.id;
       ownerKey = testOwner.owner.key;
@@ -60,26 +50,21 @@ describe('Invitation', () => {
     let token!: string;
     beforeEach(async () => {
       try {
-        creatorOwner = new TestOwner(
-          DATA_PROVIDER_URL,
-          'creator',
-          'testpassword',
-        );
-        await creatorOwner.dispose();
-        await creatorOwner.register();
+        // Clean up existing test data
+        await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+        await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
+
+        // Create creator owner and namespace
+        creatorOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'creator', 'testpassword');
         const namespace = await creatorOwner.createNamespace('testnamespace');
         namespaceId = namespace.id;
-        const invitation =
-          await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
-        invitationKey = invitation.invitationKey;
-        testOwner = new TestOwner(
-          DATA_PROVIDER_URL,
-          'invitedowner',
-          'testpassword,',
-        );
-        await testOwner.dispose();
-        await testOwner.register();
 
+        // Create invitation
+        const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+        invitationKey = invitation.invitationKey;
+
+        // Create test owner
+        testOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'invitedowner', 'testpassword');
         token = testOwner.token;
       } catch (error) {
         throw Error('beforeAll error: ' + (error as Error).message);
@@ -117,30 +102,23 @@ describe('Invitation', () => {
   describe('accept invitation - guest that already has profile',() => {
     const email = 'test2@email.com';
     let namespaceId!: number;
-    let testOwner!: TestOwner;
     let creatorOwner!: TestOwner;
     let invitationKey!: string;
     beforeEach(async () => {
 
-      creatorOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'creator',
-        'testpassword',
-      );
-      await creatorOwner.dispose();
-      await creatorOwner.register();
+      // Clean up existing test data
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
+
+      // Create creator owner and namespace
+      creatorOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'creator', 'testpassword');
       const namespace = await creatorOwner.createNamespace('testnamespace');
       namespaceId = namespace.id;
-      const invitation =
-        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+
+      // Create invitation
+      const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
       invitationKey = invitation.invitationKey;
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'invitedowner',
-        'testpassword',
-      );
-      await testOwner.dispose();
-      await testOwner.register();
+
     });
 
     it('can accept invitation, but must login first', () => {
@@ -161,30 +139,22 @@ describe('Invitation', () => {
   describe('accept invitation - guest that doesn\'t jet have a profile',() => {
     const email = 'test2@email.com';
     let namespaceId!: number;
-    let testOwner!: TestOwner;
     let creatorOwner!: TestOwner;
     let invitationKey!: string;
 
     beforeEach(async () => {
+      // Clean up existing test data
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
+      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
 
-      creatorOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'creator',
-        'testpassword',
-      );
-      await creatorOwner.dispose();
-      await creatorOwner.register();
+      // Create creator owner and namespace
+      creatorOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'creator', 'testpassword');
       const namespace = await creatorOwner.createNamespace('testnamespace');
       namespaceId = namespace.id;
-      const invitation =
-        await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+
+      // Create invitation
+      const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
       invitationKey = invitation.invitationKey;
-      testOwner = new TestOwner(
-        DATA_PROVIDER_URL,
-        'invitedowner',
-        'testpassword',
-      );
-      await testOwner.dispose();
     });
 
     it('can accept invitation, but must register and login first', () => {
