@@ -48,7 +48,8 @@ export const PAYMENT_EVENT_SERVICE = {
         return paymentEventView;
       });
 
-      return paymentEventsViews;
+      return paymentEventsViews.sort(
+        (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
     });
   },
 

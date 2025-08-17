@@ -254,6 +254,91 @@ describe(API_NAME, () => {
     });
   });
 
+  describe.only('payment events sorting by year', () => {
+    const firstDate = moment().set({
+      year: 2024,
+      month: 2,
+      date: 15,
+    }).toDate();
+    const secondDate = moment().set({
+      year: 2025,
+      month: 8,
+      date: 17,
+    }).toDate();
+
+    let namespaceId!: number;
+    let creatorOwner!: TestOwner;
+    let scenario!: TestScenarioNamespace;
+
+    beforeEach(async () => {
+      try {
+        scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
+          testEnv().DATA_PROVIDER_URL,
+          testEnv().BACKDOOR_USERNAME,
+          testEnv().BACKDOOR_PASSWORD,
+          'testnamespace',
+          {  username: 'testuser'},
+          [
+            {  username: 'atestuser1'},
+            {  username: 'btestuser2'},
+            {  username: 'ctestuser3'},
+          ],
+          [
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 5.4,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: firstDate,
+                edited: firstDate,
+              },
+            },
+            {
+              user: 'testuser',
+              record: {
+                benefitors: [
+                  'atestuser1',
+                  'btestuser2',
+                  'ctestuser3',
+                ],
+                cost: 10,
+                currency: 'SIT',
+                paidBy: ['testuser'],
+                created: secondDate,
+                edited: secondDate,
+              },
+            },
+          ],
+        );
+
+        creatorOwner = scenario.creator.owner;
+        namespaceId = scenario.namespaceId;
+      } catch (error) {
+        throwBeforeEachError(error);
+      }
+    });
+
+    it('verify later year is before earlier year', async () => {
+
+      await fnCall(API_NAME,
+        async () => await axios.get(
+          `${DATA_PROVIDER_URL}/app/${creatorOwner.owner.key}/namespace/${namespaceId}`,
+          creatorOwner.authHeaders(),
+        ))
+        .result((result => {
+          expect(result.paymentEvents).toHaveLength(2);
+          expect(new Date(result.paymentEvents[0].created).getFullYear()).toBe(2025);
+          expect(new Date(result.paymentEvents[1].created).getFullYear()).toBe(2024);
+        }));
+    });
+  });
+
   describe('settled records', () => {
     const firstDate = moment().set({
       year: 2024,

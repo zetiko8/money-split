@@ -185,7 +185,7 @@ describe('Record list', () => {
       namespaceId = scenario.namespaceId;
     });
 
-    it('can add an additional expense', () => {
+    it('corectly sorts records not in the same year', () => {
       ACTIONS.loginTestOwnerWithToken(creatorOwner.token);
 
       NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
