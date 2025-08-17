@@ -324,6 +324,7 @@ export async function jsonProcedure<T>(
     )) {
       console.log(sql);
     }
+    console.log(sql);
     console.log('Result', result);
     throw error;
   }
