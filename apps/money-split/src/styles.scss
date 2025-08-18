@@ -566,3 +566,15 @@ ul {
     }
 }
 
+// z-index level
+header, .page-header {
+  z-index: 100;
+}
+
+full-screen-loader {
+  z-index: 300;
+}
+
+.modal-backdrop {
+  z-index: 200;
+}
