@@ -101,8 +101,6 @@ describe('Invitation', () => {
 
   describe('accept invitation - guest that already has profile',() => {
     const email = 'test2@email.com';
-    let namespaceId!: number;
-    let creatorOwner!: TestOwner;
     let invitationKey!: string;
     beforeEach(async () => {
 
@@ -111,12 +109,13 @@ describe('Invitation', () => {
       await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
 
       // Create creator owner and namespace
-      creatorOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'creator', 'testpassword');
-      const namespace = await creatorOwner.createNamespace('testnamespace');
-      namespaceId = namespace.id;
+      const machine = new MockDataMachine(DATA_PROVIDER_URL);
+      await machine.createNewCluster('creator', 'testpassword');
+      await machine.createNewNamespace('testnamespace');
+      const state = await machine.createNewInvitation('test@email.com');
 
       // Create invitation
-      const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+      const invitation = state.getInvitationByEmail('test@email.com');
       invitationKey = invitation.invitationKey;
 
     });
@@ -125,7 +124,7 @@ describe('Invitation', () => {
       cy.visit(`/invitation/${invitationKey}/join`);
       cy.get('[data-test="accept-invitation-btn"]').click();
 
-      LOGIN_FORM.login('invitedowner', 'testpassword');
+      LOGIN_FORM.login('test@email.com', 'testpassword');
       INVITATION_FORM.accept(email);
       NAMESPACE_SCREEN.openMembersTab();
       cy.url().should('contain', '/namespace/');
