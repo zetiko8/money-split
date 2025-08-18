@@ -6,17 +6,18 @@ const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
 describe('Login', () => {
   beforeEach(async () => {
-    MockDataMachine.dispose(DATA_PROVIDER_URL, 'testuser');
-    MockDataMachine.createNewOwner(DATA_PROVIDER_URL, 'testuser', 'testpassword');
-    cy.visit('/login');
+    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testuser');
+    await MockDataMachine.createNewOwner(DATA_PROVIDER_URL, 'testuser', 'testpassword');
   });
 
   it('should login with valid credentials', () => {
+    cy.visit('/login');
     LOGIN_FORM.login('testuser', 'testpassword');
     cy.url().should('include', '/realm');
   });
 
   it('should not login with invalid password', () => {
+    cy.visit('/login');
     LOGIN_FORM.login('testuser', 'invalidpassword');
     cy
       .get('[data-cy="notification"]')
@@ -25,6 +26,7 @@ describe('Login', () => {
   });
 
   it('should not login with invalid username', () => {
+    cy.visit('/login');
     LOGIN_FORM.login('invaliduser', 'invalidpassword');
     cy
       .get('[data-cy="notification"]')
