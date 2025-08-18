@@ -108,6 +108,10 @@ function separateByCurrency (
 function isSimple (
   paymentEventView: PaymentEventView | PaymentEvent | CreatePaymentEventData,
 ): boolean {
+
+  if (paymentEventView.paidBy.length === 0 && paymentEventView.benefitors.length === 0) {
+    return true;
+  }
   const cost: number | null = paymentEventView.paidBy[0]?.amount || null;
   let allCostsAreTheSame = true;
   const paidBy = paymentEventView.paidBy.reduce((acc, item) => {
@@ -134,7 +138,6 @@ function isSimple (
     }
     return acc;
   }, {} as { [key: string]: { amount: number, currency: string }[] });
-
 
   return Object.keys(paidBy).length === 1
     && Object.keys(benefitors).length === 1
@@ -187,5 +190,3 @@ export const PaymentEventViewHelpers = {
   getSimplePaymentEventCostAndCurrency,
   getComplexPaymentEventCostAndCurrencyForSimpleConversion,
 };
-
-

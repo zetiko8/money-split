@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CreatePaymentEventData, NamespaceView, PaymentEvent, PaymentNode, User } from '@angular-monorepo/entities';
+import { CreatePaymentEventData, GuiError, NamespaceView, PaymentEvent, PaymentNode, User, validatePaymentAmounts } from '@angular-monorepo/entities';
 import { PaymentEventFormGroup, PaymentNodeFormGroup } from '../../../../../types';
 import { PaymentUserFormComponent } from './payment-user-form/payment-user-form.component';
 import { DescriptionAndNotesFormComponent } from '../description-and-notes-form/description-and-notes-form.component';
@@ -11,6 +11,7 @@ import { FullScreenLoaderComponent } from '../../../../../components/full-screen
 import { PaymentEventViewHelpers } from '../../../../../../helpers';
 import { ModalComponent } from '@angular-monorepo/components';
 import { NotesOpenComponent } from '../notes-open-component';
+import { HtmlAttributePipe } from '../../../../../shared/pipes/html-attribute.pipe';
 
 export interface PaymentEventComplexFormData {
   form: PaymentEventFormGroup,
@@ -108,6 +109,8 @@ export function getPaymentEventForm (
 }
 
 @Component({
+  selector: 'payment-event-complex-form',
+  templateUrl: './payment-event-complex-form.component.html',
   standalone: true,
   imports: [
     RouterModule,
@@ -119,9 +122,8 @@ export function getPaymentEventForm (
     FullScreenLoaderComponent,
     ModalComponent,
     NotesOpenComponent,
+    HtmlAttributePipe,
   ],
-  selector: 'payment-event-complex-form',
-  templateUrl: './payment-event-complex-form.component.html',
 })
 export class PaymentEventComplexFormComponent {
 
@@ -143,10 +145,24 @@ export class PaymentEventComplexFormComponent {
   public notesOpen = false;
   public isLoading = false;
   public complexModeChangeModalOpen = false;
+  public notMatchingCostError: GuiError | null = null;
 
   public submit () {
     const createPaymentEventData = this.getPaymentEventData();
     if (createPaymentEventData) {
+      try {
+        validatePaymentAmounts(
+          createPaymentEventData?.paidBy,
+          createPaymentEventData?.benefitors,
+        );
+      } catch (error) {
+        if ((error as GuiError).details) {
+          this.notMatchingCostError = error as GuiError;
+          return;
+        } else {
+          throw error;
+        }
+      }
       this.formSubmit.emit(
         createPaymentEventData,
       );

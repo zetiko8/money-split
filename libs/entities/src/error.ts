@@ -10,3 +10,9 @@ export enum ERROR_CODE {
     PROCEDURE_ERROR = 'PROCEDURE_ERROR',
     FILE_UPLOAD_ERROR = 'FILE_UPLOAD_ERROR',
 }
+
+export interface GuiError extends Error {
+  message: string;
+  code?: ERROR_CODE;
+  details?: Record<string, unknown>;
+}

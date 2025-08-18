@@ -1,3 +1,4 @@
+import { sanitizeForHtmlAttribute } from '@angular-monorepo/utils';
 import moment = require('moment');
 
 
@@ -694,11 +695,19 @@ const _RECORD_FORM = {
 };
 
 export const RECORD_FORM = {
+  isVisible () {
+    cy.get('[data-test="payment-event-simple"]')
+      .should('be.visible');
+  },
   setCurrency: _RECORD_FORM.setCurrency,
   currencyIsSetTo: _RECORD_FORM.currencyIsSetTo,
   setCost: _RECORD_FORM.setCost,
   costIsSetTo: _RECORD_FORM.costIsSetTo,
   clickBenefitor: _RECORD_FORM.clickBenefitor,
+  switchToComplexMode () {
+    cy.get('[data-test="complex-mode-switcher"]')
+      .click();
+  },
   BENEFITORS: {
     ..._RECORD_FORM.BENEFITORS,
     click: _RECORD_FORM.clickBenefitor,
@@ -783,6 +792,234 @@ export const RECORD_FORM = {
     shouldNotHaveErrorOutline () {
       cy.get('[data-testid="cost-input"]')
         .should('not.have.class', 'error');
+    },
+  },
+};
+
+export const RECORD_FORM_COMPLEX = {
+  isVisible () {
+    cy.get('[data-test="payment-event-complex"]')
+      .should('be.visible');
+  },
+  switchToSimpleMode () {
+    cy.get('[data-test="complex-mode-switcher"]')
+      .click();
+  },
+  SWITCH_TO_SIMPLE_MODE_MODAL: {
+    isVisible () {
+      cy.get('[data-test="complex-mode-change-modal-warning"]')
+        .should('be.visible');
+    },
+    cancel () {
+      cy.get('[data-test="complex-mode-change-modal-warning-cancel-btn"]')
+        .click();
+    },
+    confirm () {
+      cy.get('[data-test="complex-mode-change-modal-warning-confirm-btn"]')
+        .click();
+    },
+  },
+  NOT_MATCHING_COST_MODE_MODAL: {
+    isVisible () {
+      cy.get('[data-test="not-matching-cost-modal-warning"]')
+        .should('be.visible');
+    },
+    close () {
+      cy.get('[data-test="not-matching-cost-modal-warning-close-btn"]')
+        .click();
+    },
+    toSay (text: string) {
+      cy.get('[data-test="not-matching-cost-modal-warning"]')
+        .should('contain.text', text);
+    },
+  },
+  PAID_BY (username: string) {
+    const $el =
+      () => cy
+        .get('[data-test="payment-user-form-paid-by-' + sanitizeForHtmlAttribute(username) + '"]');
+    return {
+      OPEN_AMOUNT_FORM () {
+        $el()
+          .find('[data-test="add-amount-btn"]')
+          .click();
+
+        return RECORD_FORM_COMPLEX.PAID_BY(username)
+          .AMOUNT_FORM(0);
+      },
+      AMOUNT_FORM: (index: number) => {
+        const $elAmountForm =
+          () => $el()
+            .find('[data-test="amount-form"]')
+            .eq(index);
+        return {
+          shouldHaveCost (cost: string) {
+            $elAmountForm()
+              .find('input[name="amount"]')
+              .should('have.value', cost);
+          },
+          shouldHaveCurrency (currency: string) {
+            $elAmountForm()
+              .find('input[name="currency"]')
+              .should('have.value', currency);
+          },
+          setCost (cost: string) {
+            $elAmountForm()
+              .find('input[name="amount"]')
+              .clear();
+            $elAmountForm()
+              .find('input[name="amount"]')
+              .type(cost);
+
+            return RECORD_FORM_COMPLEX.PAID_BY(username)
+              .AMOUNT_FORM(index);
+          },
+          setCurrency (currency: string) {
+            if (currency === '') {
+              $elAmountForm()
+                .find('input[name="currency"]')
+                .clear();
+            } else {
+              $elAmountForm()
+                .find('input[name="currency"]')
+                .clear();
+              $elAmountForm()
+                .find('input[name="currency"]')
+                .type(currency);
+            }
+
+            return RECORD_FORM_COMPLEX.PAID_BY(username)
+              .AMOUNT_FORM(index);
+          },
+          COST: () => {
+            return {
+              shouldHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="amount-input"]')
+                  .should('have.class', 'error');
+              },
+              shouldNotHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="amount-input"]')
+                  .should('not.have.class', 'error');
+              },
+            };
+          },
+          CURRENCY: () => {
+            return {
+              shouldHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="currency-input"]')
+                  .should('have.class', 'error');
+              },
+              shouldNotHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="currency-input"]')
+                  .should('not.have.class', 'error');
+              },
+            };
+          },
+        };
+      },
+    };
+  },
+  BENEFITORS (username: string) {
+    const $el =
+      () => cy
+        .get('[data-test="payment-user-form-benefitors-' + sanitizeForHtmlAttribute(username) + '"]');
+    return {
+      OPEN_AMOUNT_FORM () {
+        $el()
+          .find('[data-test="add-amount-btn"]')
+          .click();
+
+        return RECORD_FORM_COMPLEX.BENEFITORS(username)
+          .AMOUNT_FORM(0);
+      },
+      AMOUNT_FORM: (index: number) => {
+        const $elAmountForm =
+          () => $el()
+            .find('[data-test="amount-form"]')
+            .eq(index);
+        return {
+          shouldHaveCost (cost: string) {
+            $elAmountForm()
+              .find('input[name="amount"]')
+              .should('have.value', cost);
+          },
+          shouldHaveCurrency (currency: string) {
+            $elAmountForm()
+              .find('input[name="currency"]')
+              .should('have.value', currency);
+          },
+          setCost (cost: string) {
+            $elAmountForm()
+              .find('input[name="amount"]')
+              .clear();
+            $elAmountForm()
+              .find('input[name="amount"]')
+              .type(cost);
+
+            return RECORD_FORM_COMPLEX.BENEFITORS(username)
+              .AMOUNT_FORM(index);
+          },
+          setCurrency (currency: string) {
+            if (currency === '') {
+              $elAmountForm()
+                .find('input[name="currency"]')
+                .clear();
+            } else {
+              $elAmountForm()
+                .find('input[name="currency"]')
+                .clear();
+              $elAmountForm()
+                .find('input[name="currency"]')
+                .type(currency);
+            }
+
+            return RECORD_FORM_COMPLEX.BENEFITORS(username)
+              .AMOUNT_FORM(index);
+          },
+          COST: () => {
+            return {
+              shouldHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="amount-input"]')
+                  .should('have.class', 'error');
+              },
+              shouldNotHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="amount-input"]')
+                  .should('not.have.class', 'error');
+              },
+            };
+          },
+          CURRENCY: () => {
+            return {
+              shouldHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="currency-input"]')
+                  .should('have.class', 'error');
+              },
+              shouldNotHaveErrorOutline () {
+                $elAmountForm()
+                  .find('[data-testid="currency-input"]')
+                  .should('not.have.class', 'error');
+              },
+            };
+          },
+        };
+      },
+    };
+  },
+  confirm: _RECORD_FORM.confirm,
+  CONFIRM_BUTTON: {
+    shouldBeDisabled () {
+      cy.get('[data-test="add-expense-confirm-btn"]')
+        .should('be.disabled');
+    },
+    shouldBeEnabled () {
+      cy.get('[data-test="add-expense-confirm-btn"]')
+        .should('be.enabled');
     },
   },
 };

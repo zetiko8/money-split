@@ -1,6 +1,7 @@
 <form
     (submit)="$event.preventDefault(); submit()"
     *ngIf="form && !notesOpen"
+    data-test="payment-event-complex"
 >
     <description-and-notes-form
       [descriptionFormControl]="form.controls.description"
@@ -19,6 +20,7 @@
         [user]="user"
         (add)="addUserPayment($event)"
         (remove)="removeUserPayment($event)"
+        [attr.data-test]="'payment-user-form-paid-by-' + user.name | htmlAttribute"
       ></payment-user-form>
     </div>
     <div>
@@ -31,6 +33,7 @@
         [user]="user"
         (add)="addUserBenefit($event)"
         (remove)="removeUserBenefit($event)"
+        [attr.data-test]="'payment-user-form-benefitors-' + user.name | htmlAttribute"
       ></payment-user-form>
     </div>
     <div class="input-group">
@@ -52,15 +55,47 @@
 <full-screen-loader
     *ngIf="isLoading"
 ></full-screen-loader>
-<modal [open]="complexModeChangeModalOpen">
+<modal 
+  [open]="complexModeChangeModalOpen"
+  data-test="complex-mode-change-modal-warning"
+>
   <h2 slot="heading">{{ 'complexModeChangeModalTitle' | translate }}</h2>
   <div slot="content">{{ 'complexModeChangeModalContent' | translate }}</div>
   <div slot="actions">
-    <button (click)="complexModeChangeModalOpen = false">
+    <button 
+      (click)="complexModeChangeModalOpen = false"
+      data-test="complex-mode-change-modal-warning-cancel-btn"
+    >
       {{ 'cancel' | translate }}
     </button>
-    <button (click)="confirmComplexModeChange()" style="margin-left: 5px;">
+    <button 
+      (click)="confirmComplexModeChange()"
+      data-test="complex-mode-change-modal-warning-confirm-btn"
+      style="margin-left: 5px;"
+    >
       {{ 'confirm' | translate }}
+    </button>
+  </div>
+</modal>
+<modal 
+  [open]="!!notMatchingCostError"
+  data-test="not-matching-cost-modal-warning"
+>
+  <h2 slot="heading">{{ 'notMatchingCostModalTitle' | translate }}</h2>
+  <div slot="content">
+    <p>{{ 'notMatchingCostModalPaidBy' 
+      | translate:{ cost: notMatchingCostError?.details?.['paidAmount'], 
+          currency: notMatchingCostError?.details?.['currency'] } }}</p>
+    <p>{{ 'notMatchingCostModalBenefitors' 
+      | translate:{ cost: notMatchingCostError?.details?.['owedAmount'], 
+        currency: notMatchingCostError?.details?.['currency'] } }}</p>
+  </div>
+  <div slot="actions">
+    <button 
+      (click)="notMatchingCostError = null"
+      data-test="not-matching-cost-modal-warning-close-btn"
+    >
+      {{ 'close' | translate }}
     </button>
   </div>
 </modal>

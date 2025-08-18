@@ -1,6 +1,7 @@
 <form
     (submit)="$event.preventDefault(); submit()"
     *ngIf="form && !notesOpen"
+    data-test="payment-event-simple"
 >
   <description-and-notes-form
     [descriptionFormControl]="form.controls.description"

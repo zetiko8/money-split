@@ -1,4 +1,4 @@
-import { PaymentNode } from './index';
+import { GuiError, PaymentNode } from './index';
 
 /**
  * Groups payment nodes by currency and sums their amounts
@@ -18,7 +18,10 @@ export function sumPaymentNodesByCurrency(nodes: PaymentNode[]): Map<string, num
  * Validates that total amount paid equals total amount owed for each currency
  * @throws Error if amounts don't match for any currency
  */
-export function validatePaymentAmounts(paidBy: PaymentNode[], benefitors: PaymentNode[]): void {
+export function validatePaymentAmounts(
+  paidBy: PaymentNode[],
+  benefitors: PaymentNode[],
+): void {
   const paidSums = sumPaymentNodesByCurrency(paidBy);
   const owedSums = sumPaymentNodesByCurrency(benefitors);
 
@@ -30,7 +33,14 @@ export function validatePaymentAmounts(paidBy: PaymentNode[], benefitors: Paymen
     const owedAmount = owedSums.get(currency) || 0;
 
     if (paidAmount !== owedAmount) {
-      throw new Error(`Amount mismatch for ${currency}: paid ${paidAmount} but owed ${owedAmount}`);
+      const error
+        = new Error(`Amount mismatch for ${currency}: paid ${paidAmount} but owed ${owedAmount}`);
+      (error as GuiError).details = {
+        paidAmount,
+        owedAmount,
+        currency,
+      };
+      throw error;
     }
   }
 }

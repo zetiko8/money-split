@@ -47,5 +47,8 @@
   "FILE_TYPE_NOT_SUPPORTED": "Vrsta datoteke je nepodprta",
   "INPUT_VALUE_TO_LONG": "Predolg vnos",
   "currency": "Valuta",
-  "cost": "Strošek"
+  "cost": "Strošek",
+  "notMatchingCostModalTitle": "Napaka pri dodajanju plačila",
+  "notMatchingCostModalPaidBy": "Vrednost plačil v valuti {{ currency }} = {{ cost }}",
+  "notMatchingCostModalBenefitors": "Vrednost dolga v valuti {{ currency }} = {{ cost }}"
 }

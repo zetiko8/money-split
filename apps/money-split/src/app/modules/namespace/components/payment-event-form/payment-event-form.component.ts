@@ -85,9 +85,31 @@ export class PaymentEventFormComponent {
         namespace: this._data.namespace,
       };
     } else {
+      const paymentEvent: PaymentEvent = {
+        benefitors: data.benefitors.map(item => ({
+          userId: item,
+          amount: data.cost / data.benefitors.length,
+          currency: data.currency,
+        })),
+        paidBy: data.paidBy.map(item => ({
+          userId: item,
+          amount: data.cost / data.paidBy.length,
+          currency: data.currency,
+        })),
+        created: new Date(),
+        edited: new Date(),
+        createdBy: data.createdBy,
+        editedBy: data.createdBy,
+        description: data.description,
+        notes: data.notes,
+        id: -1,
+        namespaceId: this._data.namespace.id,
+        settlementId: null,
+      };
       this.paymentEventFormData = {
         form: getPaymentEventForm(
           this._data.namespace.ownerUsers[0].id,
+          paymentEvent,
         ),
         namespace: this._data.namespace,
       };

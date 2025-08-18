@@ -26,3 +26,16 @@ export async function asyncMap<T, R> (
 
   return result;
 }
+
+export function sanitizeForHtmlAttribute(value: string): string {
+  if (!value) return '';
+
+  return value
+    .toLowerCase()
+    // Replace spaces and underscores with dashes
+    .replace(/[\s_]+/g, '-')
+    // Remove any characters that aren't alphanumeric or dashes
+    .replace(/[^a-z0-9-]/g, '')
+    // Remove leading/trailing dashes
+    .replace(/^-+|-+$/g, '');
+}
