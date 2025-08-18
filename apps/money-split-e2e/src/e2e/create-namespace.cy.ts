@@ -26,7 +26,7 @@ describe('Create a namespace', () => {
       NAMESPACE_SCREEN.userIsOn('testnamespace');
     });
 
-    it.only('validates namespace name', () => {
+    it('validates namespace name', () => {
       ACTIONS.loginTestOwnerWithToken(token);
       CREATE_NAMESPACE_FORM.visit(testOwner.owner.key);
 
