@@ -254,7 +254,7 @@ describe(API_NAME, () => {
     });
   });
 
-  describe.only('payment events sorting by year', () => {
+  describe('payment events sorting by year', () => {
     const firstDate = moment().set({
       year: 2024,
       month: 2,

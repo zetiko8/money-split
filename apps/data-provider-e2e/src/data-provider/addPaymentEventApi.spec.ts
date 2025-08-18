@@ -405,7 +405,7 @@ describe(API_NAME, () => {
     });
   });
 
-  describe.only('complex payment event validation', () => {
+  describe('complex payment event validation', () => {
     describe('amount owed must be same as amount paid', () => {
       it('multiple payers must equal benefitors - 2EUR + 3EUR != 4EUR', async () => {
         await fnCall(API_NAME,
