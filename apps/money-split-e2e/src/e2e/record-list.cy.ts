@@ -120,7 +120,7 @@ describe('Record list', () => {
     });
   });
 
-  describe.only('corectly displays records not in the same year',() => {
+  describe('corectly displays records not in the same year',() => {
     const firstDate = moment().set({
       year: 2024,
       month: 2,

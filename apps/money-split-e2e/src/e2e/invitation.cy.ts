@@ -41,7 +41,7 @@ describe('Invitation', () => {
     });
   });
 
-  describe.only('accept invitation - already logged in',() => {
+  describe('accept invitation - already logged in',() => {
     const email = 'test@email.com';
     let namespaceId!: number;
     let testOwner!: TestOwner;
