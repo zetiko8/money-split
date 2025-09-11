@@ -169,7 +169,7 @@ describe(API_NAME, () => {
       }
     });
 
-    it('verify payment event view data', async () => {
+    it('verify namespace view data', async () => {
 
       await fnCall(API_NAME,
         async () => await axios.get(
@@ -233,6 +233,11 @@ describe(API_NAME, () => {
             },
             description: null,
             notes: null,
+            namespace: {
+              id: namespaceId,
+              avatarId: expect.any(Number),
+              name: 'testnamespace',
+            },
             namespaceId,
             paidBy: [
               {

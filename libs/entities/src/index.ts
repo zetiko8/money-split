@@ -182,7 +182,7 @@ export interface PaymentEventViewFromDb {
   edited: Date,
   createdBy: User,
   editedBy: User,
-  namespace: MNamespace,
+  namespaceId: number,
   settlementId: number | null,
   settledOn: Date | null,
   description: string,
@@ -276,7 +276,7 @@ export interface Debt {
 
 export interface SettlementPreview {
     settleRecords: SettlementRecord[];
-    records: RecordView[];
+    paymentEvents: PaymentEventView[];
     namespace: NamespaceView,
 }
 

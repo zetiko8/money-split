@@ -185,22 +185,23 @@ export class NamespaceService {
       );
   }
 
-  public settlePreview () {
+  public settlePreview (): Observable<SettlementPreview> {
     return combineLatest([
       this.routingService.getOwnerKey(),
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this
-          .http.get<SettlementPreview>(
-            this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/settle/preview',
-          ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => {
+          return DATA_PROVIDER_API.settlePreviewApi.callObservable(
+            null,
+            { ownerKey, namespaceId },
+            (url) => {
+              return this.http.get<SettlementPreview>(
+                this.config.getConfig().middlewareUrl + url,
+              );
+            },
+          );
+        }),
       );
   }
 

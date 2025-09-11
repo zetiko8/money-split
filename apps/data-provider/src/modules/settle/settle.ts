@@ -1,4 +1,4 @@
-import { ERROR_CODE, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPreview, SettlementRecord } from '@angular-monorepo/entities';
+import { ERROR_CODE, paymentEventsToRecords, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPreview, SettlementRecord } from '@angular-monorepo/entities';
 import { RECORD_SERVICE } from '../record/record';
 import { settle, deptToRecordData } from '@angular-monorepo/debt-simplification';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
@@ -7,6 +7,7 @@ import { lastInsertId, query } from '../../connection/connection';
 import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from '../../types';
 import { USER_SERVICE } from '../user/user';
 import { asyncMap } from '@angular-monorepo/utils';
+import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 
 export const SETTLE_SERVICE = {
   createSettlement: async (
@@ -96,19 +97,13 @@ export const SETTLE_SERVICE = {
     namespaceId: number,
     ownerId: number,
   ): Promise<SettlementPreview> => {
-    const records = (await RECORD_SERVICE
-      .getNamespaceRecords(namespaceId))
-      .filter(record => record.settlementId === null);
+    const paymentEvents = await PAYMENT_EVENT_SERVICE
+      .getNamespacePaymentEvents(namespaceId, ownerId);
+    const records = paymentEventsToRecords(paymentEvents);
 
-    const namespace
-            = await NAMESPACE_SERVICE.getNamespaceById(namespaceId);
-    const recordsView = await asyncMap(
-      records, async (record) => await NAMESPACE_SERVICE
-        .mapToRecordView(record, namespace));
+    const currency = records[0].currency;
 
-    const currency = records[0].data.currency;
-
-    const settleRecords = settle(records.map(record => record.data))
+    const settleRecords = settle(records)
       .map(debt => deptToRecordData(debt, currency));
 
     const settleRecordsData = await asyncMap<
@@ -124,7 +119,8 @@ export const SETTLE_SERVICE = {
               });
     return {
       settleRecords: settleRecordsData,
-      records: recordsView,
+      paymentEvents: await PAYMENT_EVENT_SERVICE
+        .getNamespacePaymentEventsView(namespaceId, ownerId),
       namespace: await NAMESPACE_SERVICE
         .getNamespaceViewForOwner(namespaceId, ownerId),
     };

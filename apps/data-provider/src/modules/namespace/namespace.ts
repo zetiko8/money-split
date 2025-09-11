@@ -259,6 +259,15 @@ export async function editNamespaceSettings (
   });
 }
 
+export async function ownerHasAccessToNamespace (
+  ownerId: number,
+  namespaceId: number,
+): Promise<boolean> {
+  const namespaces = await getNamespacesForOwner(ownerId);
+
+  return namespaces.some(namespace => namespace.id === namespaceId);
+}
+
 export const NAMESPACE_SERVICE = {
   deleteNamespace: async (
     namespaceId: number,
@@ -278,4 +287,5 @@ export const NAMESPACE_SERVICE = {
   getSettlementListViews,
   getNamespaceSettings,
   editNamespaceSettings,
+  ownerHasAccessToNamespace,
 };

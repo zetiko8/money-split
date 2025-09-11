@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { ENVIRONMENT } from '../config';
 import { Request } from 'express';
 import { appError } from '../../helpers';
+import { NAMESPACE_SERVICE } from '../namespace/namespace';
 
 async function login (
   username: string,
@@ -141,6 +142,25 @@ export const AUTH_SERVICE = {
       throw appError(
         ERROR_CODE.UNAUTHORIZED,
         'AUTH_SERVICE.auth',
+        error,
+      );
+    }
+  },
+  namespaceAuth: async (
+    request: Request,
+  ) => {
+    try {
+      const owner = await getOwnerFromRequest(request);
+      const ownerHasAccessToNamespace = await NAMESPACE_SERVICE.ownerHasAccessToNamespace(
+        owner.id,
+        Number(request.params['namespaceId']),
+      );
+      if (!ownerHasAccessToNamespace) throw Error(ERROR_CODE.UNAUTHORIZED);
+      return owner;
+    } catch (error) {
+      throw appError(
+        ERROR_CODE.UNAUTHORIZED,
+        'AUTH_SERVICE.namespaceAuth',
         error,
       );
     }

@@ -11,31 +11,25 @@ import { mysqlDate } from '../../connection/helper';
 import {
   settleConfirmApi,
   settleConfirmApiBackdoor,
+  settlePreviewApi,
 } from '@angular-monorepo/api-interface';
 
 export const settleRouter = Router();
 
-settleRouter.get('/:ownerKey/namespace/:namespaceId/settle/preview',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = await AUTH_SERVICE.getOwnerFromRequest(req);
+registerRoute(
+  settlePreviewApi(),
+  settleRouter,
+  async (payload, params, context) => {
+    const settlmentPreview = await SETTLE_SERVICE
+      .settleNamespacePreview(
+        Number(params.namespaceId),
+        context.owner.id,
+      );
 
-      const settlmentPreview = await SETTLE_SERVICE
-        .settleNamespacePreview(
-          numberRouteParam(req, 'namespaceId'),
-          owner.id,
-        );
-
-      res.json(settlmentPreview);
-    } catch (error) {
-      next(error);
-    }
-  });
+    return settlmentPreview;
+  },
+  AUTH_SERVICE.namespaceAuth,
+);
 
 registerRoute(
   settleConfirmApi(),

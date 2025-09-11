@@ -1,4 +1,4 @@
-import { GuiError, PaymentNode } from './index';
+import { GuiError, PaymentEvent, PaymentNode, RecordData } from './index';
 
 /**
  * Groups payment nodes by currency and sums their amounts
@@ -44,3 +44,36 @@ export function validatePaymentAmounts(
     }
   }
 }
+
+export const paymentEventsToRecords = (paymentEvents: PaymentEvent[]) => {
+  const records: RecordData[] = [];
+
+  for (const paymentEvent of paymentEvents) {
+    const paidBy = paymentEvent.paidBy;
+    const benefitors = paymentEvent.benefitors;
+    const paidByByCurrencies = new Map<string, PaymentNode[]>();
+    const benefitorsByCurrencies = new Map<string, PaymentNode[]>();
+
+    for (const node of paidBy) {
+      const current = paidByByCurrencies.get(node.currency) || [];
+      paidByByCurrencies.set(node.currency, [...current, node]);
+    }
+    for (const node of benefitors) {
+      const current = benefitorsByCurrencies.get(node.currency) || [];
+      benefitorsByCurrencies.set(node.currency, [...current, node]);
+    }
+
+    for (const [currency, paidByNodes] of paidByByCurrencies) {
+      const benefitorNodes = benefitorsByCurrencies.get(currency) || [];
+      records.push({
+        currency,
+        paidBy: paidByNodes.map(node => node.userId),
+        benefitors: benefitorNodes.map(node => node.userId),
+        cost: paidByNodes.reduce((acc, node) => acc + node.amount, 0),
+      });
+    }
+  }
+
+  return records;
+};
+
