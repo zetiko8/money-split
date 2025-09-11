@@ -33,15 +33,15 @@ export class SettleView {
   public readonly routingService = inject(RoutingService);
 
   public readonly loadProcess = new AsyncProcess(
-    () => this.nameSpaceService.settlePreview() 
+    () => this.nameSpaceService.settlePreview(),
   );
   public readonly settleConfirmProcess = new AsyncProcess(
     () => this.preview$.pipe(take(1))
       .pipe(mergeMap(preview => this.nameSpaceService
         .settle(
           preview.namespace.ownerUsers[0].id,
-          { records: preview.records.map(r => r.id) }
-        )))
+          { records: preview.records.map(r => r.id) },
+        ))),
   );
 
   public readonly preview$
@@ -52,17 +52,17 @@ export class SettleView {
     this.settleConfirmProcess.inProgress$,
   ]);
 
-  public readonly notification$: Observable<Notification> 
+  public readonly notification$: Observable<Notification>
     = merge(
       this.loadProcess.error$,
       this.settleConfirmProcess.error$,
-    ) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+    )
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 
   public settle () {
     this.settleConfirmProcess.execute('')
