@@ -1,5 +1,5 @@
 <div
-    (click)="change(!_value)"
+    (click)="change(!_value); $event.stopPropagation()"
     style="display: flex; align-items: center;"
 >
     <input

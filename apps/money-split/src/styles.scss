@@ -209,8 +209,6 @@ ul {
       &.box {
         border-color: transparent;
         border-width: 1px;
-        border-bottom-width: 2px;
-        border-right-width: 2px;
       }
 
       &.checked {
@@ -275,6 +273,8 @@ ul {
         border-radius: var(--border-radius-normal);
         padding: var(--gap-small);
         margin: var(--gap-small) 0;
+        border-bottom-width: 2px;
+        border-right-width: 2px;
 
         &.xsmall {
             padding: var(--gap-xsmall) var(--gap-small);
@@ -287,6 +287,20 @@ ul {
             &.xsmall {
                 margin: var(--gap-xsmall);    
             }
+        }
+
+        &.secondary {
+          border-color: var(--color-secondary);
+        }
+
+        &.secondary-fill {
+          background-color: var(--color-secondary);
+
+          color: var(--text-color-inverted);
+        }
+
+        &.no-border {
+          border-color: transparent;
         }
     }
 
@@ -337,6 +351,21 @@ ul {
     .p-lr-small {
         padding-left: var(--gap-small);
         padding-right: var(--gap-small);
+    }
+
+    .m-r-normal {
+        margin-right: var(--gap-normal);
+    }
+    .m-r-large {
+        margin-right: var(--gap-large);
+    }
+
+    .m-t-normal {
+        margin-top: var(--gap-normal);
+    }
+
+    .pt-small {
+        padding-top: var(--gap-small);
     }
 
     .form-control {
@@ -577,4 +606,13 @@ full-screen-loader {
 
 .modal-backdrop {
   z-index: 200;
+}
+
+.payment-event-balance {
+  display: flex;
+  align-items: center;
+}
+
+.display-none {
+  display: none !important;
 }

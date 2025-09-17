@@ -149,8 +149,8 @@ export const AUTH_SERVICE = {
   namespaceAuth: async (
     request: Request,
   ) => {
+    const owner = await AUTH_SERVICE.auth(request);
     try {
-      const owner = await getOwnerFromRequest(request);
       const ownerHasAccessToNamespace = await NAMESPACE_SERVICE.ownerHasAccessToNamespace(
         owner.id,
         Number(request.params['namespaceId']),

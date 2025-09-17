@@ -281,4 +281,61 @@ export const VALIDATE = {
     if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
     VALIDATE.bigint(value);
   },
+
+  boolean (value: unknown) {
+    if (value === null || value === undefined) return;
+    if (typeof value !== 'boolean') {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
+  },
+
+  requiredBoolean (value: unknown) {
+    if (value === undefined || value === null) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.boolean(value);
+  },
+
+  object (value: unknown) {
+    if (value === null || value === undefined) return;
+    if (typeof value !== 'object' || Array.isArray(value)) {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
+  },
+
+  requiredObject (value: unknown) {
+    if (!value) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.object(value);
+  },
+
+  nonNegativeNumber (value: unknown) {
+    VALIDATE.number(value);
+    if ((value as number) < 0) {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
+  },
+
+  requiredNonNegativeNumber (value: unknown) {
+    VALIDATE.requiredNumber(value);
+    VALIDATE.nonNegativeNumber(value);
+  },
+
+  currencyObject (value: unknown) {
+    VALIDATE.requiredObject(value);
+    for (const [code, amount] of Object.entries(value)) {
+      VALIDATE.currency(code);
+      VALIDATE.nonNegativeNumber(amount);
+    }
+  },
+
+  idArray (value: unknown) {
+    if (value === null || value === undefined) return;
+    VALIDATE.array(value);
+    for (const item of value as unknown[]) {
+      VALIDATE.bigint(item);
+    }
+  },
+
+  requiredIdArray (value: unknown) {
+    VALIDATE.requiredArray(value);
+    VALIDATE.idArray(value);
+  },
 };

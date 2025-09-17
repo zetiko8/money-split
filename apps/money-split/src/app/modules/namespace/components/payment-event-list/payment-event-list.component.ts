@@ -1,19 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
-import { PaymentEventView, SettlementListView } from '@angular-monorepo/entities';
-import moment from 'moment';
+import { PaymentEventView } from '@angular-monorepo/entities';
 import { PaymentEventItemComponent } from '../payment-event-item/payment-event-item.component';
+import { DateItemComponent } from '../date-item/date-item.component';
+import { FormControl } from '@angular/forms';
 
-interface DateItem {
-  date: Date,
-  contents: ({
-    isRecord: true,
-    data: PaymentEventView,
-  } | {
-    isRecord: false,
-    data: SettlementListView,
-  })[],
+interface PaymentEventContent {
+  isRecord: true;
+  data: PaymentEventView;
+  formControl?: FormControl<boolean>;
 }
 
 @Component({
@@ -22,6 +18,7 @@ interface DateItem {
     CommonModule,
     TranslateModule,
     PaymentEventItemComponent,
+    DateItemComponent,
   ],
   selector: 'payment-event-list',
   templateUrl: './payment-event-list.component.html',
@@ -31,20 +28,24 @@ interface DateItem {
   },
 })
 export class PaymentEventListComponent {
+
   @Input()
-  set paymentEvents (data: {
+  set paymentEvents(data: {
     paymentEvents: PaymentEventView[],
+    controls?: { id: number, formControl: FormControl<boolean> }[]
   }) {
-    const items: DateItem[] = [];
-    data.paymentEvents.forEach((paymentEventView) => {
-      if (paymentEventView.settlementId === null) {
-        getDateItem(paymentEventView.created, items)
-          .contents.push({
-            data: paymentEventView,
-            isRecord: true,
-          });
-      }
-    });
+    this._items = DateItemComponent.groupByDate<PaymentEventView, PaymentEventContent>(
+      data.paymentEvents.filter(pe => pe.settlementId === null),
+      (paymentEvent) => {
+        const obj: PaymentEventContent = {
+          isRecord: true,
+          data: paymentEvent,
+        };
+        if (data.controls) {
+          obj.formControl = data.controls.find(c => c.id === paymentEvent.id)?.formControl;
+        }
+        return obj;
+      },
 
     // data.settlements.forEach((settlementView) => {
     //   getDateItem(settlementView.settlement.created, items)
@@ -53,50 +54,16 @@ export class PaymentEventListComponent {
     //       isRecord: false,
     //     });
     // });
-
-    this._items
-      = items.filter(item => !!(item.contents.length));
-  };
+    );
+  }
 
   @Output() selectPaymentEvent = new EventEmitter<PaymentEventView>();
   @Output() markAsSettled = new EventEmitter<number>();
   @Output() markAsUnSettled = new EventEmitter<number>();
-  public _items: DateItem[] = [];
-}
-
-function dateAlreadyExist (
-  date: Date,
-  items: DateItem[],
-) {
-  return items.find(
-    item => {
-      return (
-        moment(date).isSame(item.date, 'date')
-        &&
-        moment(date).isSame(item.date, 'month')
-        &&
-        moment(date).isSame(item.date, 'year')
-      );
-    },
-  );
-}
-
-function getDateItem (
-  date: Date,
-  items: DateItem[],
-): DateItem {
-  const item = dateAlreadyExist(date, items);
-  if (
-    item === undefined
-  ) {
-    const newItem = {
-      date,
-      contents: [],
-    };
-    items.push(newItem);
-
-    return newItem;
-  } else {
-    return item;
-  }
+  @Output() checkboxesChange
+    = new EventEmitter<{ id: number, checked: boolean }[]>();
+  public _items: Array<{
+    date: Date;
+    contents: PaymentEventContent[],
+  }> = [];
 }

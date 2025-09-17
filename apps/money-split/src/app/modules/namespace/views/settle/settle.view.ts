@@ -10,6 +10,7 @@ import { combineLoaders } from '../../../../../helpers';
 import { NamespaceHeaderComponent } from '../../components/namespace.header.component';
 import { TranslateModule } from '@ngx-translate/core';
 import { DebtSpecificationComponent } from '../../components/debt-specification/debt-specification.component';
+import { SettlementComponent, SettlementStateService } from '../../services/settlement.state.service';
 
 @Component({
   standalone: true,
@@ -27,20 +28,21 @@ import { DebtSpecificationComponent } from '../../components/debt-specification/
   ],
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
-export class SettleView {
+export class SettleView extends SettlementComponent {
 
   private readonly nameSpaceService = inject(NamespaceService);
+  private readonly settlementStateService = inject(SettlementStateService);
   public readonly routingService = inject(RoutingService);
 
   public readonly loadProcess = new AsyncProcess(
-    () => this.nameSpaceService.settlePreview(),
+    () => this.settlementStateService.getPreview(),
   );
   public readonly settleConfirmProcess = new AsyncProcess(
     () => this.preview$.pipe(take(1))
       .pipe(mergeMap(preview => this.nameSpaceService
         .settle(
           preview.namespace.ownerUsers[0].id,
-          { records: preview.records.map(r => r.id) },
+          { records: preview.paymentEvents.map(pe => pe.id) },
         ))),
   );
 

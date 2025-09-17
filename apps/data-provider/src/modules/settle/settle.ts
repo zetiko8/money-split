@@ -1,4 +1,4 @@
-import { ERROR_CODE, paymentEventsToRecords, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPreview, SettlementRecord } from '@angular-monorepo/entities';
+import { ERROR_CODE, paymentEventsToRecords, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPreview, SettlementRecord, SettlementSettings } from '@angular-monorepo/entities';
 import { RECORD_SERVICE } from '../record/record';
 import { settle, deptToRecordData } from '@angular-monorepo/debt-simplification';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
@@ -99,7 +99,8 @@ export const SETTLE_SERVICE = {
   ): Promise<SettlementPreview> => {
     const paymentEvents = await PAYMENT_EVENT_SERVICE
       .getNamespacePaymentEvents(namespaceId, ownerId);
-    const records = paymentEventsToRecords(paymentEvents);
+    const records = paymentEventsToRecords(
+      paymentEvents.filter(pe => !pe.settlementId));
 
     const currency = records[0].currency;
 
@@ -121,6 +122,18 @@ export const SETTLE_SERVICE = {
       settleRecords: settleRecordsData,
       paymentEvents: await PAYMENT_EVENT_SERVICE
         .getNamespacePaymentEventsView(namespaceId, ownerId),
+      namespace: await NAMESPACE_SERVICE
+        .getNamespaceViewForOwner(namespaceId, ownerId),
+    };
+  },
+  getSettleSettings: async (
+    namespaceId: number,
+    ownerId: number,
+  ): Promise<SettlementSettings> => {
+    const paymentEvents = await PAYMENT_EVENT_SERVICE
+      .getNamespacePaymentEventsView(namespaceId, ownerId);
+    return {
+      paymentEventsToSettle: paymentEvents.filter(pe => !pe.settlementId),
       namespace: await NAMESPACE_SERVICE
         .getNamespaceViewForOwner(namespaceId, ownerId),
     };

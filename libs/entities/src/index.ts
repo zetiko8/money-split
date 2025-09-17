@@ -280,6 +280,18 @@ export interface SettlementPreview {
     namespace: NamespaceView,
 }
 
+export interface SettlementSettings {
+    paymentEventsToSettle: PaymentEventView[];
+    namespace: NamespaceView,
+}
+
+export interface SettlementPayload {
+  separatedSettlementPerCurrency: boolean;
+  currencies: { [key: string]: number };
+  mainCurrency: string;
+  paymentEvents: number[];
+}
+
 export interface SettlementListView {
     settlement: Settlement,
     settleRecords: SettlementDebtView[];

@@ -1041,5 +1041,13 @@ function getMonthString (date: Date) {
     return 'Jul';
   if (moment(date).month() === 7)
     return 'Avg';
+  if (moment(date).month() === 8)
+    return 'Sep';
+  if (moment(date).month() === 9)
+    return 'Oct';
+  if (moment(date).month() === 10)
+    return 'Nov';
+  if (moment(date).month() === 11)
+    return 'Dec';
   throw Error('Not implemented jet');
 }

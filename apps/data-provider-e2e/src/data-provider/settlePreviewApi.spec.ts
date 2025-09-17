@@ -14,6 +14,7 @@ describe(API_NAME, () => {
   let testOwner!: TestOwner;
   let machine!: MockDataMachine;
   let machineState!: MockDataState;
+  let paymentEventIds!: number[];
 
   beforeEach(async () => {
     try {
@@ -40,7 +41,7 @@ describe(API_NAME, () => {
       creatorUserId = creatorUser.id;
 
       // Create test payment events
-      await machine.addPaymentEventToNamespace(
+      const paymentEvent1 = await machine.addPaymentEventToNamespace(
         namespaceId, userId, {
           paidBy: [{ userId, amount: 100, currency: 'EUR' }],
           benefitors: [
@@ -52,7 +53,7 @@ describe(API_NAME, () => {
           notes: '',
         });
 
-      await machine.addPaymentEventToNamespace(
+      const paymentEvent2 = await machine.addPaymentEventToNamespace(
         namespaceId, creatorUserId, {
           paidBy: [{ userId: creatorUserId, amount: 60, currency: 'EUR' }],
           benefitors: [
@@ -64,6 +65,11 @@ describe(API_NAME, () => {
           notes: '',
         });
 
+      paymentEventIds = [
+        paymentEvent1.paymentEvent.id,
+        paymentEvent2.paymentEvent.id,
+      ];
+
       await testOwner.login();
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
@@ -72,8 +78,15 @@ describe(API_NAME, () => {
 
   describe('smoke', () => {
     it('smoke', async () => {
-      await smoke(API_NAME, async () => await axios.get(
+      await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: { 'EUR': 1 },
+          mainCurrency: 'EUR',
+          paymentEvents: paymentEventIds,
+        },
+        testOwner.authHeaders(),
       ));
     });
   });
@@ -81,14 +94,26 @@ describe(API_NAME, () => {
   describe('validation', () => {
     it('throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
-        async () => await axios.get(
+        async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
 
       await fnCall(API_NAME,
-        async () => await axios.get(
+        async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
           {
             headers: {
               Authorization: 'Bearer invalid-token',
@@ -100,7 +125,7 @@ describe(API_NAME, () => {
 
     it('validates namespace exists', async () => {
       await fnCall(API_NAME,
-        async () => await axios.get(
+        async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/999999/settle/preview`,
           testOwner.authHeaders()))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
@@ -110,7 +135,7 @@ describe(API_NAME, () => {
       // Create a new namespace where test user is not a member
       const { selectedNamespace : newNamespace } = await machine.createNewNamespace('other-namespace');
       await fnCall(API_NAME,
-        async () => await axios.get(
+        async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${newNamespace.id}/settle/preview`,
           testOwner.authHeaders()))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
@@ -118,17 +143,216 @@ describe(API_NAME, () => {
 
     it('validates owner key exists', async () => {
       await fnCall(API_NAME,
-        async () => await axios.get(
+        async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invalid-key/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
           testOwner.authHeaders()))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
+    });
+
+    it('validates payload with missing fields', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {},
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates payload with missing currencies field', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates payload with missing mainCurrency field', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates negative currency value', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': -1 },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid currency code', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'INVALID': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid main currency', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'INVALID',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid separatedSettlementPerCurrency type', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: 'not-a-boolean',
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid currencies type', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: 'not-an-object',
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid currency value type', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 'not-a-number' },
+            mainCurrency: 'EUR',
+            paymentEvents: paymentEventIds,
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates empty paymentEvents array', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: [],
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates payment event from different namespace', async () => {
+      // Create a new namespace and payment event
+      const { selectedNamespace: otherNamespace } = await machine.createNewNamespace('other-namespace');
+      const otherNamespaceCreatorUser = machineState.getUserByName('creator');
+      const otherPaymentEvent = await machine.addPaymentEventToNamespace(
+        otherNamespace.id, otherNamespaceCreatorUser.id, {
+          paidBy: [{ userId: otherNamespaceCreatorUser.id, amount: 60, currency: 'EUR' }],
+          benefitors: [{ userId: otherNamespaceCreatorUser.id, amount: 60, currency: 'EUR' }],
+          description: 'test payment in other namespace',
+          createdBy: otherNamespaceCreatorUser.id,
+          notes: '',
+        });
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: [otherPaymentEvent.paymentEvent.id],
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid payment event ID', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: [999999],
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+
+    it('validates invalid paymentEvents type', async () => {
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+          {
+            separatedSettlementPerCurrency: true,
+            currencies: { 'EUR': 1 },
+            mainCurrency: 'EUR',
+            paymentEvents: 'not-an-array',
+          },
+          testOwner.authHeaders()))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
   });
 
   describe('happy path', () => {
     it('returns correct settlement preview structure', async () => {
-      const response = await axios.get(
+      const response = await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: { 'EUR': 1 },
+          mainCurrency: 'EUR',
+          paymentEvents: paymentEventIds,
+        },
         testOwner.authHeaders(),
       );
 
@@ -155,5 +379,6 @@ describe(API_NAME, () => {
     });
 
     it.todo('returns empty arrays when no unsettled payments exist');
+    it.todo('multiple currencies');
   });
 });

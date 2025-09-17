@@ -17,7 +17,9 @@ import {
   RecordDataBackdoor,
   RegisterOwnerPayload,
   Settlement,
+  SettlementPayload,
   SettlementPreview,
+  SettlementSettings,
   SettlePayload,
   ViewUserViewData,
 } from '@angular-monorepo/entities';
@@ -309,13 +311,26 @@ export function settleConfirmApiBackdoor() {
 
 export function settlePreviewApi() {
   return apiDefinition<
-   null,
+   SettlementPayload,
     {
       ownerKey: string,
       namespaceId: number,
     },
     SettlementPreview>({
       endpoint: '/:ownerKey/namespace/:namespaceId/settle/preview',
+      method: 'POST',
+    });
+}
+
+export function settleSettingsApi() {
+  return apiDefinition<
+   null,
+    {
+      ownerKey: string,
+      namespaceId: number,
+    },
+    SettlementSettings>({
+      endpoint: '/:ownerKey/namespace/:namespaceId/settle/settings',
       method: 'GET',
     });
 }
@@ -397,4 +412,5 @@ export const DATA_PROVIDER_API = {
   editPaymentEventApi: new ApiDefinitionObj(editPaymentEventApi()),
   getPaymentEventApi: new ApiDefinitionObj(getPaymentEventApi()),
   getEditPaymentEventViewApi: new ApiDefinitionObj(getEditPaymentEventViewApi()),
+  settleSettingsApi: new ApiDefinitionObj(settleSettingsApi()),
 };

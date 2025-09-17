@@ -1,4 +1,20 @@
-import { GuiError, PaymentEvent, PaymentNode, RecordData } from './index';
+import { GuiError, PaymentEvent, PaymentEventView, PaymentNode, RecordData } from './index';
+
+/**
+ * Groups payment nodes by currency and sums their amounts
+ */
+export function getAllCurrenciesForPaymentEventView(
+  nodes: PaymentEventView[],
+): string[] {
+  const currencies = new Set<string>();
+
+  for (const node of nodes) {
+    node.paidBy.forEach(n => currencies.add(n.currency));
+    node.benefitors.forEach(n => currencies.add(n.currency));
+  }
+
+  return [...currencies];
+}
 
 /**
  * Groups payment nodes by currency and sums their amounts

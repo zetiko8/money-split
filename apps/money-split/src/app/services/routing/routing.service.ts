@@ -171,6 +171,33 @@ export class RoutingService {
     }
   }
 
+  public goToSettleSetingsView (
+    namespaceId?: number,
+    ownerKey?: string,
+  ) {
+    if (ownerKey && namespaceId) {
+      this.router.navigate(
+        this.settleSettingsLink(ownerKey, namespaceId));
+    }
+    else if (namespaceId) {
+      this.getOwnerKey()
+        .subscribe(
+          ownerKeyG => this.router.navigate(
+            this.settleSettingsLink(ownerKeyG, namespaceId)),
+        );
+    }
+    else {
+      combineLatest(
+        this.getOwnerKey(),
+        this.getNamespaceId(),
+      )
+        .subscribe(
+          ([ownerKeyG, namespaceIdG]) => this.router.navigate(
+            this.settleSettingsLink(ownerKeyG, namespaceIdG)),
+        );
+    }
+  }
+
   public goToAddExpenseView (
     namespaceId?: number,
     ownerKey?: string,
@@ -378,6 +405,14 @@ export class RoutingService {
       namespaceId, 'settle'];
   }
 
+  public settleSettingsLink (
+    ownerKey: string,
+    namespaceId: number,
+  ) {
+    return ['/', ownerKey, 'namespace',
+      namespaceId, 'settle', 'settings'];
+  }
+
   public addExpenseLink (
     ownerKey: string,
     namespaceId: number,
@@ -429,5 +464,9 @@ export class RoutingService {
 
   public goToLoginView () {
     this.router.navigate(['/login']);
+  }
+
+  public isSettleLink (url: string) {
+    return url.includes('/settle');
   }
 }

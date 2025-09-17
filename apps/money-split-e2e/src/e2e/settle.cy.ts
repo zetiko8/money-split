@@ -96,10 +96,10 @@ describe('Settle', () => {
       creatorOwner = scenario.creator.owner;
       namespaceId = scenario.namespaceId;
 
-      await ACTIONS.loginTestOwner(creatorOwner);
     });
 
     it('can settle', () => {
+      ACTIONS.loginTestOwnerWithToken(creatorOwner.token);
       NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.settleButton.click();

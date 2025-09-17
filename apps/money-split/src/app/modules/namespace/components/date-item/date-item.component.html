@@ -1,0 +1,21 @@
+<section>
+    <ul>
+        <ng-container *ngFor="let item of items">
+            <li data-test="records-day">
+                <p 
+                  data-test="records-day-label"
+                  class="text-light"
+                >
+                    {{ item.date | date }}
+                </p>
+                <ul>
+                    <ng-container *ngFor="let content of item.contents">
+                        <ng-container 
+                            *ngTemplateOutlet="itemTemplate; context: { $implicit: content }"
+                        ></ng-container>
+                    </ng-container>
+                </ul>
+            </li>
+        </ng-container>
+    </ul>
+</section>

@@ -15,6 +15,7 @@ import { RoutingService } from './services/routing/routing.service';
 import { AvatarService } from './services/avatar.service';
 import { HomeGuard } from './services/guards/HomeGuard';
 import { AuthGuard } from './services/guards/AuthGuard';
+import { SettlementStateService } from './modules/namespace/services/settlement.state.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -57,6 +58,7 @@ export const appConfig: ApplicationConfig = {
     AvatarService,
     HomeGuard,
     AuthGuard,
+    SettlementStateService,
   ],
 };
 

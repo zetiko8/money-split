@@ -1,52 +1,148 @@
 <div
-    class="record-item-header"
-    *ngIf="_paymentEventView"
+  (click)="(!checkboxFormControl && edit.emit()) 
+            || checkboxFormControl?.setValue(!checkboxFormControl?.value)"
 >
-    <h5
-        data-test="settled-on-label"
-        *ngIf="_paymentEventView.settlementId !== null"
-    >
-        {{ 'settledOn' | translate }}:
-        {{ _paymentEventView.settledOn | date }}
-    </h5>
-</div>
-<div
-  *ngFor="let paymentEventSimpleView of paymentEventSimpleViews"
->
-  <div>
-      <avatar
-          *ngFor="let payer of paymentEventSimpleView.data.paidBy"
-          [name]="payer.name"
-          [avatarId]="payer.avatarId"
-          style="display: inline-block;"
-          data-test="payer-avatar"
-          [id]="'payer-avatar-' + payer.name"
+  <div
+      class="record-item-header"
+      *ngIf="_paymentEventView &&_paymentEventView.settlementId !== null"
+  >
+    <div>
+      <h5
+          data-test="settled-on-label"
       >
-      </avatar>
-      <span>
-          {{ 'paidWord' | translate }}
-      </span>
-      <span
-          data-test="record-cost"
-      >
-          {{ paymentEventSimpleView.data.cost | number : '1.2-2' }}
-      </span>
-      <span
-          data-test="record-currency"
-      >
-          {{ paymentEventSimpleView.data.currency }}
-      </span>
-      <span>
-          {{ 'toWord' | translate }}
-      </span>
-      <avatar
-          *ngFor="let benefitor of paymentEventSimpleView.data.benefitors"
-          [name]="benefitor.name"
-          [avatarId]="benefitor.avatarId"
-          style="display: inline-block;"
-          data-test="benefitor-avatar"
-          [id]="'benefitor-avatar-' + benefitor.name"
-      >
-      </avatar>
+          {{ 'settledOn' | translate }}:
+          {{ _paymentEventView.settledOn | date }}
+      </h5>
+    </div>
   </div>
+  <div
+    style="display: flex;"
+  >
+    <div
+      style="width: 20px; margin-left: 10px;"
+      *ngIf="checkboxFormControl"
+    >
+      &nbsp;
+    </div>
+    <div
+        class="p-lr-small"
+        *ngIf="_paymentEventView "
+    >
+      <div>
+        <h5
+            *ngIf="displayType === 'TITLE'
+                  || displayType === 'TITLE_AND_BALANCE'"
+        >
+            {{ _paymentEventView.description || 'no_title' | translate }}
+        </h5>
+      </div>
+    </div>
+  </div>
+  <div
+    style="display: flex;"
+  >
+    <div
+      style="width: 20px; margin-left: 10px;"
+      *ngIf="checkboxFormControl"
+    >
+      <checkbox-input
+        [formControl]="checkboxFormControl"
+        data-test="record-checkbox"
+      ></checkbox-input>
+    </div>
+    <div>
+
+      <div
+        *ngFor="let paymentEventSimpleView of paymentEventSimpleViews"
+      >
+        <div
+          class="payment-event-balance"
+          *ngIf="displayType === 'BALANCE' 
+                || displayType === 'TITLE_AND_BALANCE'"
+        >
+          <div>
+            <avatar
+                *ngFor="let payer of paymentEventSimpleView.data.paidBy"
+                [name]="payer.name"
+                [avatarId]="payer.avatarId"
+                style="display: inline-block;"
+                data-test="payer-avatar"
+                [id]="'payer-avatar-' + payer.name"
+                class="pt-small"
+            >
+            </avatar>
+          </div>
+          <div>
+            <span
+              *ngIf="paymentEventSimpleView.data.paidBy.length === 1
+                    && paymentEventSimpleView.data.benefitors.length === 1"
+            >
+              {{ 'balanceText_single_single' 
+                | translate:{ 
+                    cost: paymentEventSimpleView.data.cost | number : '1.2-2', 
+                    currency: paymentEventSimpleView.data.currency 
+                    } 
+              }}
+            </span>
+            <span
+              *ngIf="paymentEventSimpleView.data.paidBy.length > 1
+                    && paymentEventSimpleView.data.benefitors.length === 1"
+            >
+              {{ 'balanceText_multi_single' 
+                | translate:{ 
+                    cost: paymentEventSimpleView.data.cost | number : '1.2-2', 
+                    currency: paymentEventSimpleView.data.currency 
+                    } 
+              }}
+            </span>
+            <span
+              *ngIf="paymentEventSimpleView.data.paidBy.length === 1
+                    && paymentEventSimpleView.data.benefitors.length > 1"
+            >
+              {{ 'balanceText_single_multi' 
+                | translate:{ 
+                    cost: paymentEventSimpleView.data.cost | number : '1.2-2', 
+                    currency: paymentEventSimpleView.data.currency 
+                    } 
+              }}
+            </span>
+            <span
+              *ngIf="paymentEventSimpleView.data.benefitors.length > 1
+                    && paymentEventSimpleView.data.paidBy.length > 1"
+            >
+              {{ 'balanceText_multi_multi' 
+                | translate:{ 
+                    cost: paymentEventSimpleView.data.cost | number : '1.2-2', 
+                    currency: paymentEventSimpleView.data.currency 
+                    } 
+              }}
+            </span>
+          </div>
+          <div>
+            <avatar
+                *ngFor="let benefitor of paymentEventSimpleView.data.benefitors"
+                [name]="benefitor.name"
+                [avatarId]="benefitor.avatarId"
+                style="display: inline-block;"
+                data-test="benefitor-avatar"
+                [id]="'benefitor-avatar-' + benefitor.name"
+                class="pt-small"
+            >
+            </avatar>
+          </div>
+      </div>
+      <div
+        class="payment-event-title p-lr-small"
+        *ngIf="displayType === 'TITLE'"
+      >
+        <div>
+          <span>
+            {{ paymentEventSimpleView.data.cost | number : '1.2-2' }}
+            {{ paymentEventSimpleView.data.currency }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    </div>
 </div>

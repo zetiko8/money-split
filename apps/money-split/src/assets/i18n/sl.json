@@ -50,5 +50,19 @@
   "cost": "Strošek",
   "notMatchingCostModalTitle": "Napaka pri dodajanju plačila",
   "notMatchingCostModalPaidBy": "Vrednost plačil v valuti {{ currency }} = {{ cost }}",
-  "notMatchingCostModalBenefitors": "Vrednost dolga v valuti {{ currency }} = {{ cost }}"
+  "notMatchingCostModalBenefitors": "Vrednost dolga v valuti {{ currency }} = {{ cost }}",
+  "balanceText_single_single": "je plačal {{ cost }} {{ currency }} osebi",
+  "balanceText_single_multi": "je plačal {{ cost }} {{ currency }} osebam",
+  "balanceText_multi_single": "so plačali {{ cost }} {{ currency }} osebi",
+  "balanceText_multi_multi": "so plačali {{ cost }} {{ currency }} osebam",
+  "no_description": "<Ni opisa>",
+  "no_title": "<Brez naslova>",
+  "settlementSettings": "Poravnava",
+  "paymentEventsToSettle": "Plačila za poravnavo",
+  "allPayments": "Vsa plačila",
+  "customPayments": "Izbrana plačila",
+  "separatedSettlementPerCurrency": "Poravnava po valutah",
+  "manageCurrencies": "Pretvori valute",
+  "selectMainCurrency": "Izberi glavno valuto",
+  "currencyConversion": "1 {{ currency }} je"
 }

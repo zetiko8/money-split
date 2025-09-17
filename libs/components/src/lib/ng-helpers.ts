@@ -1,7 +1,7 @@
-import { combineLatest, map, Observable } from "rxjs";
+import { combineLatest, map, Observable } from 'rxjs';
 
 export function combineLoaders (
-  loaders: Observable<boolean>[]
+  loaders: Observable<boolean>[],
 ): Observable<boolean> {
   return combineLatest(loaders).pipe(map(all => all.some(l => l)));
 }

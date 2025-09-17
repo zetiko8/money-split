@@ -9,7 +9,7 @@
         *ngIf="preview$ | async as preview"
         [name]="preview.namespace.name"
         [avatarId]="preview.namespace.avatarId"
-        (backNavigation)="routingService.goToNamespaceView()"
+        (backNavigation)="routingService.goToSettleSetingsView()"
     ></namespace-header>
     <ng-container
         *ngIf="preview$ | async as preview"

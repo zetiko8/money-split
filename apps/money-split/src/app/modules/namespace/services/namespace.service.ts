@@ -15,7 +15,9 @@ import {
   PaymentEvent,
   Record,
   SettlePayload,
+  SettlementPayload,
   SettlementPreview,
+  SettlementSettings,
 } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
@@ -185,7 +187,9 @@ export class NamespaceService {
       );
   }
 
-  public settlePreview (): Observable<SettlementPreview> {
+  public settlePreview (
+    payload: SettlementPayload,
+  ): Observable<SettlementPreview> {
     return combineLatest([
       this.routingService.getOwnerKey(),
       this.routingService.getNamespaceId(),
@@ -193,10 +197,31 @@ export class NamespaceService {
       .pipe(
         mergeMap(([ownerKey, namespaceId]) => {
           return DATA_PROVIDER_API.settlePreviewApi.callObservable(
+            payload,
+            { ownerKey, namespaceId },
+            (url) => {
+              return this.http.post<SettlementPreview>(
+                this.config.getConfig().middlewareUrl + url,
+                payload,
+              );
+            },
+          );
+        }),
+      );
+  }
+
+  public settleSettings (): Observable<SettlementSettings> {
+    return combineLatest([
+      this.routingService.getOwnerKey(),
+      this.routingService.getNamespaceId(),
+    ])
+      .pipe(
+        mergeMap(([ownerKey, namespaceId]) => {
+          return DATA_PROVIDER_API.settleSettingsApi.callObservable(
             null,
             { ownerKey, namespaceId },
             (url) => {
-              return this.http.get<SettlementPreview>(
+              return this.http.get<SettlementSettings>(
                 this.config.getConfig().middlewareUrl + url,
               );
             },

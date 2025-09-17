@@ -17,6 +17,8 @@ import { HomeGuard } from './services/guards/HomeGuard';
 import { AuthGuard } from './services/guards/AuthGuard';
 import { ViewUserView } from './modules/namespace/views/view-user/view-user.view';
 import { EditNamespaceView } from './modules/namespace/views/edit-namespace/edit-namespace.view';
+import { SettlementSettingsView } from './modules/namespace/views/settlement-settings/settlement-settings.view';
+import { SettlementStateService } from './modules/namespace/services/settlement.state.service';
 
 export const appRoutes: Route[] = [
   {
@@ -83,7 +85,19 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'namespace/:namespaceId/settle',
-        component: SettleView,
+        children: [
+          {
+            path: '',
+            component: SettleView,
+            canActivate: [ SettlementStateService ],
+            canDeactivate: [ SettlementStateService ],
+          },
+          {
+            path: 'settings',
+            component: SettlementSettingsView,
+            canDeactivate: [ SettlementStateService ],
+          },
+        ],
       },
       {
         path: 'namespace/:namespaceId/settings',
