@@ -201,11 +201,12 @@ export class MockData2Component implements OnInit {
         createdBy: this.paymentEvent.createdBy!.id,
       };
 
-      this.state = await this.mockData.addPaymentEventToNamespace(
+      const { state } = await this.mockData.addPaymentEventToNamespace(
         this.state.selectedNamespace.id,
         record.createdBy,
         record,
       );
+      this.state = state;
 
       // Reset form
       this.paymentEvent.paidBy = [];
