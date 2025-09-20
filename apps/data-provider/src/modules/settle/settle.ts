@@ -1,5 +1,4 @@
-import { ERROR_CODE, paymentEventsToRecords, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPreview, SettlementRecord, SettlementSettings } from '@angular-monorepo/entities';
-import { RECORD_SERVICE } from '../record/record';
+import { ERROR_CODE, paymentEventsToRecordsWithIds, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPayload, SettlementPreview, SettlementRecord, SettlementSettings } from '@angular-monorepo/entities';
 import { settle, deptToRecordData } from '@angular-monorepo/debt-simplification';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { insertSql, mysqlDate, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
@@ -8,6 +7,36 @@ import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from '../.
 import { USER_SERVICE } from '../user/user';
 import { asyncMap } from '@angular-monorepo/utils';
 import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
+
+async function getSettleRecords (
+  namespaceId: number,
+  payload: SettlementPayload,
+  ownerId: number,
+): Promise<{
+  recordsToSettle: {
+    paymentEventId: number;
+    record: RecordData;
+  }[],
+  settleRecords: RecordData[]
+}> {
+  const paymentEvents = await PAYMENT_EVENT_SERVICE
+    .getNamespacePaymentEvents(namespaceId, ownerId);
+
+  if (paymentEvents.find(record => record.settlementId !== null))
+    throw Error(ERROR_CODE.USER_ACTION_CONFLICT);
+
+  const recordsToSettle = paymentEventsToRecordsWithIds(
+    paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id)));
+
+  const currency = recordsToSettle[0].record.currency;
+
+  const settleRecords = settle(recordsToSettle.map(r => r.record))
+    .map(debt => deptToRecordData(debt, currency));
+  return {
+    settleRecords,
+    recordsToSettle,
+  };
+};
 
 export const SETTLE_SERVICE = {
   createSettlement: async (
@@ -95,17 +124,12 @@ export const SETTLE_SERVICE = {
   },
   settleNamespacePreview: async (
     namespaceId: number,
+    payload: SettlementPayload,
     ownerId: number,
   ): Promise<SettlementPreview> => {
-    const paymentEvents = await PAYMENT_EVENT_SERVICE
-      .getNamespacePaymentEvents(namespaceId, ownerId);
-    const records = paymentEventsToRecords(
-      paymentEvents.filter(pe => !pe.settlementId));
 
-    const currency = records[0].currency;
-
-    const settleRecords = settle(records)
-      .map(debt => deptToRecordData(debt, currency));
+    const { settleRecords }
+      = await getSettleRecords(namespaceId, payload, ownerId);
 
     const settleRecordsData = await asyncMap<
             RecordData, SettlementRecord>(
@@ -126,38 +150,15 @@ export const SETTLE_SERVICE = {
         .getNamespaceViewForOwner(namespaceId, ownerId),
     };
   },
-  getSettleSettings: async (
-    namespaceId: number,
-    ownerId: number,
-  ): Promise<SettlementSettings> => {
-    const paymentEvents = await PAYMENT_EVENT_SERVICE
-      .getNamespacePaymentEventsView(namespaceId, ownerId);
-    return {
-      paymentEventsToSettle: paymentEvents.filter(pe => !pe.settlementId),
-      namespace: await NAMESPACE_SERVICE
-        .getNamespaceViewForOwner(namespaceId, ownerId),
-    };
-  },
   settle: async (
     byUser: number,
     namespaceId: number,
-    records: number[],
+    payload: SettlementPayload,
+    ownerId: number,
   ) => {
 
-    if (!records.length)
-      throw Error(ERROR_CODE.INVALID_REQUEST);
-
-    const recordsToSettle
-            = await RECORD_SERVICE.getRecordsById(records);
-
-    if (recordsToSettle.find(record => record.settlementId !== null))
-      throw Error(ERROR_CODE.USER_ACTION_CONFLICT);
-
-    const currency = recordsToSettle[0].data.currency;
-
-    const settleRecords = settle(recordsToSettle
-      .map(record => record.data))
-      .map(debt => deptToRecordData(debt, currency));
+    const { settleRecords, recordsToSettle }
+      = await getSettleRecords(namespaceId, payload, ownerId);
 
     const settlement = await SETTLE_SERVICE.createSettlement(
       byUser, namespaceId);
@@ -175,10 +176,25 @@ export const SETTLE_SERVICE = {
       ),
     );
 
-    await RECORD_SERVICE.addRecordsToSettlement(
-      recordsToSettle.map(r => r.id), settlement.id, byUser);
+    await asyncMap(
+      recordsToSettle,
+      async (record) => await PAYMENT_EVENT_SERVICE.addPaymentEventToSettlement(
+        record.paymentEventId, settlement.id, byUser, ownerId, namespaceId),
+    );
 
     return settlement;
+  },
+  getSettleSettings: async (
+    namespaceId: number,
+    ownerId: number,
+  ): Promise<SettlementSettings> => {
+    const paymentEvents = await PAYMENT_EVENT_SERVICE
+      .getNamespacePaymentEventsView(namespaceId, ownerId);
+    return {
+      paymentEventsToSettle: paymentEvents.filter(pe => !pe.settlementId),
+      namespace: await NAMESPACE_SERVICE
+        .getNamespaceViewForOwner(namespaceId, ownerId),
+    };
   },
   getSettlementRecordViews: async (
     settlementId: number,

@@ -54,6 +54,11 @@ export class MemoryStorage implements Storage {
     this.data.clear();
     this.keys = [];
   }
+
+  removeItem (key: string) {
+    this.data.delete(key);
+    this.keys = this.keys.filter(k => k !== key);
+  }
 }
 
 export class MockDataMachine {

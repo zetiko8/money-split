@@ -1,10 +1,11 @@
-import { ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, User } from '@angular-monorepo/entities';
+import { BackdoorLoadData, ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, User } from '@angular-monorepo/entities';
 import { lastInsertId, query } from '../../connection/connection';
 import { insertSql, mysqlDate, selectOneWhereSql } from '../../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, RecordEntity } from '../../types';
 import { RECORD_SERVICE } from '../record/record';
 import { SETTLE_SERVICE } from '../settle/settle';
 import { asyncMap } from '@angular-monorepo/utils';
+import { NAMESPACE_SERVICE } from '../namespace/namespace';
 
 export const CYBACKDOOR_SERVICE = {
   deleteOwner: async (
@@ -141,31 +142,56 @@ export const CYBACKDOOR_SERVICE = {
 
     return RECORD_SERVICE.getRecordById(recordId);
   },
-  settleRecords: async (
-    byUser: string,
-    namespaceName: string,
-    records: number[],
-    settledOn: Date,
-  ) => {
-    const user = await CYBACKDOOR_SERVICE.getUserByUsername(byUser);
-    const namespace
-      = await CYBACKDOOR_SERVICE.getNamespaceByName(namespaceName);
+  // settleRecords: async (
+  //   byUser: string,
+  //   namespaceName: string,
+  //   records: number[],
+  //   settledOn: Date,
+  // ) => {
+  //   const user = await CYBACKDOOR_SERVICE.getUserByUsername(byUser);
+  //   const namespace
+  //     = await CYBACKDOOR_SERVICE.getNamespaceByName(namespaceName);
 
-    const settlement = await SETTLE_SERVICE.settle(
-      user.id,
-      namespace.id,
-      records,
-    );
+  //   const settlement = await SETTLE_SERVICE.settle(
+  //     user.id,
+  //     namespace.id,
+  //     records,
+  //   );
 
-    const updateSql = `
-        UPDATE \`Settlement\`
-        SET
-        created = '${mysqlDate(new Date())}'
-        WHERE id = ${settlement.id}
-    `;
-    await query(updateSql);
+  //   const updateSql = `
+  //       UPDATE \`Settlement\`
+  //       SET
+  //       created = '${mysqlDate(new Date())}'
+  //       WHERE id = ${settlement.id}
+  //   `;
+  //   await query(updateSql);
 
-    settlement.created = settledOn;
-    return settlement;
+  //   settlement.created = settledOn;
+  //   return settlement;
+  // },
+
+  load: async (ownerIds: number[]): Promise<BackdoorLoadData[]> => {
+
+    const result = await asyncMap(ownerIds, async (ownerId) => {
+      const namespaces = await NAMESPACE_SERVICE.getNamespacesForOwner(ownerId);
+
+      const namespaceViews = await asyncMap(namespaces, async (namespace) => {
+        return NAMESPACE_SERVICE.getNamespaceViewForOwner(namespace.id, ownerId);
+      });
+
+      const owner = (await query<Owner[]>(`
+        SELECT * FROM \`Owner\`
+        WHERE \`id\` = ${ownerId}
+        `))[0];
+
+      const data: BackdoorLoadData = {
+        owner,
+        namespaces: namespaceViews,
+      };
+
+      return data;
+    });
+
+    return result;
   },
 };

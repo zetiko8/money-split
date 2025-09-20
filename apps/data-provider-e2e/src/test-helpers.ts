@@ -333,3 +333,41 @@ export class TestContext {
     };
   }
 }
+
+export const testWrap = (
+  dotOnly: string,
+  description: string,
+  fn: () => Promise<void>,
+) => {
+  if (dotOnly === '.only') {
+    it.only(
+      description,
+      async () => {
+        try {
+          await fn();
+        } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ((error as any).message)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            throw new Error((error as any).message);
+          throw error;
+        }
+      },
+    );
+  } else {
+    it(
+      description,
+      async () => {
+        try {
+          await fn();
+        } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ((error as any).message)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            throw new Error((error as any).message);
+          throw error;
+        }
+      },
+    );
+  }
+};

@@ -1,5 +1,6 @@
 import {
   AvatarData,
+  BackdoorLoadData,
   CreateNamespacePayload,
   CreatePaymentEventData,
   EditPaymentEventViewData,
@@ -20,7 +21,6 @@ import {
   SettlementPayload,
   SettlementPreview,
   SettlementSettings,
-  SettlePayload,
   ViewUserViewData,
 } from '@angular-monorepo/entities';
 import { ApiDefinition, apiDefinition } from './helpers';
@@ -255,6 +255,16 @@ export function addRecordApiBackdoor() {
   });
 }
 
+export function loadApiBackdoor() {
+  return apiDefinition<
+  number[],
+  null,
+  BackdoorLoadData[]>({
+    endpoint: '/backdoor/load',
+    method: 'POST',
+  });
+}
+
 export function addPaymentEventApiBackdoor() {
   return apiDefinition<
   PaymentEvent,
@@ -279,7 +289,7 @@ export function editOwnerProfileApi() {
 
 export function settleConfirmApi() {
   return apiDefinition<
-    SettlePayload,
+    SettlementPayload,
     {
       ownerKey: string,
       byUser: number,
@@ -413,4 +423,5 @@ export const DATA_PROVIDER_API = {
   getPaymentEventApi: new ApiDefinitionObj(getPaymentEventApi()),
   getEditPaymentEventViewApi: new ApiDefinitionObj(getEditPaymentEventViewApi()),
   settleSettingsApi: new ApiDefinitionObj(settleSettingsApi()),
+  loadApiBackdoor: new ApiDefinitionObj(loadApiBackdoor()),
 };

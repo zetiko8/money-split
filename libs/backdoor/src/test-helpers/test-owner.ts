@@ -1,5 +1,5 @@
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
-import { AvatarData, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor } from '@angular-monorepo/entities';
+import { AvatarData, BackdoorLoadData, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { BACKDOOR_ACTIONS, getRandomColor } from './backdoor-actions';
 
@@ -44,47 +44,83 @@ export class TestOwner {
   }
 
   async login () {
+    this.token
+      = await TestOwner
+        .sLogin(this.DATA_PROVIDER_URL, this.username, this.password);
+
+    return this.token;
+  }
+
+  static async sLogin (
+    DATA_PROVIDER_URL: string,
+    username: string,
+    password: string,
+  ) {
     const res = await  axios.post<{ token: string }>(
-      this.DATA_PROVIDER_URL + '/app/login',
+      DATA_PROVIDER_URL + '/app/login',
       {
-        username: this.username,
-        password: this.password,
+        username,
+        password,
       },
     );
 
-    this.token = res.data.token;
-
-    return this.token;
+    return res.data.token;
   }
 
   async backdoorLogin (credentials: {
     username: string;
     password: string;
   }) {
+    this.backdoorToken
+      = await TestOwner.sBackdoorLogin(this.DATA_PROVIDER_URL, credentials);
+  }
+
+  static async sBackdoorLogin (
+    DATA_PROVIDER_URL: string,
+    credentials: {
+    username: string;
+    password: string;
+  }) {
     const res = await  axios.post<{ token: string }>(
-      this.DATA_PROVIDER_URL + '/app/login',
+      DATA_PROVIDER_URL + '/app/login',
       {
         username: credentials.username,
         password: credentials.password,
       },
     );
 
-    this.backdoorToken = res.data.token;
-
-    return this.backdoorToken;
+    return res.data.token;
   }
 
   async createNamespace (
     namespaceName: string,
   ) {
+    return TestOwner.sCreateNamespace(
+      this.DATA_PROVIDER_URL,
+      this.owner.key,
+      namespaceName,
+      this.token,
+    );
+  }
+
+  static async sCreateNamespace (
+    DATA_PROVIDER_URL: string,
+    ownerKey: string,
+    namespaceName: string,
+    token: string,
+  ) {
     const res = await axios.post<MNamespace>(
-      `${this.DATA_PROVIDER_URL}/app/${this.owner.key}/namespace`,
+      `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace`,
       {
         namespaceName,
         avatarColor: getRandomColor(),
         avatarUrl: null,
       },
-      this.authHeaders(),
+      {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+        },
+      },
     );
 
     return res.data;
@@ -122,14 +158,32 @@ export class TestOwner {
     name: string,
     invitationKey: string,
   ) {
+    return TestOwner.sAcceptInvitation(
+      this.DATA_PROVIDER_URL,
+      name,
+      invitationKey,
+      this.token,
+    );
+  }
+
+  static async sAcceptInvitation (
+    DATA_PROVIDER_URL: string,
+    name: string,
+    invitationKey: string,
+    token: string,
+  ) {
     return DATA_PROVIDER_API.acceptInvitationApi.callPromise(
       { name },
       { invitationKey },
       async (endpoint, method, payload) => {
         const res = await axios.post<Invitation>(
-          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+          `${DATA_PROVIDER_URL}/app/${endpoint}`,
           payload,
-          this.authHeaders(),
+          {
+            headers: {
+              'Authorization': 'Bearer ' + token,
+            },
+          },
         );
         return res.data;
       },
@@ -140,21 +194,43 @@ export class TestOwner {
     email: string,
     namespaceId: number,
   ) {
+    const invitation = await TestOwner.sInviteToNamespace(
+      this.DATA_PROVIDER_URL,
+      this.owner.key,
+      email,
+      namespaceId,
+      this.token,
+    );
+
+    this.invitations.push(invitation);
+    return invitation;
+  }
+
+  static async sInviteToNamespace (
+    DATA_PROVIDER_URL: string,
+    ownerKey: string,
+    email: string,
+    namespaceId: number,
+    token: string,
+  ) {
     const invitation = await DATA_PROVIDER_API
       .createInvitationApi.callPromise(
         { email },
-        { namespaceId, ownerKey: this.owner.key },
+        { namespaceId, ownerKey },
         async (endpoint, method, payload) => {
           const res = await axios.post<Invitation>(
-            `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+            `${DATA_PROVIDER_URL}/app/${endpoint}`,
             payload,
-            this.authHeaders(),
+            {
+              headers: {
+                'Authorization': 'Bearer ' + token,
+              },
+            },
           );
           return res.data;
         },
       );
 
-    this.invitations.push(invitation);
     return invitation;
   }
 
@@ -181,6 +257,14 @@ export class TestOwner {
     return {
       headers: {
         'Authorization': 'Bearer ' + this.backdoorToken,
+      },
+    };
+  }
+
+  static sBackdoorAuthHeaders (backdoorToken: string) {
+    return {
+      headers: {
+        'Authorization': 'Bearer ' + backdoorToken,
       },
     };
   }
@@ -272,6 +356,28 @@ export class TestOwner {
     return result;
   }
 
+  static async sAddPaymentEventToNamespaceBackdoor (
+    DATA_PROVIDER_URL: string,
+    record: PaymentEvent,
+    backdoorToken: string,
+  ) {
+    const result
+    = await DATA_PROVIDER_API.addPaymentEventApiBackdoor.callPromise(
+      record,
+      null,
+      async (endpoint, method, payload) => {
+        const res = await axios.post<PaymentEvent>(
+          `${DATA_PROVIDER_URL}/app/${endpoint}`,
+          payload,
+          TestOwner.sBackdoorAuthHeaders(backdoorToken),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
+  }
+
   async settleRecords (
     namespaceId: number,
     byUser: number,
@@ -344,5 +450,27 @@ export class TestOwner {
     );
 
     return;
+  }
+
+  static async load (
+    DATA_PROVIDER_URL: string,
+    backdoorToken: string,
+    ownerIds: number[],
+  ) {
+    const result
+    = await DATA_PROVIDER_API.loadApiBackdoor.callPromise(
+      ownerIds,
+      null,
+      async (endpoint, method, payload) => {
+        const res = await axios.post<BackdoorLoadData[]>(
+          `${DATA_PROVIDER_URL}/cybackdoor${endpoint}`,
+          payload,
+          this.sBackdoorAuthHeaders(backdoorToken),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
   }
 }

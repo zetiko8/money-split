@@ -4,6 +4,7 @@ import { appErrorWrap } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
 import { USER_SERVICE } from '../user/user';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
+import { query } from '../../connection/connection';
 
 export const PAYMENT_EVENT_SERVICE = {
   getNamespacePaymentEventsView: async (
@@ -215,5 +216,26 @@ export const PAYMENT_EVENT_SERVICE = {
 
       return res;
     });
+  },
+  addPaymentEventToSettlement: async (
+    paymentEventId: number,
+    settlementId: number,
+    addedBy: number,
+    ownerId: number,
+    namespaceId: number,
+  ) => {
+
+    const updateSql = `
+              UPDATE \`PaymentEvent\`
+              SET
+              settlementId = ${settlementId},
+              edited = '${mysqlDate(new Date())}',
+              editedBy = ${addedBy}
+              WHERE id = ${paymentEventId}
+          `;
+    await query(updateSql);
+
+    return PAYMENT_EVENT_SERVICE
+      .getPaymentEvent(namespaceId, paymentEventId, ownerId);
   },
 };

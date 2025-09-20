@@ -2,19 +2,45 @@ import { Router } from 'express';
 import { SETTLE_SERVICE } from './settle';
 import { AUTH_SERVICE } from '../../modules/auth/auth';
 import { VALIDATE, numberRouteParam, registerRoute } from '../../helpers';
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { ERROR_CODE, SettlementPayload } from '@angular-monorepo/entities';
 import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 import { TypedRequestBody } from '../../types';
 import { logRequestMiddleware } from '../../request/service';
 
-import { query } from '../../connection/connection';
-import { mysqlDate } from '../../connection/helper';
 import {
   settleConfirmApi,
-  settleConfirmApiBackdoor,
   settlePreviewApi,
   settleSettingsApi,
 } from '@angular-monorepo/api-interface';
+
+async function validateSettlementPayload(
+  payload: SettlementPayload,
+  namespaceId: number,
+  ownerId: number,
+) {
+  // Validate required fields
+  VALIDATE.requiredPayload(payload);
+  VALIDATE.requiredIdArray(payload.paymentEvents);
+  VALIDATE.requiredCurrency(payload.mainCurrency);
+
+  // Validate currencies object
+  VALIDATE.currencyObject(payload.currencies);
+
+  // Validate payment events
+  const namespaceEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(
+    namespaceId,
+    ownerId,
+  );
+  const paymentEventIds = new Set(namespaceEvents.map(pe => pe.id));
+  for (const eventId of payload.paymentEvents) {
+    if (!paymentEventIds.has(eventId)) {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
+  }
+
+  // Validate separatedSettlementPerCurrency
+  VALIDATE.requiredBoolean(payload.separatedSettlementPerCurrency);
+}
 
 export const settleRouter = Router();
 
@@ -35,32 +61,16 @@ registerRoute(
   settlePreviewApi(),
   settleRouter,
   async (payload, params, context) => {
-    // Validate required fields
-    VALIDATE.requiredPayload(payload);
-    VALIDATE.requiredIdArray(payload.paymentEvents);
-    VALIDATE.requiredCurrency(payload.mainCurrency);
-
-    // Validate currencies object
-    VALIDATE.currencyObject(payload.currencies);
-
-    // Validate payment events
-    const namespaceEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(
+    await validateSettlementPayload(
+      payload,
       Number(params.namespaceId),
       context.owner.id,
     );
-    const paymentEventIds = new Set(namespaceEvents.map(pe => pe.id));
-    for (const eventId of payload.paymentEvents) {
-      if (!paymentEventIds.has(eventId)) {
-        throw Error(ERROR_CODE.INVALID_REQUEST);
-      }
-    }
-
-    // Validate separatedSettlementPerCurrency
-    VALIDATE.requiredBoolean(payload.separatedSettlementPerCurrency);
 
     const settlmentPreview = await SETTLE_SERVICE
       .settleNamespacePreview(
         Number(params.namespaceId),
+        payload,
         context.owner.id,
       );
 
@@ -72,49 +82,24 @@ registerRoute(
 registerRoute(
   settleConfirmApi(),
   settleRouter,
-  async (payload, params) => {
-    VALIDATE.requiredPayload(payload);
-    if (!payload.records.length)
-      throw Error(ERROR_CODE.INVALID_REQUEST);
+  async (payload, params, context) => {
+    await validateSettlementPayload(
+      payload,
+      Number(params.namespaceId),
+      context.owner.id,
+    );
 
     const result = await SETTLE_SERVICE
       .settle(
-        params.byUser,
-        params.namespaceId,
-        payload.records,
+        Number(params.byUser),
+        Number(params.namespaceId),
+        payload,
+        context.owner.id,
       );
 
     return result;
   },
-  AUTH_SERVICE.auth,
-);
-
-registerRoute(
-  settleConfirmApiBackdoor(),
-  settleRouter,
-  async (payload, params) => {
-    VALIDATE.requiredPayload(payload);
-    if (!payload.records.length)
-      throw Error(ERROR_CODE.INVALID_REQUEST);
-
-    const result = await SETTLE_SERVICE
-      .settle(
-        params.byUser,
-        params.namespaceId,
-        payload.records,
-      );
-
-    const updateSql = `
-    UPDATE \`Settlement\`
-    SET created = '${mysqlDate(new Date(payload.settledOn))}',
-        edited = '${mysqlDate(new Date(payload.settledOn))}'
-    WHERE id = ${result.id}
-  `;
-    await query(updateSql);
-
-    return result;
-  },
-  AUTH_SERVICE.backdoorAuth,
+  AUTH_SERVICE.namespaceAuth,
 );
 
 settleRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-settled/:byUser/:settlementDebtId',

@@ -62,34 +62,49 @@ export function validatePaymentAmounts(
 }
 
 export const paymentEventsToRecords = (paymentEvents: PaymentEvent[]) => {
-  const records: RecordData[] = [];
-
-  for (const paymentEvent of paymentEvents) {
-    const paidBy = paymentEvent.paidBy;
-    const benefitors = paymentEvent.benefitors;
-    const paidByByCurrencies = new Map<string, PaymentNode[]>();
-    const benefitorsByCurrencies = new Map<string, PaymentNode[]>();
-
-    for (const node of paidBy) {
-      const current = paidByByCurrencies.get(node.currency) || [];
-      paidByByCurrencies.set(node.currency, [...current, node]);
-    }
-    for (const node of benefitors) {
-      const current = benefitorsByCurrencies.get(node.currency) || [];
-      benefitorsByCurrencies.set(node.currency, [...current, node]);
-    }
-
-    for (const [currency, paidByNodes] of paidByByCurrencies) {
-      const benefitorNodes = benefitorsByCurrencies.get(currency) || [];
-      records.push({
-        currency,
-        paidBy: paidByNodes.map(node => node.userId),
-        benefitors: benefitorNodes.map(node => node.userId),
-        cost: paidByNodes.reduce((acc, node) => acc + node.amount, 0),
-      });
-    }
-  }
-
+  const records: RecordData[] = paymentEventsToRecordsWithIds(paymentEvents).map(r => r.record);
   return records;
 };
+
+export const paymentEventsToRecordsWithIds
+  = (paymentEvents: PaymentEvent[]): {
+    paymentEventId: number,
+    record: RecordData
+  }[] => {
+    const records: {
+      paymentEventId: number,
+      record: RecordData
+    }[] = [];
+
+    for (const paymentEvent of paymentEvents) {
+      const paidBy = paymentEvent.paidBy;
+      const benefitors = paymentEvent.benefitors;
+      const paidByByCurrencies = new Map<string, PaymentNode[]>();
+      const benefitorsByCurrencies = new Map<string, PaymentNode[]>();
+
+      for (const node of paidBy) {
+        const current = paidByByCurrencies.get(node.currency) || [];
+        paidByByCurrencies.set(node.currency, [...current, node]);
+      }
+      for (const node of benefitors) {
+        const current = benefitorsByCurrencies.get(node.currency) || [];
+        benefitorsByCurrencies.set(node.currency, [...current, node]);
+      }
+
+      for (const [currency, paidByNodes] of paidByByCurrencies) {
+        const benefitorNodes = benefitorsByCurrencies.get(currency) || [];
+        records.push({
+          paymentEventId: paymentEvent.id,
+          record: {
+            currency,
+            paidBy: paidByNodes.map(node => node.userId),
+            benefitors: benefitorNodes.map(node => node.userId),
+            cost: paidByNodes.reduce((acc, node) => acc + node.amount, 0),
+          },
+        });
+      }
+    }
+
+    return records;
+  };
 

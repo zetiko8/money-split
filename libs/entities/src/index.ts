@@ -79,10 +79,6 @@ export interface RecordData {
     paidBy: number[],
 }
 
-export interface SettlePayload {
-    records: number[],
-}
-
 export interface RecordDataCy {
     benefitors: string[],
     cost: number,
@@ -197,8 +193,22 @@ export interface CreatePaymentEventData {
   createdBy: number;
 }
 
+export interface CreatePaymentEventDataBackdoor {
+  paidBy: PaymentNodeBackdoor[];
+  benefitors: PaymentNodeBackdoor[];
+  description: string | null;
+  notes: string | null;
+  created: Date;
+  edited: Date;
+}
+
 export interface PaymentNode {
   userId: number,
+  amount: number,
+  currency: string,
+}
+export interface PaymentNodeBackdoor {
+  user: string,
   amount: number,
   currency: string,
 }
@@ -321,6 +331,11 @@ export interface MNamespaceSettings {
   namespaceName: string,
   avatarColor: string | null,
   avatarUrl: string | null,
+}
+
+export interface BackdoorLoadData {
+  owner: Owner,
+  namespaces: NamespaceView[]
 }
 
 export * from './error';

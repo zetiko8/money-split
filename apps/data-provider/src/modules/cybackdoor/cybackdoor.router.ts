@@ -4,9 +4,11 @@ import { TypedRequestBody } from '../../types';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { INVITATION_SERVICE } from '../invitation/invitation';
 import { CYBACKDOOR_SERVICE } from './cybackdoor.service';
-import { stringRouteParam } from '../../helpers';
+import { registerRoute, stringRouteParam } from '../../helpers';
 import { RecordDataCy } from '@angular-monorepo/entities';
 import { query } from '../../connection/connection';
+import { loadApiBackdoor } from '@angular-monorepo/api-interface';
+import { AUTH_SERVICE } from '../auth/auth';
 
 export const cyBackdoorRouter = Router();
 
@@ -156,30 +158,36 @@ cyBackdoorRouter.post('/record/:namespaceName/:createdByUsername',
     }
   });
 
-cyBackdoorRouter.post('/settle/:namespaceName/:byUsername',
-  logRequestMiddleware('CYBACKDOOR - acceptInvitation'),
-  async (
-    req: TypedRequestBody<{
-      records: number[],
-      settledOn: Date,
-    }>,
-    res,
-    next,
-  ) => {
-    try {
-      const result = await CYBACKDOOR_SERVICE
-        .settleRecords(
-          stringRouteParam(req, 'byUsername'),
-          stringRouteParam(req, 'namespaceName'),
-          req.body.records,
-          new Date(req.body.settledOn),
-        );
+// registerRoute(
+//   settleConfirmApiBackdoor(),
+//   settleRouter,
+//   async (payload, params) => {
 
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
+//     // Validate settledOn date
+//     if (!payload.settledOn || isNaN(new Date(payload.settledOn).getTime())) {
+//       throw Error(ERROR_CODE.INVALID_REQUEST);
+//     }
+
+//     const result = await SETTLE_SERVICE
+//       .settle(
+//         Number(params.byUser),
+//         Number(params.namespaceId),
+//         payload,
+//         context.owner.id,
+//       );
+
+//     const updateSql = `
+//     UPDATE \`Settlement\`
+//     SET created = '${mysqlDate(new Date(payload.settledOn))}',
+//         edited = '${mysqlDate(new Date(payload.settledOn))}'
+//     WHERE id = ${result.id}
+//   `;
+//     await query(updateSql);
+
+//     return result;
+//   },
+//   AUTH_SERVICE.backdoorAuth,
+// );
 
 cyBackdoorRouter.post('/sql',
   logRequestMiddleware('CYBACKDOOR - sql'),
@@ -200,3 +208,12 @@ cyBackdoorRouter.post('/sql',
       next(error);
     }
   });
+
+registerRoute(
+  loadApiBackdoor(),
+  cyBackdoorRouter,
+  async (payload) => {
+    return await CYBACKDOOR_SERVICE.load(payload);
+  },
+  AUTH_SERVICE.backdoorAuth,
+);
