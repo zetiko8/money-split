@@ -155,6 +155,11 @@ export interface PaymentEvent {
   notes: string | null,
 }
 
+export interface PaymentEventData {
+  paidBy: PaymentNode[],
+  benefitors: PaymentNode[],
+}
+
 export interface PaymentEventView {
   paidBy: PaymentNodeView[],
   benefitors: PaymentNodeView[],
@@ -302,6 +307,12 @@ export interface SettlementPayload {
   paymentEvents: number[];
 }
 
+export interface SettlementTransactionPayload {
+  separatedSettlementPerCurrency: boolean;
+  currencies: { [key: string]: number };
+  mainCurrency: string;
+}
+
 export interface SettlementListView {
     settlement: Settlement,
     settleRecords: SettlementDebtView[];
@@ -341,3 +352,4 @@ export interface BackdoorLoadData {
 export * from './error';
 export * from './constants';
 export * from './domain-helpers';
+export * from './validation';

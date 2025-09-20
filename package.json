@@ -14,6 +14,7 @@
     "dev:data-provider": "nx run data-provider:serve:development",
     "dev:money-split": "nx run money-split:serve:development",
     "test:money-split": "nx run money-split-e2e:e2e:development-watch",
+    "test:dept-simplification": "nx run debt-simplification:test:development",
     "dev:admin-dashboard": "nx run admin-dashboard:serve:development",
     "test:data-provider": "npx nx run data-provider-e2e:e2e --configuration=development --skip-nx-cache",
     "test:development:headless": "nx run debt-simplification:test:ci --skip-nx-cache && nx run data-provider-e2e:e2e --configuration=ci --skip-nx-cache --parallel && nx run money-split-e2e:e2e:development --skip-nx-cache",

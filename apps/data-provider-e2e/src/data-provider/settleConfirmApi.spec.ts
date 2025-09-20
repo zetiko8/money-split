@@ -686,4 +686,289 @@ describe(API_NAME, () => {
       expect(response).toHaveLength(1);
     });
   });
+
+  describe('settlement settings', () => {
+    testWrap('', 'two currencies, two events, separatedSettlementPerCurrency = true', async () => {
+
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
+
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'SIT' }],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 50, currency: 'SIT' },
+          { user: 'namespace-owner1', amount: 50, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      const creatorOwner = machine.getOwner('creator-owner');
+      const namespaceId = machine.getNamespace('namespace1').id;
+      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+
+      const settleConfirmResponse = await axios.post(
+        `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: { 'EUR': 1 },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
+        await machine.getAuthHeaders('creator-owner'));
+
+      const response = await queryDb(
+        `
+        SELECT * FROM \`SettlementDebt\`
+        WHERE settlementId = ${settleConfirmResponse.data.id}
+        `,
+      );
+
+      expect(response).toHaveLength(2);
+
+      expect(JSON.parse((response as { data: string }[])[0].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(50),
+        'currency':'EUR',
+        'paidBy':[expect.any(Number)],
+      });
+      expect(JSON.parse((response as { data: string }[])[1].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(50),
+        'currency':'SIT',
+        'paidBy':[expect.any(Number)],
+      });
+    });
+    testWrap('', 'two currencies, one event, separatedSettlementPerCurrency = true', async () => {
+
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
+
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [
+          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+          { user: 'creator-owner', amount: 5, currency: 'SIT' },
+        ],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 5, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      const creatorOwner = machine.getOwner('creator-owner');
+      const namespaceId = machine.getNamespace('namespace1').id;
+      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+
+      const settleConfirmResponse = await axios.post(
+        `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: { 'EUR': 1 },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
+        await machine.getAuthHeaders('creator-owner'));
+
+      const response = await queryDb(
+        `
+        SELECT * FROM \`SettlementDebt\`
+        WHERE settlementId = ${settleConfirmResponse.data.id}
+        `,
+      );
+
+      expect(response).toHaveLength(2);
+
+      expect(JSON.parse((response as { data: string }[])[0].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(50),
+        'currency':'EUR',
+        'paidBy':[expect.any(Number)],
+      });
+      expect(JSON.parse((response as { data: string }[])[1].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(5),
+        'currency':'SIT',
+        'paidBy':[expect.any(Number)],
+      });
+    });
+    testWrap('', 'two currencies, two events, separatedSettlementPerCurrency = false', async () => {
+
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
+
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'SIT' }],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 50, currency: 'SIT' },
+          { user: 'namespace-owner1', amount: 50, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      const creatorOwner = machine.getOwner('creator-owner');
+      const namespaceId = machine.getNamespace('namespace1').id;
+      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+
+      const settleConfirmResponse = await axios.post(
+        `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
+        {
+          separatedSettlementPerCurrency: false,
+          currencies: { 'EUR': 1, 'SIT': 2 },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
+        await machine.getAuthHeaders('creator-owner'));
+
+      const response = await queryDb(
+        `
+        SELECT * FROM \`SettlementDebt\`
+        WHERE settlementId = ${settleConfirmResponse.data.id}
+        `,
+      );
+
+      expect(response).toHaveLength(1);
+
+      expect(JSON.parse((response as { data: string }[])[0].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(150),
+        'currency':'EUR',
+        'paidBy':[expect.any(Number)],
+      });
+    });
+    testWrap('', 'two currencies, one event, separatedSettlementPerCurrency = false', async () => {
+
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
+
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [
+          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+          { user: 'creator-owner', amount: 5, currency: 'SIT' },
+        ],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 5, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      const creatorOwner = machine.getOwner('creator-owner');
+      const namespaceId = machine.getNamespace('namespace1').id;
+      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+
+      const settleConfirmResponse = await axios.post(
+        `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
+        {
+          separatedSettlementPerCurrency: false,
+          currencies: { 'EUR': 1, 'SIT': 2 },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
+        await machine.getAuthHeaders('creator-owner'));
+
+      const response = await queryDb(
+        `
+        SELECT * FROM \`SettlementDebt\`
+        WHERE settlementId = ${settleConfirmResponse.data.id}
+        `,
+      );
+
+      expect(response).toHaveLength(2);
+
+      expect(JSON.parse((response as { data: string }[])[0].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(10),
+        'currency':'EUR',
+        'paidBy':[expect.any(Number)],
+      });
+      expect(JSON.parse((response as { data: string }[])[1].data)).toEqual({
+        'benefitors': [expect.any(Number)],
+        'cost': expect.closeTo(40),
+        'currency':'EUR',
+        'paidBy':[expect.any(Number)],
+      });
+    });
+  });
 });

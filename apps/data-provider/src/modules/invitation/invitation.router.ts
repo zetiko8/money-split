@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { INVITATION_SERVICE } from './invitation';
 import { AUTH_SERVICE } from '../../modules/auth/auth';
-import { VALIDATE, registerRoute } from '../../helpers';
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { registerRoute } from '../../helpers';
+import { ERROR_CODE, VALIDATE } from '@angular-monorepo/entities';
 import {
   acceptInvitationApi,
   createInvitationApi,

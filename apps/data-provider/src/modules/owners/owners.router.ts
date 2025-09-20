@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { OWNER_SERVICE } from './owners';
-import { VALIDATE, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import { registerApi } from '@angular-monorepo/api-interface';
+import { VALIDATE } from '@angular-monorepo/entities';
 
 export const ownerRouter = Router();
 

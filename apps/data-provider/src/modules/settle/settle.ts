@@ -28,10 +28,37 @@ async function getSettleRecords (
   const recordsToSettle = paymentEventsToRecordsWithIds(
     paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id)));
 
-  const currency = recordsToSettle[0].record.currency;
+  const recordsToSettleByCurrency: Record<string, RecordData[]> = {};
+  recordsToSettle.forEach(record => {
+    if (!recordsToSettleByCurrency[record.record.currency])
+      recordsToSettleByCurrency[record.record.currency] = [];
+    recordsToSettleByCurrency[record.record.currency].push(record.record);
+  });
 
-  const settleRecords = settle(recordsToSettle.map(r => r.record))
-    .map(debt => deptToRecordData(debt, currency));
+  const settleRecords: RecordData[] = [];
+
+  if (payload.separatedSettlementPerCurrency) {
+    Object.entries(recordsToSettleByCurrency).forEach(([currency, records]) => {
+      settleRecords.push(...settle(records).map(debt => deptToRecordData(debt, currency)));
+    });
+  } else {
+    const currenyConvertedRecords: RecordData[] = [];
+
+    Object.entries(recordsToSettleByCurrency)
+      .forEach(([currency, records]) => {
+        currenyConvertedRecords.push(...records.map(r => {
+          return {
+            benefitors: r.benefitors,
+            cost: r.cost * (payload.currencies[currency]),
+            paidBy: r.paidBy,
+            currency: payload.mainCurrency,
+          };
+        }));
+      });
+
+    settleRecords.push(...settle(currenyConvertedRecords).map(debt => deptToRecordData(debt, payload.mainCurrency)));
+  }
+
   return {
     settleRecords,
     recordsToSettle,
