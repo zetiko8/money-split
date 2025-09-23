@@ -588,6 +588,20 @@ export const SETTLE_PREVIEW_SCREEN = {
   },
 };
 
+export const SETTLE_SETTINGS_SCREEN = {
+  settleConfirmButton: {
+    isNotVisible () {
+      cy.get('[data-test="settle-setting-confirm-button"]')
+        .should('not.be.visible');
+    },
+    click () {
+      cy.get('[data-test="settle-setting-confirm-button"]')
+        .should('be.visible')
+        .click();
+    },
+  },
+};
+
 const _RECORD_FORM = {
   setCurrency (
     currency: string,

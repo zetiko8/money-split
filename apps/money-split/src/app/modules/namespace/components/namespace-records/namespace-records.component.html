@@ -16,6 +16,7 @@
 <payment-event-list
     [paymentEvents]="{ 
         paymentEvents: namespace.paymentEvents,
+        settlements: namespace.settlements,
     }"
     (selectPaymentEvent)="routingService
         .goToEditRecordView($event.id)"

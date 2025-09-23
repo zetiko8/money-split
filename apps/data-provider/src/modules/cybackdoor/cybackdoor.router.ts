@@ -5,10 +5,13 @@ import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { INVITATION_SERVICE } from '../invitation/invitation';
 import { CYBACKDOOR_SERVICE } from './cybackdoor.service';
 import { registerRoute, stringRouteParam } from '../../helpers';
-import { RecordDataCy } from '@angular-monorepo/entities';
+import { ERROR_CODE, RecordDataCy } from '@angular-monorepo/entities';
 import { query } from '../../connection/connection';
-import { loadApiBackdoor } from '@angular-monorepo/api-interface';
+import { loadApiBackdoor, settleConfirmApiBackdoor } from '@angular-monorepo/api-interface';
 import { AUTH_SERVICE } from '../auth/auth';
+import { settleRouter } from '../settle/settle.router';
+import { SETTLE_SERVICE } from '../settle/settle';
+import { mysqlDate } from '../../connection/helper';
 
 export const cyBackdoorRouter = Router();
 
@@ -158,36 +161,36 @@ cyBackdoorRouter.post('/record/:namespaceName/:createdByUsername',
     }
   });
 
-// registerRoute(
-//   settleConfirmApiBackdoor(),
-//   settleRouter,
-//   async (payload, params) => {
+registerRoute(
+  settleConfirmApiBackdoor(),
+  settleRouter,
+  async (payload) => {
 
-//     // Validate settledOn date
-//     if (!payload.settledOn || isNaN(new Date(payload.settledOn).getTime())) {
-//       throw Error(ERROR_CODE.INVALID_REQUEST);
-//     }
+    // Validate settledOn date
+    if (!payload.settledOn || isNaN(new Date(payload.settledOn).getTime())) {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
 
-//     const result = await SETTLE_SERVICE
-//       .settle(
-//         Number(params.byUser),
-//         Number(params.namespaceId),
-//         payload,
-//         context.owner.id,
-//       );
+    const result = await SETTLE_SERVICE
+      .settle(
+        payload.userId,
+        payload.namespaceId,
+        payload,
+        payload.ownerId,
+      );
 
-//     const updateSql = `
-//     UPDATE \`Settlement\`
-//     SET created = '${mysqlDate(new Date(payload.settledOn))}',
-//         edited = '${mysqlDate(new Date(payload.settledOn))}'
-//     WHERE id = ${result.id}
-//   `;
-//     await query(updateSql);
+    const updateSql = `
+    UPDATE \`Settlement\`
+    SET created = '${mysqlDate(new Date(payload.settledOn))}',
+        edited = '${mysqlDate(new Date(payload.settledOn))}'
+    WHERE id = ${result.id}
+  `;
+    await query(updateSql);
 
-//     return result;
-//   },
-//   AUTH_SERVICE.backdoorAuth,
-// );
+    return result;
+  },
+  AUTH_SERVICE.backdoorAuth,
+);
 
 cyBackdoorRouter.post('/sql',
   logRequestMiddleware('CYBACKDOOR - sql'),

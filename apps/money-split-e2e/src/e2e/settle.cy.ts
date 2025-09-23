@@ -1,8 +1,9 @@
-import { NAMESPACE_SCREEN, RECORD_LIST, SETTLE_PREVIEW_SCREEN } from '../support/app.po';
+import { NAMESPACE_SCREEN, RECORD_LIST, SETTLE_PREVIEW_SCREEN, SETTLE_SETTINGS_SCREEN } from '../support/app.po';
 import * as moment from 'moment';
 import { ACTIONS } from '../support/actions';
-import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ENV } from '../support/config';
+import { NamespaceView, Owner } from '@angular-monorepo/entities';
 
 const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
 
@@ -10,32 +11,32 @@ describe('Settle', () => {
 
   describe('settle button is not displayed when there are no records',() => {
     let namespaceId!: number;
-    let creatorOwner!: TestOwner;
-    let scenario!: TestScenarioNamespace;
+    let creatorOwner!: Owner;
+    let creatorOwnerToken!: string;
 
     before(async () => {
-      scenario = await BACKDOOR_ACTIONS.SCENARIO.prepareNamespace(
-        DATA_PROVIDER_URL,
-        ENV().BACKDOOR_USERNAME,
-        ENV().BACKDOOR_PASSWORD,
-        'testnamespace',
-        {  username: 'testuser'},
-        [
-          {  username: 'atestuser1'},
-          {  username: 'btestuser2'},
-          {  username: 'ctestuser3'},
-        ],
-        [],
-      );
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, ENV().BACKDOOR_USERNAME, ENV().BACKDOOR_PASSWORD);
 
-      creatorOwner = scenario.creator.owner;
-      namespaceId = scenario.namespaceId;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
 
-      await ACTIONS.loginTestOwner(creatorOwner);
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      creatorOwner = await machine.getOwner('creator-owner');
+      namespaceId = machine.getNamespace('namespace1').id;
+      creatorOwnerToken = await machine.loginOwner('creator-owner');
     });
 
     it('settle button is not visible', () => {
-      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      ACTIONS.loginTestOwnerWithToken(creatorOwnerToken);
+      NAMESPACE_SCREEN.visit(creatorOwner.key, namespaceId);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.settleButton.isNotVisible();
     });
@@ -49,86 +50,147 @@ describe('Settle', () => {
     }).add(2, 'hours').toDate();
 
     let namespaceId!: number;
-    let creatorOwner!: TestOwner;
-    let scenario!: TestScenarioNamespace;
+    let creatorOwner!: Owner;
+    let creatorOwnerToken!: string;
 
     before(async () => {
-      scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
-        moment,
-        DATA_PROVIDER_URL,
-        ENV().BACKDOOR_USERNAME,
-        ENV().BACKDOOR_PASSWORD,
-      );
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, ENV().BACKDOOR_USERNAME, ENV().BACKDOOR_PASSWORD);
 
-      creatorOwner = scenario.creator.owner;
-      namespaceId = scenario.namespaceId;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
 
-      await creatorOwner.settleRecords(
-        namespaceId,
-        scenario.creator.user.id,
-        scenario.addedRecords.map(r => r.id),
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      creatorOwner = await machine.getOwner('creator-owner');
+      namespaceId = machine.getNamespace('namespace1').id;
+      creatorOwnerToken = await machine.loginOwner('creator-owner');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [
+          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+          { user: 'creator-owner', amount: 250, currency: 'SIT' },
+        ],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 33.33, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 33.33, currency: 'EUR' },
+          { user: 'creator-owner', amount: 33.34, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 250, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      await machine.settleRecords(
+        'creator-owner',
+        'namespace1',
+        'creator-owner',
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: {
+            EUR: 1,
+            SIT: 1,
+          },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
         settleDate,
       );
-
-      await ACTIONS.loginTestOwner(creatorOwner);
     });
 
     it('settle button is not visible', () => {
-      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      ACTIONS.loginTestOwnerWithToken(creatorOwnerToken);
+      NAMESPACE_SCREEN.visit(creatorOwner.key, namespaceId);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.settleButton.isNotVisible();
     });
   });
 
   describe('can settle',() => {
-    let namespaceId!: number;
-    let creatorOwner!: TestOwner;
-    let scenario!: TestScenarioNamespace;
+    let namespace!: NamespaceView;
+    let creatorOwner!: Owner;
+    let creatorOwnerToken!: string;
 
     before(async () => {
-      scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
-        moment,
-        DATA_PROVIDER_URL,
-        ENV().BACKDOOR_USERNAME,
-        ENV().BACKDOOR_PASSWORD,
-      );
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, ENV().BACKDOOR_USERNAME, ENV().BACKDOOR_PASSWORD);
 
-      creatorOwner = scenario.creator.owner;
-      namespaceId = scenario.namespaceId;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
 
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      creatorOwner = await machine.getOwner('creator-owner');
+      namespace = machine.getNamespace('namespace1');
+      creatorOwnerToken = await machine.loginOwner('creator-owner');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [
+          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+          { user: 'creator-owner', amount: 250, currency: 'SIT' },
+        ],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 33.33, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 33.33, currency: 'EUR' },
+          { user: 'creator-owner', amount: 33.34, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 250, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
     });
 
     it('can settle', () => {
-      ACTIONS.loginTestOwnerWithToken(creatorOwner.token);
-      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      ACTIONS.loginTestOwnerWithToken(creatorOwnerToken);
+      NAMESPACE_SCREEN.visit(creatorOwner.key, namespace.id);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.settleButton.click();
+      SETTLE_SETTINGS_SCREEN.settleConfirmButton.click();
       SETTLE_PREVIEW_SCREEN.settleButton.click();
-      NAMESPACE_SCREEN.userIsOn(scenario.namespace.name);
+      NAMESPACE_SCREEN.userIsOn(namespace.name);
 
       RECORD_LIST.SETTLEMENT(0).isSettledOn(new Date());
       RECORD_LIST.SETTLEMENT(0).RECORD(0).IN_DEBT()
-        .hasId('benefitor-avatar-atestuser1');
+        .hasId('benefitor-avatar-creator-owner');
       RECORD_LIST.SETTLEMENT(0).RECORD(0).DEBT_TO()
-        .hasId('payer-avatar-testuser');
+        .hasId('payer-avatar-namespace-owner1');
       RECORD_LIST.SETTLEMENT(0).RECORD(0)
-        .shouldHaveDebtAmount('7.47');
+        .shouldHaveDebtAmount('33.33');
       RECORD_LIST.SETTLEMENT(0).RECORD(0)
-        .shouldHaveCurrency('SIT');
+        .shouldHaveCurrency('EUR');
+      RECORD_LIST.SETTLEMENT(0).isSettledOn(new Date());
+
       RECORD_LIST.SETTLEMENT(0).RECORD(1).IN_DEBT()
-        .hasId('benefitor-avatar-btestuser2');
+        .hasId('benefitor-avatar-namespace-owner2');
       RECORD_LIST.SETTLEMENT(0).RECORD(1).DEBT_TO()
-        .hasId('payer-avatar-testuser');
+        .hasId('payer-avatar-namespace-owner1');
       RECORD_LIST.SETTLEMENT(0).RECORD(1)
-        .shouldHaveDebtAmount('7.47');
+        .shouldHaveDebtAmount('33.33');
       RECORD_LIST.SETTLEMENT(0).RECORD(1)
-        .shouldHaveCurrency('SIT');
+        .shouldHaveCurrency('EUR');
+
       RECORD_LIST.SETTLEMENT(0).RECORD(2).IN_DEBT()
-        .hasId('benefitor-avatar-ctestuser3');
+        .hasId('benefitor-avatar-namespace-owner1');
       RECORD_LIST.SETTLEMENT(0).RECORD(2).DEBT_TO()
-        .hasId('payer-avatar-testuser');
+        .hasId('payer-avatar-creator-owner');
       RECORD_LIST.SETTLEMENT(0).RECORD(2)
-        .shouldHaveDebtAmount('7.47');
+        .shouldHaveDebtAmount('250.00');
       RECORD_LIST.SETTLEMENT(0).RECORD(2)
         .shouldHaveCurrency('SIT');
     });
@@ -141,33 +203,66 @@ describe('Settle', () => {
       date: 15,
     }).add(2, 'hours').toDate();
 
-    let namespaceId!: number;
-    let creatorOwner!: TestOwner;
-    let scenario!: TestScenarioNamespace;
+    let namespace!: NamespaceView;
+    let creatorOwner!: Owner;
+    let creatorOwnerToken!: string;
 
     before(async () => {
-      scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
-        moment,
-        DATA_PROVIDER_URL,
-        ENV().BACKDOOR_USERNAME,
-        ENV().BACKDOOR_PASSWORD,
-      );
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, ENV().BACKDOOR_USERNAME, ENV().BACKDOOR_PASSWORD);
 
-      creatorOwner = scenario.creator.owner;
-      namespaceId = scenario.namespaceId;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
 
-      await creatorOwner.settleRecords(
-        namespaceId,
-        scenario.creator.user.id,
-        scenario.addedRecords.map(r => r.id),
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      creatorOwner = await machine.getOwner('creator-owner');
+      namespace = machine.getNamespace('namespace1');
+      creatorOwnerToken = await machine.loginOwner('creator-owner');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [
+          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+          { user: 'creator-owner', amount: 250, currency: 'SIT' },
+        ],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 33.33, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 33.33, currency: 'EUR' },
+          { user: 'creator-owner', amount: 33.34, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 250, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      await machine.settleRecords(
+        'creator-owner',
+        'namespace1',
+        'creator-owner',
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: {
+            EUR: 1,
+            SIT: 1,
+          },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
         settleDate,
       );
-
-      await ACTIONS.loginTestOwner(creatorOwner);
     });
 
     it('settle and unsettle', () => {
-      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      ACTIONS.loginTestOwnerWithToken(creatorOwnerToken);
+      NAMESPACE_SCREEN.visit(creatorOwner.key, namespace.id);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.SETTLEMENT(0).RECORD(0)
         .toggleSettled();
@@ -187,33 +282,66 @@ describe('Settle', () => {
       date: 15,
     }).add(2, 'hours').toDate();
 
-    let namespaceId!: number;
-    let creatorOwner!: TestOwner;
-    let scenario!: TestScenarioNamespace;
+    let namespace!: NamespaceView;
+    let creatorOwner!: Owner;
+    let creatorOwnerToken!: string;
 
     before(async () => {
-      scenario = await BACKDOOR_ACTIONS.SCENARIO.scenarios[1](
-        moment,
-        DATA_PROVIDER_URL,
-        ENV().BACKDOOR_USERNAME,
-        ENV().BACKDOOR_PASSWORD,
-      );
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, ENV().BACKDOOR_USERNAME, ENV().BACKDOOR_PASSWORD);
 
-      creatorOwner = scenario.creator.owner;
-      namespaceId = scenario.namespaceId;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+      await machine.createOwner('namespace-owner2');
 
-      await creatorOwner.settleRecords(
-        namespaceId,
-        scenario.creator.user.id,
-        scenario.addedRecords.map(r => r.id),
+      await machine.createNamespace('creator-owner', 'namespace1');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
+      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+
+      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
+      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
+
+      creatorOwner = await machine.getOwner('creator-owner');
+      namespace = machine.getNamespace('namespace1');
+      creatorOwnerToken = await machine.loginOwner('creator-owner');
+
+      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
+        paidBy: [
+          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+          { user: 'creator-owner', amount: 250, currency: 'SIT' },
+        ],
+        benefitors: [
+          { user: 'namespace-owner2', amount: 33.33, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 33.33, currency: 'EUR' },
+          { user: 'creator-owner', amount: 33.34, currency: 'EUR' },
+          { user: 'namespace-owner1', amount: 250, currency: 'SIT' },
+        ],
+        description: 'test payment 1',
+        created: new Date(),
+        edited: new Date(),
+        notes: '',
+      });
+
+      await machine.settleRecords(
+        'creator-owner',
+        'namespace1',
+        'creator-owner',
+        {
+          separatedSettlementPerCurrency: true,
+          currencies: {
+            EUR: 1,
+            SIT: 1,
+          },
+          mainCurrency: 'EUR',
+          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+        },
         settleDate,
       );
-
-      await ACTIONS.loginTestOwner(creatorOwner);
     });
 
     it('is-all-settled', () => {
-      NAMESPACE_SCREEN.visit(creatorOwner.owner.key, namespaceId);
+      ACTIONS.loginTestOwnerWithToken(creatorOwnerToken);
+      NAMESPACE_SCREEN.visit(creatorOwner.key, namespace.id);
       NAMESPACE_SCREEN.openRecordsListTab();
       RECORD_LIST.SETTLEMENT(0).RECORD(0)
         .toggleSettled();

@@ -14,7 +14,6 @@ import {
   NamespaceView,
   PaymentEvent,
   Record,
-  SettlePayload,
   SettlementPayload,
   SettlementPreview,
   SettlementSettings,
@@ -232,7 +231,7 @@ export class NamespaceService {
 
   public settle (
     byUser: number,
-    payload: SettlePayload,
+    payload: SettlementPayload,
   ) {
     return combineLatest([
       this.routingService.getOwnerKey(),

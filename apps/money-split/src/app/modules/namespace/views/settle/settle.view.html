@@ -6,20 +6,20 @@
 >
     <namespace-header
         page-header
-        *ngIf="preview$ | async as preview"
-        [name]="preview.namespace.name"
-        [avatarId]="preview.namespace.avatarId"
+        *ngIf="data$ | async as data"
+        [name]="data.preview.namespace.name"
+        [avatarId]="data.preview.namespace.avatarId"
         (backNavigation)="routingService.goToSettleSetingsView()"
     ></namespace-header>
     <ng-container
-        *ngIf="preview$ | async as preview"
+        *ngIf="data$ | async as data"
     >
         <h4>
             {{ 'settlePreview' | translate }}
         </h4>
         <ul>
             <debt-specification
-                *ngFor="let debt of preview.settleRecords"
+                *ngFor="let debt of data.preview.settleRecords"
                 data-test="debt-record"
                 [debt]="debt"
                 class="list-item box"

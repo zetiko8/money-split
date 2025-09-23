@@ -1,5 +1,5 @@
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
-import { AvatarData, BackdoorLoadData, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor } from '@angular-monorepo/entities';
+import { AvatarData, BackdoorLoadData, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor, SettlementPayloadBackdoor } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { BACKDOOR_ACTIONS, getRandomColor } from './backdoor-actions';
 
@@ -378,24 +378,20 @@ export class TestOwner {
     return result;
   }
 
-  async settleRecords (
-    namespaceId: number,
-    byUser: number,
-    records: number[],
-    settledOn: Date,
+  static async settleConfirmBackdoor (
+    DATA_PROVIDER_URL: string,
+    record: SettlementPayloadBackdoor,
+    backdoorToken: string,
   ) {
     const result
     = await DATA_PROVIDER_API.settleConfirmApiBackdoor.callPromise(
-      {
-        records,
-        settledOn,
-      },
-      { namespaceId, byUser, ownerKey: this.owner.key },
+      record,
+      null,
       async (endpoint, method, payload) => {
-        const res = await axios.post<Record>(
-          `${this.DATA_PROVIDER_URL}/app/${endpoint}`,
+        const res = await axios.post<PaymentEvent>(
+          `${DATA_PROVIDER_URL}/app/${endpoint}`,
           payload,
-          this.backdoorAuthHeaders(),
+          TestOwner.sBackdoorAuthHeaders(backdoorToken),
         );
         return res.data;
       },

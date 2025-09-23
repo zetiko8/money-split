@@ -19,6 +19,7 @@ import {
   RegisterOwnerPayload,
   Settlement,
   SettlementPayload,
+  SettlementPayloadBackdoor,
   SettlementPreview,
   SettlementSettings,
   ViewUserViewData,
@@ -303,17 +304,10 @@ export function settleConfirmApi() {
 
 export function settleConfirmApiBackdoor() {
   return apiDefinition<
-    {
-      records: number[],
-      settledOn: Date,
-    },
-    {
-      ownerKey: string,
-      byUser: number,
-      namespaceId: number,
-    },
+    SettlementPayloadBackdoor,
+    null,
     Settlement>({
-      endpoint: '/backdoor/:ownerKey/namespace/:namespaceId/settle/confirm/:byUser',
+      endpoint: '/backdoor/settle',
       method: 'POST',
     });
 }

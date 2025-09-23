@@ -22,11 +22,14 @@ async function getSettleRecords (
   const paymentEvents = await PAYMENT_EVENT_SERVICE
     .getNamespacePaymentEvents(namespaceId, ownerId);
 
-  if (paymentEvents.find(record => record.settlementId !== null))
+  const paymentEventsToSettle
+    = paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id));
+
+  if (paymentEventsToSettle.find(record => record.settlementId !== null))
     throw Error(ERROR_CODE.USER_ACTION_CONFLICT);
 
   const recordsToSettle = paymentEventsToRecordsWithIds(
-    paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id)));
+    paymentEventsToSettle);
 
   const recordsToSettleByCurrency: Record<string, RecordData[]> = {};
   recordsToSettle.forEach(record => {

@@ -307,6 +307,13 @@ export interface SettlementPayload {
   paymentEvents: number[];
 }
 
+export interface SettlementPayloadBackdoor extends SettlementPayload {
+  settledOn: Date;
+  userId: number;
+  namespaceId: number;
+  ownerId: number;
+}
+
 export interface SettlementTransactionPayload {
   separatedSettlementPerCurrency: boolean;
   currencies: { [key: string]: number };

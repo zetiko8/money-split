@@ -1,6 +1,15 @@
 import { MemoryStorage, MockDataMachine } from './mock-data.machine';
 import { TestOwner } from './test-owner';
-import { PaymentEvent, BackdoorLoadData, CreatePaymentEventDataBackdoor, NamespaceView, Owner, User } from '@angular-monorepo/entities';
+import {
+  PaymentEvent,
+  BackdoorLoadData,
+  CreatePaymentEventDataBackdoor,
+  NamespaceView,
+  Owner,
+  User,
+  SettlementPayloadBackdoor,
+  SettlementPayload,
+} from '@angular-monorepo/entities';
 
 export interface OwnerData {
   ownerId: number,
@@ -169,6 +178,42 @@ export class MockDataMachine2 {
     const res = await TestOwner.sAddPaymentEventToNamespaceBackdoor(
       this.dataProviderUrl,
       record,
+      await this.getBackdoorToken(),
+    );
+
+    await this.load();
+    return res;
+  }
+
+  async settleRecords (
+    ownerName: string,
+    namespaceName: string,
+    user: string,
+    settlementPayload: SettlementPayload,
+    settledOn: Date,
+  ) {
+    const owner = this.getOwnerByUsername(ownerName);
+    if (!owner) throw new Error('Owner not found');
+    const namespace
+      = this.state.find(s => s.data.owner.username === ownerName)?.data.namespaces
+        .find(n => n.name === namespaceName);
+    if (!namespace) throw new Error('Namespace not found');
+    const userId = namespace.users.find(u => u.name === user)?.id;
+    if (!userId) throw new Error('User not found');
+
+    const payload: SettlementPayloadBackdoor = {
+      separatedSettlementPerCurrency: settlementPayload.separatedSettlementPerCurrency,
+      currencies: settlementPayload.currencies,
+      mainCurrency: settlementPayload.mainCurrency,
+      paymentEvents: settlementPayload.paymentEvents,
+      settledOn,
+      userId,
+      namespaceId: namespace.id,
+      ownerId: owner.data.owner.id,
+    };
+    const res = await TestOwner.settleConfirmBackdoor(
+      this.dataProviderUrl,
+      payload,
       await this.getBackdoorToken(),
     );
 

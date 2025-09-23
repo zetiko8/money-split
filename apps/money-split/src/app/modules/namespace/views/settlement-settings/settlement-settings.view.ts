@@ -65,7 +65,7 @@ export class SettlementSettingsView
       .settlePreview(payload)
       .pipe(
         tap((preview) => {
-          this.settlementStateService.setPreview(preview);
+          this.settlementStateService.setPreview({ preview, payload });
           this.routingService.goToSettleView();
         }),
       ),

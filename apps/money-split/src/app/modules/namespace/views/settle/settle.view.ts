@@ -38,15 +38,15 @@ export class SettleView extends SettlementComponent {
     () => this.settlementStateService.getPreview(),
   );
   public readonly settleConfirmProcess = new AsyncProcess(
-    () => this.preview$.pipe(take(1))
-      .pipe(mergeMap(preview => this.nameSpaceService
+    () => this.data$.pipe(take(1))
+      .pipe(mergeMap(data => this.nameSpaceService
         .settle(
-          preview.namespace.ownerUsers[0].id,
-          { records: preview.paymentEvents.map(pe => pe.id) },
+          data.preview.namespace.ownerUsers[0].id,
+          data.payload,
         ))),
   );
 
-  public readonly preview$
+  public readonly data$
     = this.loadProcess.share('');
 
   public readonly isLoading = combineLoaders([

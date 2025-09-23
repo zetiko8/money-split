@@ -10,7 +10,7 @@
             [paymentEventView]="content.data"
             [checkboxFormControl]="content.formControl"
         ></payment-event-item>
-        <!-- <settlement-item
+        <settlement-item
             *ngIf="!content.isRecord"
             [settlement]="content.data"
             data-test="settlement-record"
@@ -21,6 +21,6 @@
                 .emit($event)"
             (markAsUnSettled)="markAsUnSettled
                 .emit($event)"
-        ></settlement-item> -->
+        ></settlement-item>
     </ng-template>
 </date-item>

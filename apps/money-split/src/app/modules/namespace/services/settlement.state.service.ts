@@ -1,4 +1,4 @@
-import { ERROR_CODE, SettlementPreview } from '@angular-monorepo/entities';
+import { ERROR_CODE, SettlementPayload, SettlementPreview } from '@angular-monorepo/entities';
 import { inject, Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, CanDeactivate, RouterStateSnapshot } from '@angular/router';
 import { catchError, map, Observable, of } from 'rxjs';
@@ -10,25 +10,27 @@ implements CanActivate, CanActivateChild, CanDeactivate<SettlementComponent> {
 
   private readonly routingService = inject(RoutingService);
 
-  setPreview (preview: SettlementPreview) {
-    localStorage.setItem('settlementPreview', JSON.stringify(preview));
+  private readonly LSKey = 'settlementData';
+
+  setPreview (preview: { preview: SettlementPreview, payload: SettlementPayload }) {
+    localStorage.setItem(this.LSKey, JSON.stringify(preview));
   }
 
-  getPreview (): Observable<SettlementPreview> {
-    const previewLs = localStorage.getItem('settlementPreview');
+  getPreview (): Observable<{ preview: SettlementPreview, payload: SettlementPayload }> {
+    const previewLs = localStorage.getItem(this.LSKey);
     if (!previewLs) {
       throw new Error(ERROR_CODE.SETTLEMENT_PREVIEW_NOT_FOUND);
     }
     try {
       const preview = JSON.parse(previewLs);
-      return of(preview as SettlementPreview);
+      return of(preview as { preview: SettlementPreview, payload: SettlementPayload });
     } catch (error) {
       throw new Error(ERROR_CODE.SETTLEMENT_PREVIEW_NOT_FOUND);
     }
   }
 
   clearPreview () {
-    localStorage.removeItem('settlementPreview');
+    localStorage.removeItem(this.LSKey);
   }
 
   canActivate () {
