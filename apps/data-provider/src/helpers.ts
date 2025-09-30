@@ -1,9 +1,10 @@
-import { Request, Router } from 'express';
+import { Request, RequestHandler, Router } from 'express';
 import { AppError, TypedRequestBody } from './types';
 import { logRequestMiddleware } from './request/service';
 import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import { ApiDefinition } from '@angular-monorepo/api-interface';
 import { Logger } from '@angular-monorepo/utils';
+import { validationResult } from 'express-validator';
 
 export function getControler <B, T>(
   router: Router,
@@ -98,16 +99,20 @@ export function registerRoute <
     },
   ) => Promise<ReturnType>,
   auth?: ((request: Request) => Promise<Owner>),
+  expressValidators?: Array<RequestHandler>,
 ) {
   if (requestDef.ajax.method === 'POST') {
     router.post(
       requestDef.ajax.endpoint,
       logRequestMiddleware(`${requestDef.ajax.method} : ${requestDef.ajax.endpoint}`),
+      ...(expressValidators || [ (req, res, next) => next()]),
       async (
         req: TypedRequestBody<Payload>,
         res,
         next,
       ) => {
+        const expressErrors = validationResult(req);
+
         try {
           if (auth) {
             const owner = await auth(req);
@@ -116,6 +121,10 @@ export function registerRoute <
               req.params as Params,
               { owner },
             );
+
+            if (!expressErrors.isEmpty())
+              throw Error(ERROR_CODE.INVALID_REQUEST);
+
             res.json(response);
           } else {
             const response = await implementation(
@@ -131,6 +140,7 @@ export function registerRoute <
             ajax: requestDef.ajax,
             params: req.params,
             payload: req.body,
+            validationErrors: expressErrors.mapped(),
           };
           next(error);
         }
@@ -225,11 +235,11 @@ export async function appErrorWrap <T>(
 }
 
 export class SimpleLogger implements Logger {
-  log(message?: any, ...optionalParams: any[]) {
+  log(message?: unknown, ...optionalParams: unknown[]) {
     console.log(new Date().toISOString(), message, ...optionalParams);
   }
 
-  error(message?: any, ...optionalParams: any[]) {
+  error(message?: unknown, ...optionalParams: unknown[]) {
     console.error(new Date().toISOString(), message, ...optionalParams);
   }
 }

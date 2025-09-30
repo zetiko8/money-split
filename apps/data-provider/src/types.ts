@@ -1,5 +1,6 @@
 import { AjaxI } from '@angular-monorepo/api-interface';
 import { Request } from 'express';
+import { ValidationError } from 'express-validator';
 
 export interface TypedRequestBody<T> extends Request {
   body: T;
@@ -113,6 +114,7 @@ export interface AppError {
     ajax: AjaxI,
     payload: unknown,
     params: unknown,
+    validationErrors?: Record<string, ValidationError>,
   } | null,
   isAppError: true,
 };

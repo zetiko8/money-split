@@ -4,8 +4,9 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { ENVIRONMENT } from '../config';
 import { Request } from 'express';
-import { appError } from '../../helpers';
+import { appError, LOGGER } from '../../helpers';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
+import { HelpersService } from '@angular-monorepo/mysql-adapter';
 
 async function login (
   username: string,
@@ -88,11 +89,7 @@ async function getOwnerFromRequest (
   const token = request.headers.authorization
     .split('Bearer ')[1];
   const decoded = AUTH_SERVICE.decodeJwt(token);
-  const owner = (await query<Owner[]>(`
-  SELECT * FROM \`Owner\`
-  WHERE \`key\` = "${decoded.key}"
-  `))[0];
-  return owner;
+  return new HelpersService(LOGGER).getOwnerByKey(decoded.key);
 }
 
 export async function getOwnerFromToken(
@@ -100,11 +97,7 @@ export async function getOwnerFromToken(
 ): Promise<Owner> {
   try {
     const decoded = AUTH_SERVICE.decodeJwt(token);
-    const owner = (await query<Owner>(`
-    SELECT * FROM \`Owner\`
-    WHERE \`key\` = "${decoded.key}"
-    `))[0];
-    return owner;
+    return new HelpersService(LOGGER).getOwnerByKey(decoded.key);
   } catch (error) {
     throw Error(ERROR_CODE.UNAUTHORIZED);
   }
@@ -119,11 +112,7 @@ export const AUTH_SERVICE = {
       const token = request.headers.authorization
         .split('Bearer ')[1];
       const decoded = AUTH_SERVICE.decodeJwt(token);
-      const owner = (await query<Owner>(`
-      SELECT * FROM \`Owner\`
-      WHERE \`key\` = "${decoded.key}"
-      `))[0];
-      return owner;
+      return new HelpersService(LOGGER).getOwnerByKey(decoded.key);
     } catch (error) {
       throw Error(ERROR_CODE.UNAUTHORIZED);
     }

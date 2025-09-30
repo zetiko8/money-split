@@ -1,4 +1,3 @@
-import { query } from '../connection/connection';
 import { RequestHandler } from 'express';
 
 export async function logRequest (

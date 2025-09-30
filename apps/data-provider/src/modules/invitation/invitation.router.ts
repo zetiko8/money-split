@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import { INVITATION_SERVICE } from './invitation';
 import { AUTH_SERVICE } from '../../modules/auth/auth';
 import { LOGGER, registerRoute } from '../../helpers';
-import { ERROR_CODE, VALIDATE } from '@angular-monorepo/entities';
+import { VALIDATE } from '@angular-monorepo/entities';
 import {
   acceptInvitationApi,
   createInvitationApi,
@@ -10,6 +9,7 @@ import {
 } from '@angular-monorepo/api-interface';
 import { InvitationService } from '@angular-monorepo/mysql-adapter';
 import { sendMail } from '../email/mock-email';
+import { body } from 'express-validator';
 
 export const invitationRouter = Router();
 
@@ -17,9 +17,6 @@ registerRoute(
   createInvitationApi(),
   invitationRouter,
   async (payload, params, context) => {
-    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (!payload.email) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (typeof payload.email !== 'string') throw Error(ERROR_CODE.INVALID_REQUEST);
     return await new InvitationService(LOGGER).inviteToNamespace(
       payload.email,
       Number(params.namespaceId),
@@ -41,14 +38,18 @@ registerRoute(
       },
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_SERVICE.namespaceAuth,
+  [ body('email')
+    .isString()
+    .trim().escape()
+    .isEmail()],
 );
 
 registerRoute(
   getInvitationViewApi(),
   invitationRouter,
   async (payload, params) => {
-    return await INVITATION_SERVICE.getInvitationViewData(
+    return await new InvitationService(LOGGER).getInvitationViewData(
       params.invitationKey,
     );
   },
@@ -63,9 +64,9 @@ registerRoute(
     VALIDATE.requiredString(payload.name);
 
     payload.name = payload.name.trim();
-    return await INVITATION_SERVICE.acceptInvitation(
+    return await new InvitationService(LOGGER).acceptInvitation(
       params.invitationKey,
-      context.owner,
+      context.owner.id,
       payload.name,
     );
   },
