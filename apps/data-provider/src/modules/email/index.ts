@@ -1,5 +1,5 @@
-import { ENVIRONMENT } from "../config";
-import { SendMailFn } from "./types";
+import { ENVIRONMENT } from '../config';
+import { SendMailFn } from './types';
 import { sendMail as implSendMail } from './email';
 import { sendMail as mockSendMail } from './mock-email';
 

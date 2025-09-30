@@ -22,7 +22,9 @@
         "libs/debt-simplification/src/index.ts"
       ],
       "@angular-monorepo/entities": ["libs/entities/src/index.ts"],
-      "@angular-monorepo/utils": ["libs/utils/src/index.ts"]
+      "@angular-monorepo/mysql-adapter": ["libs/mysql-adapter/src/index.ts"],
+      "@angular-monorepo/utils": ["libs/utils/src/index.ts"],
+      "@angular-monorepo/data-adapter": ["libs/data-adapter/src/index.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]

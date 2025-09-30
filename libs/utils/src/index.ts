@@ -39,3 +39,19 @@ export function sanitizeForHtmlAttribute(value: string): string {
     // Remove leading/trailing dashes
     .replace(/^-+|-+$/g, '');
 }
+
+export interface Logger {
+  log(message?: any, ...optionalParams: any[]): void;
+  error(message?: any, ...optionalParams: any[]): void;
+}
+
+export class ConsoleLogger implements Logger {
+  log(message?: any, ...optionalParams: any[]): void {
+    console.log(message, ...optionalParams);
+  }
+
+  error(message?: any, ...optionalParams: any[]): void {
+    console.error(message, ...optionalParams);
+  }
+}
+

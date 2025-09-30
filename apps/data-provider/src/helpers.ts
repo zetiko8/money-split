@@ -3,6 +3,7 @@ import { AppError, TypedRequestBody } from './types';
 import { logRequestMiddleware } from './request/service';
 import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import { ApiDefinition } from '@angular-monorepo/api-interface';
+import { Logger } from '@angular-monorepo/utils';
 
 export function getControler <B, T>(
   router: Router,
@@ -222,3 +223,16 @@ export async function appErrorWrap <T>(
     );
   }
 }
+
+export class SimpleLogger implements Logger {
+  log(message?: any, ...optionalParams: any[]) {
+    console.log(new Date().toISOString(), message, ...optionalParams);
+  }
+
+  error(message?: any, ...optionalParams: any[]) {
+    console.error(new Date().toISOString(), message, ...optionalParams);
+  }
+}
+
+export const LOGGER = new SimpleLogger();
+
