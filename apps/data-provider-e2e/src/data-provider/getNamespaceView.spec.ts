@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, fnCall, smoke, testEnv, throwBeforeEachError } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testEnv, throwBeforeEachError } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { getNamespaceViewApi } from '@angular-monorepo/api-interface';
 import { BACKDOOR_ACTIONS, MockDataMachine, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
@@ -33,7 +33,7 @@ describe(API_NAME, () => {
         namespaceId = scenario.namespaceId;
 
         // Create other owner for validation tests
-        await MockDataMachine.dispose(DATA_PROVIDER_URL, 'otherowner');
+        await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'otherowner');
         otherOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'otherowner', 'testpassword');
       } catch (error) {
         throwBeforeEachError(error);

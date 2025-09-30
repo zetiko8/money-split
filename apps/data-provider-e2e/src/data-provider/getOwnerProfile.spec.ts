@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { getOwnerProfileApi } from '@angular-monorepo/api-interface';
@@ -18,11 +18,11 @@ describe(API_NAME, () => {
 
   beforeEach(async () => {
     // Clean up existing test data
-    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
-    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'otherowner');
+    await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testowner');
+    await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'otherowner');
 
     // Create test owners and namespaces using MockDataMachine
-    machine = new MockDataMachine(DATA_PROVIDER_URL);
+    machine = new MockDataMachine(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
     await machine.initialize();
 
     // Create test owner with namespace

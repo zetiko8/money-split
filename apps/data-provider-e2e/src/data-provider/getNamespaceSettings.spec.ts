@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE, MNamespaceSettings } from '@angular-monorepo/entities';
 import { getNamespaceSettingsApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
@@ -19,11 +19,12 @@ describe(API_NAME, () => {
 
   beforeEach(async () => {
     try {
-      machine = new MockDataMachine(DATA_PROVIDER_URL);
+      machine = new MockDataMachine(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
       // Dispose existing test data
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'otherowner');
+      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'creator');
+      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'otherowner');
 
       // Create cluster and namespace with creator
       machineState = await machine.createNewCluster('creator', 'testpassword');

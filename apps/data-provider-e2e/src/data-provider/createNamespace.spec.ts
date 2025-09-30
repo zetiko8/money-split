@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, expectEqual, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, expectEqual, fnCall, queryDb, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { createNamespaceApi } from '@angular-monorepo/api-interface';
@@ -14,10 +14,11 @@ describe(API_NAME, () => {
 
   beforeEach(async () => {
     try {
-      const machine = new MockDataMachine(DATA_PROVIDER_URL);
+      const machine = new MockDataMachine(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
       // dispose any existing owners with the same name
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+      await machine.dispose('testowner');
 
       // Create new cluster
       machineState = await machine.createNewCluster('testowner', 'testpassword');

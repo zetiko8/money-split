@@ -41,7 +41,7 @@ export async function prepareNamespace (
     creator.username,
     creator.password || 'testpassword',
   );
-  await TestOwner.dispose(DATA_PROVIDER_URL, creator.username);
+  await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_PASSWORD, BACKDOOR_USERNAME, creator.username);
   await creatorOwner.register();
 
   const namespace = await creatorOwner.createNamespace(namespaceName);
@@ -49,6 +49,8 @@ export async function prepareNamespace (
 
   const addedOwner: TestOwner[] = await asyncMap(users, async user => {
     return await creatorOwner.addOwnerToNamespace(
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
       namespaceId,
       {
         name: user.username,

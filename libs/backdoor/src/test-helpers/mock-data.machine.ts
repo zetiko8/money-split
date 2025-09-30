@@ -61,6 +61,9 @@ export class MemoryStorage implements Storage {
   }
 }
 
+/**
+ * @deprecated - use MockDataMachine2 instead
+ */
 export class MockDataMachine {
   private clusters: TestOwner[] = [];
   private namespaces: MNamespace[] = [];
@@ -69,15 +72,21 @@ export class MockDataMachine {
   private selectedTestOwner?: TestOwner;
   private selectedNamespace?: NamespaceView;
   private dataProviderUrl: string;
+  private BACKDOOR_USERNAME: string;
+  private BACKDOOR_PASSWORD: string;
   private currentProfile = 'default';
   private readonly STORAGE_PREFIX = 'mock-data-';
   private readonly LAST_PROFILE_KEY = 'mock-data-last-profile';
 
   constructor(
     dataProviderUrl: string,
+    BACKDOOR_USERNAME: string,
+    BACKDOOR_PASSWORD: string,
     private storage: Storage = new MemoryStorage(),
   ) {
     this.dataProviderUrl = dataProviderUrl;
+    this.BACKDOOR_USERNAME = BACKDOOR_USERNAME;
+    this.BACKDOOR_PASSWORD = BACKDOOR_PASSWORD;
   }
 
   async initialize(): Promise<MockDataState> {
@@ -338,7 +347,7 @@ export class MockDataMachine {
 
   public async disposeCluster(testOwner: TestOwner): Promise<MockDataState> {
     try {
-      await TestOwner.dispose(this.dataProviderUrl, testOwner.username);
+      await TestOwner.dispose(this.dataProviderUrl, this.BACKDOOR_USERNAME, this.BACKDOOR_PASSWORD, testOwner.username);
       // Remove disposed cluster from storage
       this.clusters = this.clusters.filter(c => c.owner !== testOwner.owner);
       this.save();
@@ -369,7 +378,7 @@ export class MockDataMachine {
       const testOwner
         = creator.ownerId === this.selectedTestOwner?.owner.id
           ? this.selectedTestOwner!
-          : await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, creator.name, 'testpassword');
+          : await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, this.BACKDOOR_USERNAME, this.BACKDOOR_PASSWORD, creator.name, 'testpassword');
       await this.loginIfNeccessary(testOwner);
       const paymentEvent = await testOwner.addPaymentEventToNamespace(namespaceId, userId, record);
       await this.selectNamespace(this.selectedNamespace!);
@@ -392,12 +401,16 @@ export class MockDataMachine {
     const testOwner
       = creator.ownerId === this.selectedTestOwner?.owner.id
         ? this.selectedTestOwner!
-        : await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, creator.name, 'testpassword');
+        : await TestOwner.fromUserNameAndPassword(this.dataProviderUrl, this.BACKDOOR_USERNAME, this.BACKDOOR_PASSWORD, creator.name, 'testpassword');
     return testOwner;
   }
 
-  public static dispose(dataProviderUrl: string, name: string) {
-    return TestOwner.dispose(dataProviderUrl, name);
+  public dispose(name: string) {
+    return TestOwner.dispose(
+      this.dataProviderUrl,
+      this.BACKDOOR_USERNAME,
+      this.BACKDOOR_PASSWORD,
+      name);
   }
 
   public static async createNewOwnerAndLogHimIn(dataProviderUrl: string, name: string, password = 'testpassword') {

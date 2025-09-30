@@ -312,6 +312,16 @@ export function settleConfirmApiBackdoor() {
     });
 }
 
+export function sqlBackdoor() {
+  return apiDefinition<
+    { sql: string },
+    null,
+    unknown>({
+      endpoint: '/backdoor/sql',
+      method: 'POST',
+    });
+}
+
 
 export function settlePreviewApi() {
   return apiDefinition<
@@ -418,4 +428,5 @@ export const DATA_PROVIDER_API = {
   getEditPaymentEventViewApi: new ApiDefinitionObj(getEditPaymentEventViewApi()),
   settleSettingsApi: new ApiDefinitionObj(settleSettingsApi()),
   loadApiBackdoor: new ApiDefinitionObj(loadApiBackdoor()),
+  sqlBackdoor: new ApiDefinitionObj(sqlBackdoor()),
 };

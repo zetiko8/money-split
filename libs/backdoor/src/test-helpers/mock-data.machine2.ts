@@ -1,4 +1,4 @@
-import { MemoryStorage, MockDataMachine } from './mock-data.machine';
+import { MemoryStorage } from './mock-data.machine';
 import { TestOwner } from './test-owner';
 import {
   PaymentEvent,
@@ -36,10 +36,9 @@ export class MockDataMachine2 {
   }
 
   async createOwner (username: string, password?: string) {
-    await MockDataMachine.dispose(this.dataProviderUrl, username);
-    const owner = await MockDataMachine
-      .createNewOwner(
-        this.dataProviderUrl, username, password || this.defaultPassword);
+    await TestOwner.dispose(this.dataProviderUrl, this.BACKDOOR_USERNAME, this.BACKDOOR_PASSWORD, username);
+    const owner = new TestOwner(this.dataProviderUrl, username, password || this.defaultPassword);
+    await owner.register();
     this.save([
       ...this.state.map(s => {
         return {

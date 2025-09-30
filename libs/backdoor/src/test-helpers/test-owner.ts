@@ -1,7 +1,7 @@
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
 import { AvatarData, BackdoorLoadData, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor, SettlementPayloadBackdoor } from '@angular-monorepo/entities';
 import axios from 'axios';
-import { BACKDOOR_ACTIONS, getRandomColor } from './backdoor-actions';
+import { getRandomColor } from './backdoor-actions';
 
 export class TestOwner {
 
@@ -18,11 +18,14 @@ export class TestOwner {
 
   public static async fromUserNameAndPassword (
     DATA_PROVIDER_URL: string,
+    BACKDOOR_USERNAME: string,
+    BACKDOOR_PASSWORD: string,
     username: string,
     password: string,
   ): Promise<TestOwner> {
+    const backdoorToken = await TestOwner.sBackdoorLogin(DATA_PROVIDER_URL, { username: BACKDOOR_USERNAME, password: BACKDOOR_PASSWORD });
     const te = new TestOwner(DATA_PROVIDER_URL, username, password);
-    const owner = await TestOwner.getOwnerDataByUsername(DATA_PROVIDER_URL, username);
+    const owner = await TestOwner.getOwnerDataByUsername(DATA_PROVIDER_URL, backdoorToken, username);
     if (!owner) throw new Error('fromUserNameAndPassword: Owner not found');
     te.owner = owner;
     return te;
@@ -270,6 +273,8 @@ export class TestOwner {
   }
 
   async addOwnerToNamespace (
+    BACKDOOR_USERNAME: string,
+    BACKDOOR_PASSWORD: string,
     namespaceId: number,
     ownerToAddData: {
       email?: string,
@@ -286,7 +291,7 @@ export class TestOwner {
       ownerToAddData.name,
       pwd,
     );
-    await TestOwner.dispose(this.DATA_PROVIDER_URL, ownerToAddData.name);
+    await TestOwner.dispose(this.DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, ownerToAddData.name);
     await owner.register();
     await owner.acceptInvitation(ownerToAddData.name, invitation.invitationKey);
 
@@ -419,10 +424,15 @@ export class TestOwner {
     return result;
   }
 
-  private static async getOwnerDataByUsername (DATA_PROVIDER_URL: string, username: string) {
+  private static async getOwnerDataByUsername (
+    DATA_PROVIDER_URL: string,
+    backdoorToken: string,
+    username: string,
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ownerArr: any = await BACKDOOR_ACTIONS.query(
+    const ownerArr: any = await TestOwner.query(
       DATA_PROVIDER_URL,
+      backdoorToken,
       `
           SELECT * FROM \`Owner\`
           WHERE \`username\` = '${username}' 
@@ -435,11 +445,23 @@ export class TestOwner {
     return owner;
   }
 
-  public static async dispose (DATA_PROVIDER_URL: string, username: string) {
-    const owner = await this.getOwnerDataByUsername(DATA_PROVIDER_URL, username);
-    if (!owner) return;
-    await BACKDOOR_ACTIONS.query(
+  public static async dispose (
+    DATA_PROVIDER_URL: string,
+    BACKDOOR_USERNAME: string,
+    BACKDOOR_PASSWORD: string,
+    username: string,
+  ) {
+    const backdoorToken = await TestOwner.sBackdoorLogin(
       DATA_PROVIDER_URL,
+      {
+        username: BACKDOOR_USERNAME,
+        password: BACKDOOR_PASSWORD,
+      });
+    const owner = await this.getOwnerDataByUsername(DATA_PROVIDER_URL, backdoorToken, username);
+    if (!owner) return;
+    await TestOwner.query(
+      DATA_PROVIDER_URL,
+      backdoorToken,
       `
       call testDispose(${owner.id})
       `,
@@ -459,6 +481,28 @@ export class TestOwner {
       null,
       async (endpoint, method, payload) => {
         const res = await axios.post<BackdoorLoadData[]>(
+          `${DATA_PROVIDER_URL}/cybackdoor${endpoint}`,
+          payload,
+          this.sBackdoorAuthHeaders(backdoorToken),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
+  }
+
+  static async query (
+    DATA_PROVIDER_URL: string,
+    backdoorToken: string,
+    sql: string,
+  ) {
+    const result
+    = await DATA_PROVIDER_API.sqlBackdoor.callPromise(
+      { sql },
+      null,
+      async (endpoint, method, payload) => {
+        const res = await axios.post<unknown>(
           `${DATA_PROVIDER_URL}/cybackdoor${endpoint}`,
           payload,
           this.sBackdoorAuthHeaders(backdoorToken),

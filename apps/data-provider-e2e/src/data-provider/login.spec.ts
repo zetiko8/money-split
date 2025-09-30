@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { MockDataMachine } from '@angular-monorepo/backdoor';
+import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 
-const DATA_PROVIDER_URL = 'http://localhost:3333/data-provider';
 const API_NAME = '/login';
 
 describe(API_NAME, () => {
@@ -11,10 +10,10 @@ describe(API_NAME, () => {
 
   beforeAll(async () => {
     // Clean up existing test data
-    await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testusername');
+    await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testusername');
 
     // Create test owner using MockDataMachine
-    machine = new MockDataMachine(DATA_PROVIDER_URL);
+    machine = new MockDataMachine(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
     await machine.initialize();
     await machine.createNewCluster('testusername', 'testpassword');
   });
