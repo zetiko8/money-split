@@ -17,11 +17,19 @@
                 type="email"
                 name="email"    
             >
+            <div 
+                class="error"
+                *ngIf="form.controls.email.dirty 
+                  && form.controls.email.errors"
+            >
+                {{ 'invalidEmail' | translate }}
+            </div>
         </div>
         <div class="input-group">
             <button
                 type="submit"
                 data-test="invite-btn"
+                [disabled]="form.invalid"
             >
                 {{ 'invite' | translate }}
             </button>

@@ -34,21 +34,21 @@ export class InviteView {
     (email: string) => this.nameSpaceService.inviteOwner(email)
       .pipe(
         tap(() => this.routingService.goToNamespaceView()),
-      ) 
+      ),
   );
 
   public readonly isLoading = combineLoaders([
     this.inviteProcess.inProgress$,
   ]);
 
-  public readonly notification$: Observable<Notification> 
+  public readonly notification$: Observable<Notification>
     = merge(
       this.inviteProcess.error$,
-    ) 
-    .pipe(
-      filter(err => err !== null),
-      map(event => {
-        return { type: 'error', message: event?.message || 'Error' };
-      }),  
-    );
+    )
+      .pipe(
+        filter(err => err !== null),
+        map(event => {
+          return { type: 'error', message: event?.message || 'Error' };
+        }),
+      );
 }

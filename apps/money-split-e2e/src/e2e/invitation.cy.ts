@@ -9,7 +9,7 @@ const BACKDOOR_PASSWORD = ENV().BACKDOOR_PASSWORD;
 
 describe('Invitation', () => {
 
-  describe.only('Invite form',() => {
+  describe('Invite form',() => {
     let namespaceId!: number;
     let ownerKey!: string;
     let token!: string;
@@ -44,18 +44,36 @@ describe('Invitation', () => {
         .contains(email);
     });
 
-    it.only('email must be valid', () => {
+    it('email must be valid', () => {
       ACTIONS.loginTestOwnerWithToken(token);
-      cy.visit(`/${ownerKey}/namespace/${namespaceId}`);
-      cy.get('[data-test="add-user-button"]').click();
+      cy.visit(`/${ownerKey}/namespace/${namespaceId}/invite`);
+
       cy.get('input[name="email"').type('test+0002gmail.com');
-      cy.get('[data-test="invite-btn"]').click();
-      cy.get('[data-test="number-of-invited-users"]')
-        .should('contain.text', '(1)');
-      cy.get('[data-test="invited-owner"]')
-        .should('have.length', 1);
-      // cy.get('[data-test="invited-owner"]')
-      //   .contains(email);
+      cy.get('[data-test="invite-btn"]').should('be.disabled');
+      cy.get('input[name="email"').parent().find('.error')
+        .should('contain.text', 'Neveljaven e-poštni naslov');
+
+      cy.get('input[name="email"').clear();
+      cy.get('input[name="email"').type('test+0002@gmail.com');
+      cy.get('[data-test="invite-btn"]').should('not.be.disabled');
+      cy.get('input[name="email"').parent().find('.error')
+        .should('not.exist');
+    });
+
+    it('email must not be to long', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/${ownerKey}/namespace/${namespaceId}/invite`);
+
+      cy.get('input[name="email"').type('a'.repeat(65) + '@test.com');
+      cy.get('[data-test="invite-btn"]').should('be.disabled');
+      cy.get('input[name="email"').parent().find('.error')
+        .should('contain.text', 'Neveljaven e-poštni naslov');
+
+      cy.get('input[name="email"').clear();
+      cy.get('input[name="email"').type('a'.repeat(64) + '@test.com');
+      cy.get('[data-test="invite-btn"]').should('not.be.disabled');
+      cy.get('input[name="email"').parent().find('.error')
+        .should('not.exist');
     });
   });
 

@@ -17,8 +17,8 @@ import { AppErrorCode } from '../../../../types';
   templateUrl: './invite.component.html',
   // eslint-disable-next-line @angular-eslint/no-host-metadata-property
   host: {
-    class: 'app-section'
-  }
+    class: 'app-section',
+  },
 })
 export class InviteOwnerComponent {
 
@@ -27,8 +27,11 @@ export class InviteOwnerComponent {
 
   public form = new FormGroup({
     email: new FormControl<string | null>('', {
-      validators: [ Validators.required ]
-    })
+      validators: [
+        Validators.required,
+        Validators.email,
+      ],
+    }),
   });
 
   inviteUser () {

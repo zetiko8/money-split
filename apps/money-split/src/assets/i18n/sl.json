@@ -64,5 +64,6 @@
   "separatedSettlementPerCurrency": "Poravnava po valutah",
   "manageCurrencies": "Pretvori valute",
   "selectMainCurrency": "Izberi glavno valuto",
-  "currencyConversion": "1 {{ currency }} je"
+  "currencyConversion": "1 {{ currency }} je",
+  "invalidEmail": "Neveljaven e-poštni naslov"
 }
