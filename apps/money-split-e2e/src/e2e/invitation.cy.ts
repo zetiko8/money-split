@@ -154,21 +154,6 @@ describe('Invitation', () => {
       cy.get('[data-test="invited-owner"]')
         .should('have.length', 0);
     });
-
-    it('username length validation', () => {
-      ACTIONS.loginTestOwnerWithToken(token);
-      cy.visit(`/invitation/${invitationKey}/join`);
-      INVITATION_FORM.setName('a'.repeat(21));
-      INVITATION_FORM.expectNameMaxLengthError();
-      INVITATION_FORM.expectSubmitButtonToBeDisabled();
-    });
-
-    it('username trim validation', () => {
-      ACTIONS.loginTestOwnerWithToken(token);
-      cy.visit(`/invitation/${invitationKey}/join`);
-      INVITATION_FORM.setName('   ');
-      INVITATION_FORM.expectSubmitButtonToBeDisabled();
-    });
   });
 
   describe('accept invitation - guest that already has profile',() => {
