@@ -1,5 +1,3 @@
-DELIMITER //
-
 DROP PROCEDURE IF EXISTS `main`.`getPaymentEventJson`;
 
 CREATE PROCEDURE getPaymentEventJson(
@@ -25,6 +23,4 @@ BEGIN
         WHERE r.id = p_paymentEventId
         LIMIT 1
     ) INTO p_jsonResult;
-END //
-
-DELIMITER ;
+END;

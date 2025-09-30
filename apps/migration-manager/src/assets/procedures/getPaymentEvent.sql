@@ -1,5 +1,3 @@
-DELIMITER //
-
 DROP PROCEDURE IF EXISTS `main`.`getPaymentEvent`;
 
 CREATE PROCEDURE getPaymentEvent(
@@ -36,6 +34,4 @@ BEGIN
   -- Return result
   SELECT procedureError;
   SELECT jsonResult;
-END //
-
-DELIMITER ;
+END;

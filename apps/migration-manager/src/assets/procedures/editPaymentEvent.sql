@@ -1,5 +1,3 @@
-DELIMITER //
-
 DROP PROCEDURE IF EXISTS `main`.`editPaymentEvent`;
 
 CREATE PROCEDURE editPaymentEvent(
@@ -50,6 +48,4 @@ BEGIN
   -- Return results
   SELECT procedureError;
   SELECT jsonResult;
-END //
-
-DELIMITER ;
+END;

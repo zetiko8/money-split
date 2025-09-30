@@ -1,7 +1,5 @@
 DROP PROCEDURE IF EXISTS `main`.`getNamespacePaymentEvents`;
 
-DELIMITER //
-
 CREATE PROCEDURE `main`.`getNamespacePaymentEvents`(
   IN p_namespaceId BIGINT,
   IN p_ownerId BIGINT
@@ -79,6 +77,4 @@ BEGIN
     ON pe.settlementId = settlement.id
   WHERE pe.namespaceId = p_namespaceId
   ORDER BY pe.created DESC;
-END //
-
-DELIMITER ;
+END;
