@@ -405,6 +405,8 @@ describe(API_NAME, () => {
 
       // Verify by querying the database directly
       const response = (await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `SELECT * FROM PaymentEvent WHERE id = ${paymentEventId}`,
       )) as PaymentEventDbRow[];
 

@@ -128,6 +128,8 @@ describe(API_NAME, () => {
 
       // Check by querying the DB
       const userRes = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `SELECT * FROM \`User\` 
                 WHERE namespaceId = ${namespaceId} 
                 AND ownerId = ${testOwner.owner.id}`,
@@ -161,6 +163,8 @@ describe(API_NAME, () => {
     });
     it('saves invitation in the db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Invitation
         WHERE id = ${invitationId}
@@ -182,6 +186,8 @@ describe(API_NAME, () => {
     });
     it('adds owner to the namespace', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM NamespaceOwner
         WHERE namespaceId = ${namespaceId}
@@ -196,6 +202,8 @@ describe(API_NAME, () => {
     });
     it('adds user to the namespace', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`User\`
         WHERE namespaceId = ${namespaceId}

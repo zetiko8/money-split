@@ -203,6 +203,8 @@ describe(API_NAME, () => {
     });
     it('updates namespace in the db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Namespace
         WHERE id = ${namespaceId}
@@ -216,6 +218,8 @@ describe(API_NAME, () => {
     });
     it('updates namespace avatar in db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT a.* FROM Avatar a
         LEFT JOIN Namespace n
@@ -250,6 +254,8 @@ describe(API_NAME, () => {
       });
       it('trims the namespace name', async () => {
         const response = await queryDb(
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
           `
           SELECT * FROM Namespace
           WHERE id = ${namespaceId}

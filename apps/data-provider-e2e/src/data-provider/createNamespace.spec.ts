@@ -180,6 +180,8 @@ describe(API_NAME, () => {
     });
     it('saves namespace in the db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Namespace
         WHERE id = ${namespaceId}
@@ -193,6 +195,8 @@ describe(API_NAME, () => {
     });
     it('saves namespace avatar in db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Avatar
         WHERE id = ${avatarId}
@@ -206,6 +210,8 @@ describe(API_NAME, () => {
     });
     it('adds owner to namespace', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM NamespaceOwner
         WHERE namespaceId = ${namespaceId}
@@ -220,6 +226,8 @@ describe(API_NAME, () => {
     });
     it('adds user to namespace', async () => {
       const users = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`User\`
         WHERE namespaceId = ${namespaceId}
@@ -257,6 +265,8 @@ describe(API_NAME, () => {
     });
     it('trims the namespace name', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Namespace
         WHERE id = ${namespaceId}

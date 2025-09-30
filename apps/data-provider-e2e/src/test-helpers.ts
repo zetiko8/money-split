@@ -1,6 +1,5 @@
-import { BACKDOOR_ACTIONS } from '@angular-monorepo/backdoor';
+import { TestOwner } from '@angular-monorepo/backdoor';
 import { AxiosError, AxiosResponse } from 'axios';
-import axios from 'axios';
 
 export const DATA_PROVIDER_URL = process.env.MIDDLEWARE_URL;
 
@@ -147,190 +146,26 @@ export function expectEqual (
   });
 }
 
-export async function queryDb (sql: string) {
+export async function queryDb (
+  BACKDOOR_USERNAME: string,
+  BACKDOOR_PASSWORD: string,
+  sql: string,
+) {
   try {
-    const response = await BACKDOOR_ACTIONS.query(
+    const bacdoorToken = await TestOwner.sBackdoorLogin(
       DATA_PROVIDER_URL,
+      {
+        username: BACKDOOR_USERNAME,
+        password: BACKDOOR_PASSWORD,
+      },
+    );
+    return TestOwner.query(
+      DATA_PROVIDER_URL,
+      bacdoorToken,
       sql,
     );
-    return response;
   } catch (error) {
     throw Error('queryDb error - ' + error.message);
-  }
-}
-
-export const MOCK_FNS = {
-  deleteOwner: async (
-    ownerName: string,
-  ) => {
-    await BACKDOOR_ACTIONS.deleteOwner(
-      DATA_PROVIDER_URL,
-      ownerName,
-    );
-  },
-  registerOwner: async (
-    ownerName: string,
-    ownerPassword: string,
-  ) => {
-    const owner = await BACKDOOR_ACTIONS.registerOwner(
-      DATA_PROVIDER_URL,
-      ownerName,
-      ownerPassword,
-    );
-
-    return {
-      ownerKey: owner.key,
-      ownerId: owner.id,
-      ownerUsername: owner.username,
-      ownerAvatarId: owner.avatarId,
-    };
-  },
-  createNamespace: async (
-    ownerKey: string,
-    namespaceName: string,
-  ) => {
-    const mNamespace = await BACKDOOR_ACTIONS.createNamespace(
-      DATA_PROVIDER_URL,
-      namespaceName,
-      ownerKey,
-    );
-
-    return mNamespace;
-  },
-  acceptInvitation: async (
-    invitationKey: string,
-    owenrId: number,
-    username: string,
-  ) => {
-    const mNamespace = await BACKDOOR_ACTIONS.query(
-      DATA_PROVIDER_URL,
-      `
-    call acceptInvitation(
-      '${invitationKey}',
-      ${owenrId},
-      '${username}'
-    );
-    `,
-    );
-
-    return mNamespace;
-  },
-  login: async (
-    ownerUsername: string,
-    ownerPassword: string,
-  ) => {
-    const response = await axios.post(
-      `${DATA_PROVIDER_URL}/app/login`,
-      {
-        username: ownerUsername,
-        password: ownerPassword,
-      },
-    );
-
-    return response.data.token;
-  },
-};
-
-export class TestContext {
-  ownerKey: string;
-  ownerId: number;
-  ownerUsername: string;
-  ownerPassword: string;
-  ownerAvatarId: number;
-  token: string;
-  namespaces: {
-    namespaceId: number,
-    namespaceName: string,
-    invitations: {
-      invitationKey: string,
-      ownerTestContext: TestContext,
-    }[]
-  }[] = [];
-
-  async deleteOwner(ownerUsername?: string) {
-    await MOCK_FNS.deleteOwner(
-      ownerUsername || this.ownerUsername);
-  }
-
-  async registerOwner (
-    ownerName: string,
-    ownerPassword: string,
-  ) {
-    const owner = await MOCK_FNS.registerOwner(
-      ownerName, ownerPassword);
-
-    this.ownerKey = owner.ownerKey;
-    this.ownerId = owner.ownerId;
-    this.ownerUsername = owner.ownerUsername;
-    this.ownerAvatarId = owner.ownerAvatarId;
-    this.ownerPassword = ownerPassword;
-
-    return this;
-  }
-
-  async createNamespace(namespaceName: string) {
-    const mNamespace = await MOCK_FNS.createNamespace(
-      this.ownerKey, namespaceName,
-    );
-
-    this.namespaces.push({
-      namespaceId: mNamespace.id,
-      namespaceName: mNamespace.name,
-      invitations: [],
-    });
-
-    return this;
-  }
-
-  async login () {
-    const token = await MOCK_FNS.login(
-      this.ownerUsername, this.ownerPassword);
-
-    this.token = token;
-
-    return this;
-  }
-
-  async deleteNamespaces () {
-    for (const namespace of this.namespaces) {
-      await BACKDOOR_ACTIONS.deleteNamespaceByName(
-        DATA_PROVIDER_URL,
-        namespace.namespaceName,
-      );
-
-      await BACKDOOR_ACTIONS.deleteNamespaceInvitations(
-        DATA_PROVIDER_URL,
-        namespace.namespaceId,
-      );
-    }
-  }
-
-  async inviteOwnerToNamespace (
-    namespaceIndex: number,
-    email: string,
-  ) {
-    await this.login();
-    const namespace = this.namespaces[namespaceIndex];
-    const invitation = await BACKDOOR_ACTIONS.invite(
-      DATA_PROVIDER_URL,
-      this.token,
-      this.ownerKey,
-      namespace.namespaceId,
-      email,
-    );
-
-    namespace.invitations.push({
-      invitationKey: invitation.invitationKey,
-      ownerTestContext: new TestContext(),
-    });
-  }
-
-  authHeaders () {
-    return {
-      headers: {
-        'Authorization': 'Bearer ' + this.token,
-      },
-    };
   }
 }
 

@@ -41,7 +41,7 @@ export async function prepareNamespace (
     creator.username,
     creator.password || 'testpassword',
   );
-  await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_PASSWORD, BACKDOOR_USERNAME, creator.username);
+  await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, creator.username);
   await creatorOwner.register();
 
   const namespace = await creatorOwner.createNamespace(namespaceName);
@@ -150,19 +150,6 @@ export async function prepareNamespace (
 }
 
 export const BACKDOOR_ACTIONS = {
-  query: async (
-    DATA_PROVIDER_URL: string,
-    sql: string,
-  ) => {
-    const res = await  axios.post<unknown>(
-      DATA_PROVIDER_URL + '/cybackdoor/sql',
-      {
-        sql,
-      },
-    );
-
-    return res.data;
-  },
   registerOwner: async (
     DATA_PROVIDER_URL: string,
     username: string,
@@ -179,20 +166,6 @@ export const BACKDOOR_ACTIONS = {
     );
 
     return res.data;
-  },
-  deleteOwner: async (
-    DATA_PROVIDER_URL: string,
-    username: string,
-  ) => {
-    return await axios
-      .delete(`${DATA_PROVIDER_URL}/cybackdoor/owner/${username}`);
-  },
-  deleteUser: async (
-    DATA_PROVIDER_URL: string,
-    username: string,
-  ) => {
-    return await axios
-      .delete(`${DATA_PROVIDER_URL}/cybackdoor/user/${username}`);
   },
   login: async (
     DATA_PROVIDER_URL: string,
@@ -304,17 +277,6 @@ export const BACKDOOR_ACTIONS = {
     );
 
     return res.data;
-  },
-  deleteNamespaceInvitations: async (
-    DATA_PROVIDER_URL: string,
-    namespaceId: number,
-  ) => {
-    await BACKDOOR_ACTIONS.query(
-      DATA_PROVIDER_URL,
-      `
-      DELETE  FROM Invitation WHERE namespaceId=${namespaceId}
-      `,
-    );
   },
   SCENARIO: {
     prepareNamespace,

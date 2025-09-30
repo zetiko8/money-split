@@ -223,6 +223,8 @@ describe(API_NAME, () => {
     });
     it('saves invitation in the db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Invitation
         WHERE id = ${invitationId}

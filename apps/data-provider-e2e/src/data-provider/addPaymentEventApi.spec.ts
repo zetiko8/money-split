@@ -661,6 +661,8 @@ describe(API_NAME, () => {
       }
 
       const response = (await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `SELECT * FROM PaymentEvent WHERE id = ${paymentEventId}`,
       )) as PaymentEventDbRow[];
 

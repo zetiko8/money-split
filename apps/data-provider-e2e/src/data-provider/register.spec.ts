@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, TestContext, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_USERNAME, BACKDOOR_PASSWORD, DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { registerApi } from '@angular-monorepo/api-interface';
+import { TestOwner } from '@angular-monorepo/backdoor';
 
 const api = registerApi();
 const API_NAME = api.ajax.method
@@ -10,14 +11,12 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
   beforeEach(async () => {
     try {
-      const testContext = new TestContext();
-      await testContext.deleteOwner('testusername');
+      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testusername');
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
     }
   });
 
-  it('a', () => {});
   it('smoke', async () => {
     await smoke(API_NAME, async () => await axios.post(
       `${DATA_PROVIDER_URL}/app/register`,
@@ -196,6 +195,8 @@ describe(API_NAME, () => {
       }));
 
     const response = await queryDb(
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
       `
         SELECT * FROM Owner
         WHERE id = ${ownerId}
@@ -236,6 +237,8 @@ describe(API_NAME, () => {
     });
     it('saves owner in the db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Owner
         WHERE id = ${ownerId}
@@ -252,6 +255,8 @@ describe(API_NAME, () => {
     });
     it('saves avatar in the db', async () => {
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM Avatar
         WHERE id = ${ownerAvatarId}

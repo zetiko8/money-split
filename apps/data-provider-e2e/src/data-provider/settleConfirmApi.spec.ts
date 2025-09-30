@@ -655,6 +655,8 @@ describe(API_NAME, () => {
         await machine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`SettlementDebt\`
         WHERE settlementId = ${settleConfirmResponse.data.id}
@@ -743,6 +745,8 @@ describe(API_NAME, () => {
         await machine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`SettlementDebt\`
         WHERE settlementId = ${settleConfirmResponse.data.id}
@@ -811,6 +815,8 @@ describe(API_NAME, () => {
         await machine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`SettlementDebt\`
         WHERE settlementId = ${settleConfirmResponse.data.id}
@@ -887,6 +893,8 @@ describe(API_NAME, () => {
         await machine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`SettlementDebt\`
         WHERE settlementId = ${settleConfirmResponse.data.id}
@@ -949,6 +957,8 @@ describe(API_NAME, () => {
         await machine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`SettlementDebt\`
         WHERE settlementId = ${settleConfirmResponse.data.id}
