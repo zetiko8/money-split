@@ -33,6 +33,9 @@ export const LOGIN_FORM = {
     cy.get('[data-test="register-link"]')
       .click();
   },
+  isOnLoginForm () {
+    cy.url().should('contain', '/login');
+  },
 };
 
 export const INVITATION_FORM = {

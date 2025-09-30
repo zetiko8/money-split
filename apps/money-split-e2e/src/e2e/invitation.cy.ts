@@ -1,32 +1,36 @@
 import { ACTIONS } from '../support/actions';
 import { INVITATION_FORM, LOGIN_FORM, NAMESPACE_SCREEN, REGISTER_FORM } from '../support/app.po';
-import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2, TestOwner } from '@angular-monorepo/backdoor';
 import { ENV } from '../support/config';
 
 const DATA_PROVIDER_URL = ENV().DATA_PROVIDER_URL;
+const BACKDOOR_USERNAME = ENV().BACKDOOR_USERNAME;
+const BACKDOOR_PASSWORD = ENV().BACKDOOR_PASSWORD;
 
 describe('Invitation', () => {
 
-  describe('can invite a person',() => {
-    const email = 'test+0002@gmail.com';
-    let testOwner!: TestOwner;
+  describe.only('Invite form',() => {
     let namespaceId!: number;
     let ownerKey!: string;
     let token!: string;
 
     beforeEach(async () => {
-      // Clean up existing test data
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'testowner');
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      // Create test owner using MockDataMachine
-      testOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'testowner', 'testpassword');
-      const namespace = await testOwner.createNamespace('testnamespace1');
-      namespaceId = namespace.id;
-      ownerKey = testOwner.owner.key;
-      token = testOwner.token;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+
+      await machine.createNamespace('creator-owner', 'namespace1');
+
+      ownerKey = machine.getOwner('creator-owner').key;
+      namespaceId = machine.getNamespace('namespace1').id;
+      token = await machine.loginOwner('creator-owner');
     });
 
     it('can invite a person', () => {
+      const email = 'test+0002@gmail.com';
+
       ACTIONS.loginTestOwnerWithToken(token);
       cy.visit(`/${ownerKey}/namespace/${namespaceId}`);
       cy.get('[data-test="add-user-button"]').click();
@@ -39,39 +43,89 @@ describe('Invitation', () => {
       cy.get('[data-test="invited-owner"]')
         .contains(email);
     });
+
+    it.only('email must be valid', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/${ownerKey}/namespace/${namespaceId}`);
+      cy.get('[data-test="add-user-button"]').click();
+      cy.get('input[name="email"').type('test+0002gmail.com');
+      cy.get('[data-test="invite-btn"]').click();
+      cy.get('[data-test="number-of-invited-users"]')
+        .should('contain.text', '(1)');
+      cy.get('[data-test="invited-owner"]')
+        .should('have.length', 1);
+      // cy.get('[data-test="invited-owner"]')
+      //   .contains(email);
+    });
   });
 
   describe('accept invitation - already logged in',() => {
     const email = 'test@email.com';
-    let namespaceId!: number;
-    let testOwner!: TestOwner;
-    let creatorOwner!: TestOwner;
     let invitationKey!: string;
     let token!: string;
     beforeEach(async () => {
-      try {
-        // Clean up existing test data
-        await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
-        await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-        // Create creator owner and namespace
-        creatorOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'creator', 'testpassword');
-        const namespace = await creatorOwner.createNamespace('testnamespace');
-        namespaceId = namespace.id;
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
 
-        // Create invitation
-        const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
-        invitationKey = invitation.invitationKey;
+      await machine.createNamespace('creator-owner', 'namespace1');
+      const invitation = await machine.inviteToNamespace('creator-owner', 'namespace1', email);
 
-        // Create test owner
-        testOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'invitedowner', 'testpassword');
-        token = testOwner.token;
-      } catch (error) {
-        throw Error('beforeAll error: ' + (error as Error).message);
-      }
+      invitationKey = invitation.invitationKey;
+      token = await machine.loginOwner('namespace-owner1');
     });
 
     it('can accept invitation', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/invitation/${invitationKey}/join`);
+      INVITATION_FORM.accept(email);
+      cy.url().should('contain', '/namespace/');
+      NAMESPACE_SCREEN.openMembersTab();
+      cy.get('[data-test="number-of-invited-users"]')
+        .should('contain.text', '(0)');
+      cy.get('[data-test="invited-owner"]')
+        .should('have.length', 0);
+    });
+
+    it('username length validation', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/invitation/${invitationKey}/join`);
+      INVITATION_FORM.setName('a'.repeat(21));
+      INVITATION_FORM.expectNameMaxLengthError();
+      INVITATION_FORM.expectSubmitButtonToBeDisabled();
+    });
+
+    it('username trim validation', () => {
+      ACTIONS.loginTestOwnerWithToken(token);
+      cy.visit(`/invitation/${invitationKey}/join`);
+      INVITATION_FORM.setName('   ');
+      INVITATION_FORM.expectSubmitButtonToBeDisabled();
+    });
+  });
+
+  describe('accept invitation - creator owner wants to accept its own invitation',() => {
+    const email = 'test@email.com';
+    let invitationKey!: string;
+    let token!: string;
+    beforeEach(async () => {
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1');
+
+      await machine.createNamespace('creator-owner', 'namespace1');
+      const invitation = await machine.inviteToNamespace('creator-owner', 'namespace1', email);
+
+      invitationKey = invitation.invitationKey;
+      token = await machine.loginOwner('creator-owner');
+    });
+
+    it('can accept invitation', () => {
+
+      // TODO - tole bo potrebno premisliti
       ACTIONS.loginTestOwnerWithToken(token);
       cy.visit(`/invitation/${invitationKey}/join`);
       INVITATION_FORM.accept(email);
@@ -103,28 +157,23 @@ describe('Invitation', () => {
     const email = 'test2@email.com';
     let invitationKey!: string;
     beforeEach(async () => {
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      // Clean up existing test data
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
+      await machine.createOwner('creator-owner');
+      await machine.createOwner('namespace-owner1', 'testpassword');
 
-      // Create creator owner and namespace
-      const machine = new MockDataMachine(DATA_PROVIDER_URL);
-      await machine.createNewCluster('creator', 'testpassword');
-      await machine.createNewNamespace('testnamespace');
-      const state = await machine.createNewInvitation('test@email.com');
+      await machine.createNamespace('creator-owner', 'namespace1');
+      const invitation = await machine.inviteToNamespace('creator-owner', 'namespace1', email);
 
-      // Create invitation
-      const invitation = state.getInvitationByEmail('test@email.com');
       invitationKey = invitation.invitationKey;
-
     });
 
     it('can accept invitation, but must login first', () => {
       cy.visit(`/invitation/${invitationKey}/join`);
       cy.get('[data-test="accept-invitation-btn"]').click();
 
-      LOGIN_FORM.login('test@email.com', 'testpassword');
+      LOGIN_FORM.login('namespace-owner1', 'testpassword');
       INVITATION_FORM.accept(email);
       NAMESPACE_SCREEN.openMembersTab();
       cy.url().should('contain', '/namespace/');
@@ -137,22 +186,18 @@ describe('Invitation', () => {
 
   describe('accept invitation - guest that doesn\'t jet have a profile',() => {
     const email = 'test2@email.com';
-    let namespaceId!: number;
-    let creatorOwner!: TestOwner;
     let invitationKey!: string;
-
     beforeEach(async () => {
-      // Clean up existing test data
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'creator');
-      await MockDataMachine.dispose(DATA_PROVIDER_URL, 'invitedowner');
+      const machine = new MockDataMachine2(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      // Create creator owner and namespace
-      creatorOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'creator', 'testpassword');
-      const namespace = await creatorOwner.createNamespace('testnamespace');
-      namespaceId = namespace.id;
+      await machine.createOwner('creator-owner');
+      await TestOwner.dispose(
+        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'invitedowner');
 
-      // Create invitation
-      const invitation = await creatorOwner.inviteToNamespace('test@email.com', namespaceId);
+      await machine.createNamespace('creator-owner', 'namespace1');
+      const invitation = await machine.inviteToNamespace('creator-owner', 'namespace1', email);
+
       invitationKey = invitation.invitationKey;
     });
 
@@ -163,6 +208,8 @@ describe('Invitation', () => {
 
       LOGIN_FORM.registerInstead();
       REGISTER_FORM.register('invitedowner', 'testpassword');
+
+      LOGIN_FORM.isOnLoginForm();
       LOGIN_FORM.login('invitedowner', 'testpassword');
       INVITATION_FORM.accept(email);
       NAMESPACE_SCREEN.openMembersTab();
