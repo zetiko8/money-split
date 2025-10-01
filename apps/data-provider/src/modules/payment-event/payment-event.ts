@@ -2,7 +2,7 @@ import { CreatePaymentEventData, PaymentEvent, PaymentEventView, PaymentEventVie
 import { jsonProcedure, mysqlDate } from '../../connection/helper';
 import { appErrorWrap, LOGGER } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
-import { UserService } from '@angular-monorepo/mysql-adapter';
+import { UserHelpersService, getTransaction } from '@angular-monorepo/mysql-adapter';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { query } from '../../connection/connection';
 
@@ -23,6 +23,7 @@ export const PAYMENT_EVENT_SERVICE = {
 
       const namespace = await NAMESPACE_SERVICE.getNamespaceById(namespaceId);
 
+      const transaction = await getTransaction(LOGGER);
       const paymentEventsViews = await asyncMap(res, async (paymentEventFromDb) => {
         const paymentEventView: PaymentEventView = {
           ...paymentEventFromDb,
@@ -40,7 +41,7 @@ export const PAYMENT_EVENT_SERVICE = {
             const paidBy: PaymentNodeView = {
               amount: paidByFromDb.amount,
               currency: paidByFromDb.currency,
-              user: await new UserService(LOGGER).getUserById(paidByFromDb.userId),
+              user: await UserHelpersService.getUserById(transaction, paidByFromDb.userId),
             };
             return paidBy;
           });
@@ -50,12 +51,13 @@ export const PAYMENT_EVENT_SERVICE = {
             const benefitor: PaymentNodeView = {
               amount: benefitorFromDb.amount,
               currency: benefitorFromDb.currency,
-              user: await new UserService(LOGGER).getUserById(benefitorFromDb.userId),
+              user: await UserHelpersService.getUserById(transaction, benefitorFromDb.userId),
             };
             return benefitor;
           });
         return paymentEventView;
       });
+      await transaction.commit();
 
       return paymentEventsViews.sort(
         (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());

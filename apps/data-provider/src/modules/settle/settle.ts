@@ -4,7 +4,7 @@ import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { insertSql, mysqlDate, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
 import { lastInsertId, query } from '../../connection/connection';
 import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from '../../types';
-import { UserService } from '@angular-monorepo/mysql-adapter';
+import { UserHelpersService, getTransaction } from '@angular-monorepo/mysql-adapter';
 import { LOGGER } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
 import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
@@ -248,21 +248,31 @@ export const SETTLE_SERVICE = {
                           settlementDebt.data,
                         );
 
+                const transaction = await getTransaction(LOGGER);
+                const createdBy = await UserHelpersService.getUserById(
+                  transaction,
+                  settlementDebt.createdBy,
+                );
+                const editedBy = await UserHelpersService.getUserById(
+                  transaction,
+                  settlementDebt.editedBy,
+                );
+                const settledBy = settlementDebt.settledBy
+                  ? await UserHelpersService.getUserById(transaction, settlementDebt.settledBy)
+                  : null;
+                await transaction.commit();
+
                 return {
                   created: settlementDebt.created,
                   edited: settlementDebt.edited,
-                  createdBy: await new UserService(LOGGER)
-                    .getUserById(settlementDebt.createdBy),
-                  editedBy: await new UserService(LOGGER)
-                    .getUserById(settlementDebt.editedBy),
+                  createdBy,
+                  editedBy,
                   id: settlementDebt.id,
                   settled: settlementDebt.settled,
                   settlementId: settlementDebt.settlementId,
                   data,
                   settledOn: settlementDebt.settledOn,
-                  settledBy: settlementDebt.settledBy ?
-                    await new UserService(LOGGER).getUserById(settlementDebt.settledBy)
-                    : null,
+                  settledBy,
                 };
               },
             );

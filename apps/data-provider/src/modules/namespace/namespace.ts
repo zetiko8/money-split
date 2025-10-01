@@ -18,7 +18,7 @@ import { query } from '../../connection/connection';
 import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../../types';
 import { appError, appErrorWrap, LOGGER } from '../../helpers';
-import { UserService } from '@angular-monorepo/mysql-adapter';
+import { UserHelpersService, getTransaction } from '@angular-monorepo/mysql-adapter';
 import { SETTLE_SERVICE } from '../settle/settle';
 import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 import { asyncMap } from '@angular-monorepo/utils';
@@ -113,8 +113,13 @@ async function getNamespaceViewForOwner (
         `,
   );
 
-  const ownerUsers = await new UserService(LOGGER)
-    .getNamespaceOwnerUsers(ownerId, namespaceId);
+  const transaction = await getTransaction(LOGGER);
+  const ownerUsers = await UserHelpersService.getNamespaceOwnerUsers(
+    transaction,
+    ownerId,
+    namespaceId,
+  );
+  await transaction.commit();
 
   const namespace = await getNamespaceById(namespaceId);
   const paymentEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(namespaceId, ownerId);
@@ -147,9 +152,10 @@ async function mapToRecordView (
   record: Record,
   namespace: MNamespace,
 ): Promise<RecordView> {
-  const userService = new UserService(LOGGER);
-  const createdBy = await userService.getUserById(record.createdBy);
-  const editedBy = await userService.getUserById(record.editedBy);
+  const transaction = await getTransaction(LOGGER);
+  const createdBy = await UserHelpersService.getUserById(transaction, record.createdBy);
+  const editedBy = await UserHelpersService.getUserById(transaction, record.editedBy);
+  await transaction.commit();
   const data = await mapToRecordDataView(record.data);
   const settlement = await SETTLE_SERVICE
     .getSettlementMaybeById(record.settlementId);
@@ -171,15 +177,16 @@ async function mapToRecordView (
 async function mapToRecordDataView (
   record: RecordData,
 ): Promise<RecordDataView> {
-  const userService = new UserService(LOGGER);
+  const transaction = await getTransaction(LOGGER);
   const benefitors = await asyncMap(
     record.benefitors,
-    async benefitorId => await userService.getUserById(benefitorId),
+    async benefitorId => await UserHelpersService.getUserById(transaction, benefitorId),
   );
   const paidBy = await asyncMap(
     record.paidBy,
-    async paidById => await userService.getUserById(paidById),
+    async paidById => await UserHelpersService.getUserById(transaction, paidById),
   );
+  await transaction.commit();
   const data: RecordDataView = {
     cost: record.cost,
     currency: record.currency,
@@ -214,10 +221,16 @@ async function getSettlementListViews (
             const isAllSettled = settleRecords
               .every(record => record.settled);
 
+            const transaction = await getTransaction(LOGGER);
+            const settledBy = await UserHelpersService.getUserById(
+              transaction,
+              settlement.createdBy,
+            );
+            await transaction.commit();
+
             return {
               settlement,
-              settledBy: await new UserService(LOGGER)
-                .getUserById(settlement.createdBy),
+              settledBy,
               settleRecords,
               isAllSettled,
             };
