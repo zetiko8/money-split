@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Invitation, User } from '@angular-monorepo/entities';
 import { AvatarComponent } from '../../../../components/avatar.component';
 import { RoutingService } from '../../../../services/routing/routing.service';
+import { TruncateInTheMiddlePipe, TruncatePipe } from '../../../../shared/pipes/truncate.pipe';
 
 @Component({
   standalone: true,
@@ -11,6 +12,8 @@ import { RoutingService } from '../../../../services/routing/routing.service';
     CommonModule,
     TranslateModule,
     AvatarComponent,
+    TruncatePipe,
+    TruncateInTheMiddlePipe,
   ],
   selector: 'users-list',
   templateUrl: './users-list.component.html',

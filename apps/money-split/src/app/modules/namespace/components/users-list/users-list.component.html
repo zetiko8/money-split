@@ -22,7 +22,7 @@
             data-test="invited-owner"
             class="box xsmall margined"
         >
-            {{ invitation.email }}
+            {{ invitation.email | truncateInTheMiddle: 39 }}
         </li>
     </ul>
 </section>
