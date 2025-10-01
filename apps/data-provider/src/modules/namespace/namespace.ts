@@ -17,8 +17,8 @@ import {
 import { query } from '../../connection/connection';
 import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
 import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../../types';
-import { USER_SERVICE } from '../user/user';
-import { appError, appErrorWrap } from '../../helpers';
+import { appError, appErrorWrap, LOGGER } from '../../helpers';
+import { UserService } from '@angular-monorepo/mysql-adapter';
 import { SETTLE_SERVICE } from '../settle/settle';
 import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 import { asyncMap } from '@angular-monorepo/utils';
@@ -113,7 +113,7 @@ async function getNamespaceViewForOwner (
         `,
   );
 
-  const ownerUsers = await USER_SERVICE
+  const ownerUsers = await new UserService(LOGGER)
     .getNamespaceOwnerUsers(ownerId, namespaceId);
 
   const namespace = await getNamespaceById(namespaceId);
@@ -147,8 +147,9 @@ async function mapToRecordView (
   record: Record,
   namespace: MNamespace,
 ): Promise<RecordView> {
-  const createdBy = await USER_SERVICE.getUserById(record.createdBy);
-  const editedBy = await USER_SERVICE.getUserById(record.editedBy);
+  const userService = new UserService(LOGGER);
+  const createdBy = await userService.getUserById(record.createdBy);
+  const editedBy = await userService.getUserById(record.editedBy);
   const data = await mapToRecordDataView(record.data);
   const settlement = await SETTLE_SERVICE
     .getSettlementMaybeById(record.settlementId);
@@ -170,13 +171,14 @@ async function mapToRecordView (
 async function mapToRecordDataView (
   record: RecordData,
 ): Promise<RecordDataView> {
+  const userService = new UserService(LOGGER);
   const benefitors = await asyncMap(
     record.benefitors,
-    async benefitorId => await USER_SERVICE.getUserById(benefitorId),
+    async benefitorId => await userService.getUserById(benefitorId),
   );
   const paidBy = await asyncMap(
     record.paidBy,
-    async paidById => await USER_SERVICE.getUserById(paidById),
+    async paidById => await userService.getUserById(paidById),
   );
   const data: RecordDataView = {
     cost: record.cost,
@@ -214,7 +216,7 @@ async function getSettlementListViews (
 
             return {
               settlement,
-              settledBy: await USER_SERVICE
+              settledBy: await new UserService(LOGGER)
                 .getUserById(settlement.createdBy),
               settleRecords,
               isAllSettled,

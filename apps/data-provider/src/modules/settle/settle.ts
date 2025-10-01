@@ -4,7 +4,8 @@ import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { insertSql, mysqlDate, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
 import { lastInsertId, query } from '../../connection/connection';
 import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from '../../types';
-import { USER_SERVICE } from '../user/user';
+import { UserService } from '@angular-monorepo/mysql-adapter';
+import { LOGGER } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
 import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 
@@ -250,9 +251,9 @@ export const SETTLE_SERVICE = {
                 return {
                   created: settlementDebt.created,
                   edited: settlementDebt.edited,
-                  createdBy: await USER_SERVICE
+                  createdBy: await new UserService(LOGGER)
                     .getUserById(settlementDebt.createdBy),
-                  editedBy: await USER_SERVICE
+                  editedBy: await new UserService(LOGGER)
                     .getUserById(settlementDebt.editedBy),
                   id: settlementDebt.id,
                   settled: settlementDebt.settled,
@@ -260,7 +261,7 @@ export const SETTLE_SERVICE = {
                   data,
                   settledOn: settlementDebt.settledOn,
                   settledBy: settlementDebt.settledBy ?
-                    await USER_SERVICE.getUserById(settlementDebt.settledBy)
+                    await new UserService(LOGGER).getUserById(settlementDebt.settledBy)
                     : null,
                 };
               },

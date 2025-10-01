@@ -1,8 +1,8 @@
 import { CreatePaymentEventData, PaymentEvent, PaymentEventView, PaymentEventViewFromDb, PaymentNode, PaymentNodeView } from '@angular-monorepo/entities';
 import { jsonProcedure, mysqlDate } from '../../connection/helper';
-import { appErrorWrap } from '../../helpers';
+import { appErrorWrap, LOGGER } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
-import { USER_SERVICE } from '../user/user';
+import { UserService } from '@angular-monorepo/mysql-adapter';
 import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { query } from '../../connection/connection';
 
@@ -40,7 +40,7 @@ export const PAYMENT_EVENT_SERVICE = {
             const paidBy: PaymentNodeView = {
               amount: paidByFromDb.amount,
               currency: paidByFromDb.currency,
-              user: await USER_SERVICE.getUserById(paidByFromDb.userId),
+              user: await new UserService(LOGGER).getUserById(paidByFromDb.userId),
             };
             return paidBy;
           });
@@ -50,7 +50,7 @@ export const PAYMENT_EVENT_SERVICE = {
             const benefitor: PaymentNodeView = {
               amount: benefitorFromDb.amount,
               currency: benefitorFromDb.currency,
-              user: await USER_SERVICE.getUserById(benefitorFromDb.userId),
+              user: await new UserService(LOGGER).getUserById(benefitorFromDb.userId),
             };
             return benefitor;
           });
