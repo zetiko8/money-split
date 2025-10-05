@@ -1,6 +1,5 @@
 import {
   CreateNamespacePayload,
-  ERROR_CODE,
   Invitation,
   MNamespace,
   MNamespaceSettings,
@@ -16,7 +15,7 @@ import {
 } from '@angular-monorepo/entities';
 import { query } from '../../connection/connection';
 import { jsonProcedure, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity, SettlementEntity } from '../../types';
+import { EntityPropertyType, MNamespaceEntity, SettlementEntity } from '../../types';
 import { appError, appErrorWrap, LOGGER } from '../../helpers';
 import { UserHelpersService, getTransaction } from '@angular-monorepo/mysql-adapter';
 import { SETTLE_SERVICE } from '../settle/settle';
@@ -82,70 +81,50 @@ async function getNamespaceViewForOwner (
   namespaceId: number,
   ownerId: number,
 ): Promise<NamespaceView> {
+  return await appErrorWrap('getNamespaceViewForOwner', async () => {
+    // Get basic namespace data from procedure
+    const basicData = await jsonProcedure<{
+      id: number;
+      name: string;
+      avatarId: number;
+      invitations: Invitation[];
+      users: User[];
+      ownerUsers: User[];
+    }>(
+      `
+      call getNamespaceView(
+        ${namespaceId},
+        ${ownerId}
+      );
+      `,
+    );
 
-  const namespaces = await query<MNamespace[]>
-  (
-    `
-        SELECT * FROM NamespaceOwner no2 
-        INNER JOIN Namespace n 
-        ON n.id = no2.namespaceId
-        WHERE no2.ownerId = ${ownerId}
-        AND n.id = ${namespaceId}
-        `,
-  );
+    // Get payment events and settlements (complex queries that need additional processing)
+    const paymentEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(namespaceId, ownerId);
 
-  if (!namespaces.length)
-    throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
+    const hasRecordsToSettle = (() => {
+      if (!paymentEvents.length) return false;
+      if (paymentEvents.some(event => event.settlementId === null))
+        return true;
+      return false;
+    })();
 
-  const invitations = (await selectWhereSql<Invitation[]>(
-    'Invitation',
-    'namespaceId',
-    EntityPropertyType.ID,
-    namespaceId,
-    InvitationEntity,
-  )).filter(invitation => !invitation.accepted);
+    const settlements = await NAMESPACE_SERVICE.getSettlementListViews(namespaceId);
 
-  const users = await query<User[]>
-  (
-    `
-        SELECT * FROM \`User\` 
-        WHERE namespaceId = ${namespaceId}
-        `,
-  );
+    const namespaceView: NamespaceView = {
+      id: basicData.id,
+      name: basicData.name,
+      avatarId: basicData.avatarId,
+      invitations: basicData.invitations || [],
+      users: basicData.users || [],
+      ownerUsers: basicData.ownerUsers || [],
+      paymentEvents,
+      hasRecordsToSettle,
+      settlements,
+    };
 
-  const transaction = await getTransaction(LOGGER);
-  const ownerUsers = await UserHelpersService.getNamespaceOwnerUsers(
-    transaction,
-    ownerId,
-    namespaceId,
-  );
-  await transaction.commit();
-
-  const namespace = await getNamespaceById(namespaceId);
-  const paymentEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(namespaceId, ownerId);
-
-  const hasRecordsToSettle = (() => {
-    if (!paymentEvents.length) return false;
-    if (paymentEvents.some(event => event.settlementId === null))
-      return true;
-    return false;
-  })();
-
-  const settlements = await NAMESPACE_SERVICE.getSettlementListViews(namespaceId);
-
-  const namespaceView: NamespaceView = {
-    id: namespaces[0].id,
-    name: namespaces[0].name,
-    invitations,
-    users,
-    ownerUsers,
-    paymentEvents,
-    avatarId: namespace.avatarId,
-    hasRecordsToSettle,
-    settlements,
-  };
-
-  return namespaceView;
+    return namespaceView;
+  });
 }
 
 async function mapToRecordView (
