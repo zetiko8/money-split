@@ -4,4 +4,4 @@ import { sendMail as implSendMail } from './email';
 import { sendMail as mockSendMail } from './mock-email';
 
 export const sendMail: SendMailFn
-    = ENVIRONMENT.sendMail ? implSendMail : mockSendMail;
+    = ENVIRONMENT.sendMail() ? implSendMail : mockSendMail;

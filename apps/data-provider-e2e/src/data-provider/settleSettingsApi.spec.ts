@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { settlePreviewApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
@@ -127,7 +127,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns payment events to settle', async () => {
+    testWrap('', 'returns payment events to settle', async () => {
       const response = await axios.get(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
         testOwner.authHeaders(),

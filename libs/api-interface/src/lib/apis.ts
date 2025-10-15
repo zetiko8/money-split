@@ -1,6 +1,7 @@
 import {
   AvatarData,
   BackdoorLoadData,
+  BackdoorScenarioDataFixed,
   CreateNamespacePayload,
   CreatePaymentEventData,
   EditPaymentEventViewData,
@@ -157,6 +158,18 @@ export function getAvatarApi() {
   });
 }
 
+export function getAvatarsApi() {
+  return apiDefinition<
+  null,
+  {
+    avatarIds: number[],
+  },
+  AvatarData[]>({
+    endpoint: '/avatar',
+    method: 'GET',
+  });
+}
+
 export function createInvitationApi() {
   return apiDefinition<
   { email: string },
@@ -266,6 +279,16 @@ export function loadApiBackdoor() {
   });
 }
 
+export function createScenarioApiBackdoor() {
+  return apiDefinition<
+  BackdoorScenarioDataFixed,
+  null,
+  BackdoorLoadData[]>({
+    endpoint: '/backdoor/create-scenario',
+    method: 'POST',
+  });
+}
+
 export function addPaymentEventApiBackdoor() {
   return apiDefinition<
   PaymentEvent,
@@ -309,6 +332,34 @@ export function settleConfirmApiBackdoor() {
     Settlement>({
       endpoint: '/backdoor/settle',
       method: 'POST',
+    });
+}
+
+export function markAsSettledApi() {
+  return apiDefinition<
+    null,
+    {
+      namespaceId: number,
+      byUser: number,
+      settlementDebtId: number,
+    },
+    void>({
+      endpoint: '/:ownerKey/namespace/:namespaceId/settle/mark-as-settled/:byUser/:settlementDebtId',
+      method: 'GET',
+    });
+}
+
+export function markAsUnsettledApi() {
+  return apiDefinition<
+    null,
+    {
+      namespaceId: number,
+      byUser: number,
+      settlementDebtId: number,
+    },
+    void>({
+      endpoint: '/:ownerKey/namespace/:namespaceId/settle/mark-as-unsettled/:byUser/:settlementDebtId',
+      method: 'GET',
     });
 }
 
@@ -421,6 +472,7 @@ export const DATA_PROVIDER_API = {
   getNamespaceSettingsApi: new ApiDefinitionObj(getNamespaceSettingsApi()),
   editNamespaceSettingApi: new ApiDefinitionObj(editNamespaceSettingApi()),
   getAvatarApi: new ApiDefinitionObj(getAvatarApi()),
+  getAvatarsApi: new ApiDefinitionObj(getAvatarsApi()),
   addPaymentEventApi: new ApiDefinitionObj(addPaymentEventApi()),
   addPaymentEventApiBackdoor: new ApiDefinitionObj(addPaymentEventApiBackdoor()),
   editPaymentEventApi: new ApiDefinitionObj(editPaymentEventApi()),
@@ -429,4 +481,7 @@ export const DATA_PROVIDER_API = {
   settleSettingsApi: new ApiDefinitionObj(settleSettingsApi()),
   loadApiBackdoor: new ApiDefinitionObj(loadApiBackdoor()),
   sqlBackdoor: new ApiDefinitionObj(sqlBackdoor()),
+  createScenarioApiBackdoor: new ApiDefinitionObj(createScenarioApiBackdoor()),
+  markAsSettledApi: new ApiDefinitionObj(markAsSettledApi()),
+  markAsUnsettledApi: new ApiDefinitionObj(markAsUnsettledApi()),
 };

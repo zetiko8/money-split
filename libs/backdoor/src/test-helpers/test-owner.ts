@@ -1,5 +1,5 @@
 import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
-import { AvatarData, BackdoorLoadData, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor, SettlementPayloadBackdoor } from '@angular-monorepo/entities';
+import { AvatarData, BackdoorLoadData, BackdoorScenarioData, BackdoorScenarioDataFixed, CreatePaymentEventData, Invitation, MNamespace, NamespaceView, Owner, PaymentEvent, Record, RecordDataBackdoor, SettlementPayloadBackdoor } from '@angular-monorepo/entities';
 import axios from 'axios';
 import { getRandomColor } from './backdoor-actions';
 
@@ -478,6 +478,53 @@ export class TestOwner {
     const result
     = await DATA_PROVIDER_API.loadApiBackdoor.callPromise(
       ownerIds,
+      null,
+      async (endpoint, method, payload) => {
+        const res = await axios.post<BackdoorLoadData[]>(
+          `${DATA_PROVIDER_URL}/cybackdoor${endpoint}`,
+          payload,
+          this.sBackdoorAuthHeaders(backdoorToken),
+        );
+        return res.data;
+      },
+    );
+
+    return result;
+  }
+
+  static async createScenario (
+    DATA_PROVIDER_URL: string,
+    backdoorToken: string,
+    scenarioData: BackdoorScenarioData,
+  ) {
+
+    const fixedScenarioData: BackdoorScenarioDataFixed = {
+      owners: scenarioData.owners.map(o => ({
+        name: o.name,
+        password: o.password || 'testpassword',
+      })),
+      namespaces: scenarioData.namespaces.map(n => {
+        return {
+          creator: n.creator,
+          name: n.name,
+          users: n.users.map(u => ({
+            name: u.name,
+            email: u.email || u.name + '@test.com',
+            owner: u.owner || u.name,
+            invitor: u.invitor || n.creator,
+          })),
+          paymentEvents: n.paymentEvents.map(pe => ({
+            user: pe.user,
+            owner: pe.owner || pe.user,
+            data: pe.data,
+          })),
+        };
+      }),
+    };
+
+    const result
+    = await DATA_PROVIDER_API.createScenarioApiBackdoor.callPromise(
+      fixedScenarioData,
       null,
       async (endpoint, method, payload) => {
         const res = await axios.post<BackdoorLoadData[]>(

@@ -1,13 +1,11 @@
 import { ERROR_CODE, paymentEventsToRecordsWithIds, RecordData, RecordDataView, Settlement, SettlementDebt, SettlementDebtView, SettlementPayload, SettlementPreview, SettlementRecord, SettlementSettings } from '@angular-monorepo/entities';
 import { settle, deptToRecordData } from '@angular-monorepo/debt-simplification';
-import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import { insertSql, mysqlDate, selectMaybeOneWhereSql, selectOneWhereSql, selectWhereSql } from '../../connection/helper';
 import { lastInsertId, query } from '../../connection/connection';
 import { EntityPropertyType, SettlementDebtEntity, SettlementEntity } from '../../types';
-import { UserHelpersService, getTransaction } from '@angular-monorepo/mysql-adapter';
+import { UserHelpersService, getTransactionContext, NamespaceHelpersService, PaymentEventHelpersService } from '@angular-monorepo/mysql-adapter';
 import { LOGGER } from '../../helpers';
 import { asyncMap } from '@angular-monorepo/utils';
-import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
 
 async function getSettleRecords (
   namespaceId: number,
@@ -20,8 +18,12 @@ async function getSettleRecords (
   }[],
   settleRecords: RecordData[]
 }> {
-  const paymentEvents = await PAYMENT_EVENT_SERVICE
-    .getNamespacePaymentEvents(namespaceId, ownerId);
+  const paymentEvents = await getTransactionContext(
+    { logger: LOGGER }, (transaction) => {
+      return PaymentEventHelpersService
+        .getNamespacePaymentEvents(transaction, namespaceId, ownerId);
+    },
+  );
 
   const paymentEventsToSettle
     = paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id));
@@ -158,28 +160,29 @@ export const SETTLE_SERVICE = {
     payload: SettlementPayload,
     ownerId: number,
   ): Promise<SettlementPreview> => {
-
-    const { settleRecords }
+    return await getTransactionContext({ logger: LOGGER}, async (transaction) => {
+      const { settleRecords }
       = await getSettleRecords(namespaceId, payload, ownerId);
 
-    const settleRecordsData = await asyncMap<
+      const settleRecordsData = await asyncMap<
             RecordData, SettlementRecord>(
               settleRecords, async (record) => {
                 return {
-                  data: await NAMESPACE_SERVICE
-                    .mapToRecordDataView(record),
+                  data: await NamespaceHelpersService
+                    .mapToRecordDataView(transaction, record),
                   settled: false,
                   settledBy: null,
                   settledOn: null,
                 };
               });
-    return {
-      settleRecords: settleRecordsData,
-      paymentEvents: await PAYMENT_EVENT_SERVICE
-        .getNamespacePaymentEventsView(namespaceId, ownerId),
-      namespace: await NAMESPACE_SERVICE
-        .getNamespaceViewForOwner(namespaceId, ownerId),
-    };
+      return {
+        settleRecords: settleRecordsData,
+        paymentEvents: await PaymentEventHelpersService
+          .getNamespacePaymentEventsView(transaction, namespaceId, ownerId),
+        namespace: await NamespaceHelpersService
+          .getNamespaceViewForOwner(transaction, namespaceId, ownerId),
+      };
+    });
   },
   settle: async (
     byUser: number,
@@ -187,97 +190,111 @@ export const SETTLE_SERVICE = {
     payload: SettlementPayload,
     ownerId: number,
   ) => {
+    return getTransactionContext(
+      { logger: LOGGER}, async (transaction) => {
+        const { settleRecords, recordsToSettle }
+          = await getSettleRecords(namespaceId, payload, ownerId);
 
-    const { settleRecords, recordsToSettle }
-      = await getSettleRecords(namespaceId, payload, ownerId);
+        const settlement = await SETTLE_SERVICE.createSettlement(
+          byUser, namespaceId);
 
-    const settlement = await SETTLE_SERVICE.createSettlement(
-      byUser, namespaceId);
+        await asyncMap(
+          settleRecords,
+          async (record) => await SETTLE_SERVICE.createSettlementDebt(
+            byUser,
+            namespaceId,
+            settlement.id,
+            record,
+            false,
+            null,
+            null,
+          ),
+        );
 
-    await asyncMap(
-      settleRecords,
-      async (record) => await SETTLE_SERVICE.createSettlementDebt(
-        byUser,
-        namespaceId,
-        settlement.id,
-        record,
-        false,
-        null,
-        null,
-      ),
-    );
+        await asyncMap(
+          recordsToSettle,
+          async (record) => await PaymentEventHelpersService.addPaymentEventToSettlement(
+            transaction,
+            record.paymentEventId,
+            settlement.id,
+            byUser,
+            ownerId,
+            namespaceId,
+          ),
+        );
 
-    await asyncMap(
-      recordsToSettle,
-      async (record) => await PAYMENT_EVENT_SERVICE.addPaymentEventToSettlement(
-        record.paymentEventId, settlement.id, byUser, ownerId, namespaceId),
-    );
+        return settlement;
+      });
 
-    return settlement;
   },
   getSettleSettings: async (
     namespaceId: number,
     ownerId: number,
   ): Promise<SettlementSettings> => {
-    const paymentEvents = await PAYMENT_EVENT_SERVICE
-      .getNamespacePaymentEventsView(namespaceId, ownerId);
-    return {
-      paymentEventsToSettle: paymentEvents.filter(pe => !pe.settlementId),
-      namespace: await NAMESPACE_SERVICE
-        .getNamespaceViewForOwner(namespaceId, ownerId),
-    };
+    return await getTransactionContext({ logger: LOGGER}, async (transaction) => {
+      const paymentEvents = await PaymentEventHelpersService
+        .getNamespacePaymentEventsView(transaction, namespaceId, ownerId);
+      return {
+        paymentEventsToSettle: paymentEvents.filter(pe => !pe.settlementId),
+        namespace: await NamespaceHelpersService
+          .getNamespaceViewForOwner(transaction, namespaceId, ownerId),
+      };
+    });
   },
   getSettlementRecordViews: async (
     settlementId: number,
   ): Promise<SettlementDebtView[]> => {
-    const settlementDebts = await selectWhereSql<SettlementDebt[]>(
-      'SettlementDebt',
-      'settlementId',
-      EntityPropertyType.ID,
-      settlementId,
-      SettlementDebtEntity,
-    );
+    return await getTransactionContext({ logger: LOGGER}, async (transaction) => {
 
-    const settlementDebtViews = await asyncMap<
-            SettlementDebt, SettlementDebtView>(
-              settlementDebts,
-              async settlementDebt => {
+      const settlementDebts = await selectWhereSql<SettlementDebt[]>(
+        'SettlementDebt',
+        'settlementId',
+        EntityPropertyType.ID,
+        settlementId,
+        SettlementDebtEntity,
+      );
 
-                const data: RecordDataView
-                        = await NAMESPACE_SERVICE.mapToRecordDataView(
-                          settlementDebt.data,
-                        );
+      const settlementDebtViews = await asyncMap<
+              SettlementDebt, SettlementDebtView>(
+                settlementDebts,
+                async settlementDebt => {
 
-                const transaction = await getTransaction(LOGGER);
-                const createdBy = await UserHelpersService.getUserById(
-                  transaction,
-                  settlementDebt.createdBy,
-                );
-                const editedBy = await UserHelpersService.getUserById(
-                  transaction,
-                  settlementDebt.editedBy,
-                );
-                const settledBy = settlementDebt.settledBy
-                  ? await UserHelpersService.getUserById(transaction, settlementDebt.settledBy)
-                  : null;
-                await transaction.commit();
+                  const data: RecordDataView
+                          = await NamespaceHelpersService.mapToRecordDataView(
+                            transaction,
+                            settlementDebt.data,
+                          );
 
-                return {
-                  created: settlementDebt.created,
-                  edited: settlementDebt.edited,
-                  createdBy,
-                  editedBy,
-                  id: settlementDebt.id,
-                  settled: settlementDebt.settled,
-                  settlementId: settlementDebt.settlementId,
-                  data,
-                  settledOn: settlementDebt.settledOn,
-                  settledBy,
-                };
-              },
-            );
+                  const createdBy = await UserHelpersService.getUserById(
+                    transaction,
+                    settlementDebt.createdBy,
+                  );
+                  const editedBy = await UserHelpersService.getUserById(
+                    transaction,
+                    settlementDebt.editedBy,
+                  );
+                  const settledBy = settlementDebt.settledBy
+                    ? await UserHelpersService.getUserById(transaction, settlementDebt.settledBy)
+                    : null;
 
-    return settlementDebtViews;
+                  return {
+                    created: settlementDebt.created,
+                    edited: settlementDebt.edited,
+                    createdBy,
+                    editedBy,
+                    id: settlementDebt.id,
+                    settled: settlementDebt.settled,
+                    settlementId: settlementDebt.settlementId,
+                    data,
+                    settledOn: settlementDebt.settledOn,
+                    settledBy,
+                  };
+                },
+              );
+
+      return settlementDebtViews;
+
+    });
   },
   setDebtIsSettled: async (
     byUser: number,

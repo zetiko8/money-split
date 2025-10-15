@@ -1,181 +1,19 @@
-import { BackdoorLoadData, ERROR_CODE, Invitation, MNamespace, Owner, RecordData, RecordDataCy, User } from '@angular-monorepo/entities';
-import { lastInsertId, query } from '../../connection/connection';
-import { insertSql, selectOneWhereSql } from '../../connection/helper';
-import { EntityPropertyType, InvitationEntity, MNamespaceEntity, RecordEntity } from '../../types';
-import { RECORD_SERVICE } from '../record/record';
-import { asyncMap } from '@angular-monorepo/utils';
-import { NAMESPACE_SERVICE } from '../namespace/namespace';
+import { BackdoorLoadData, BackdoorScenarioDataFixed, Owner, PaymentEvent } from '@angular-monorepo/entities';
+import { query } from '../../connection/connection';
+import { asyncMap, getRandomColor } from '@angular-monorepo/utils';
+import { InvitationHelpersService, NamespaceService, OwnerService, PaymentEventService } from '@angular-monorepo/mysql-adapter';
+import { getTransactionContext } from '@angular-monorepo/mysql-adapter';
+import { LOGGER } from '../../helpers';
+import { AUTHENTICATION } from '../authentication/authentication';
 
 export const CYBACKDOOR_SERVICE = {
-  deleteOwner: async (
-    username: string,
-  ) => {
-    await query(
-      `DELETE FROM Owner WHERE username = "${username}"`,
-    );
-  },
-  deleteUser: async (
-    username: string,
-  ) => {
-    await query(
-      `DELETE FROM \`User\` WHERE name = "${username}"`,
-    );
-  },
-  deleteNamespaceByName: async (
-    namespaceName: string,
-  ) => {
-    try {
-      const namespace = await selectOneWhereSql<MNamespace>(
-        'Namespace',
-        'name',
-        EntityPropertyType.STRING,
-        namespaceName,
-        MNamespaceEntity,
-      );
-      await query(
-        `DELETE FROM \`User\`
-              WHERE namespaceId = "${namespace.id}"
-              `,
-      );
-    } catch (error) {
-      //
-    }
-    await query(
-      `DELETE FROM \`Namespace\`
-            WHERE name = "${namespaceName}"
-            `,
-    );
-  },
-  getNamespaceByName: async (
-    namespaceName: string,
-  ) => {
-    return (await query<MNamespace>(
-      `SELECT * FROM \`Namespace\`
-            WHERE name = "${namespaceName}"
-            `,
-    ))[0];
-  },
-  deleteInvitationByEmail: async (
-    email: string,
-  ) => {
-    await query(
-      `DELETE FROM \`Invitation\`
-          WHERE email = "${email}"
-          `,
-    );
-  },
-  getOwnerByUsername: async (
-    username: string,
-  ) => {
-    const owner = await query<Owner[]>(`
-        SELECT * FROM \`Owner\`
-        WHERE \`username\` = "${username}"`);
-
-    if (!owner.length)
-      throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (owner[0] as any).hash;
-
-    return owner[0];
-  },
-  getUserByUsername: async (
-    username: string,
-  ) => {
-    const user = await query<User[]>(`
-        SELECT * FROM \`User\`
-        WHERE \`name\` = "${username}"`);
-
-    if (!user.length)
-      throw Error(ERROR_CODE.RESOURCE_NOT_FOUND);
-
-    return user[0];
-  },
-  getInvitationByEmail: async (
-    email: string,
-  ) => {
-    return await selectOneWhereSql<Invitation>(
-      'Invitation',
-      'email',
-      EntityPropertyType.STRING,
-      email,
-      InvitationEntity,
-    );
-  },
-  addRecord: async (
-    namespaceId: number,
-    userId: number,
-    data: RecordDataCy,
-  ) => {
-
-    const recordData: RecordData = {
-      paidBy: (
-        await asyncMap(data.paidBy, async (b) => {
-          return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
-            .id;
-        })),
-      benefitors: (
-        await asyncMap(data.benefitors, async (b) => {
-          return (await CYBACKDOOR_SERVICE.getUserByUsername(b))
-            .id;
-        })),
-      cost: data.cost,
-      currency: data.currency,
-    };
-
-    await query(insertSql(
-      'Record',
-      RecordEntity,
-      {
-        created: new Date(data.created),
-        edited: new Date(data.edited),
-        createdBy: userId,
-        editedBy: userId,
-        data: recordData,
-        namespaceId,
-        settlementId: null,
-      },
-    ));
-
-    const recordId = await lastInsertId();
-
-    return RECORD_SERVICE.getRecordById(recordId);
-  },
-  // settleRecords: async (
-  //   byUser: string,
-  //   namespaceName: string,
-  //   records: number[],
-  //   settledOn: Date,
-  // ) => {
-  //   const user = await CYBACKDOOR_SERVICE.getUserByUsername(byUser);
-  //   const namespace
-  //     = await CYBACKDOOR_SERVICE.getNamespaceByName(namespaceName);
-
-  //   const settlement = await SETTLE_SERVICE.settle(
-  //     user.id,
-  //     namespace.id,
-  //     records,
-  //   );
-
-  //   const updateSql = `
-  //       UPDATE \`Settlement\`
-  //       SET
-  //       created = '${mysqlDate(new Date())}'
-  //       WHERE id = ${settlement.id}
-  //   `;
-  //   await query(updateSql);
-
-  //   settlement.created = settledOn;
-  //   return settlement;
-  // },
-
   load: async (ownerIds: number[]): Promise<BackdoorLoadData[]> => {
 
     const result = await asyncMap(ownerIds, async (ownerId) => {
-      const namespaces = await NAMESPACE_SERVICE.getNamespacesForOwner(ownerId);
+      const namespaces = await new NamespaceService(LOGGER).getNamespacesForOwner(ownerId);
 
       const namespaceViews = await asyncMap(namespaces, async (namespace) => {
-        return NAMESPACE_SERVICE.getNamespaceViewForOwner(namespace.id, ownerId);
+        return new NamespaceService(LOGGER).getNamespaceViewForOwner(namespace.id, ownerId);
       });
 
       const owner = (await query<Owner[]>(`
@@ -192,5 +30,86 @@ export const CYBACKDOOR_SERVICE = {
     });
 
     return result;
+  },
+  createScenario: async (scenarioData: BackdoorScenarioDataFixed) => {
+    return await getTransactionContext({ logger: LOGGER}, async (transaction) => {
+      await query(
+        `call testDisposeMultiple('[${scenarioData.owners.map(o => ('"' + o.name + '"')).join(', ')}]')`,
+      );
+
+      const owners = await asyncMap(scenarioData.owners, async (owner) => {
+        return await new OwnerService(LOGGER).createOwner({
+          username: owner.name,
+          password: owner.password,
+          avatarColor: getRandomColor(),
+          avatarUrl: null,
+        }, AUTHENTICATION.getPasswordHash(owner.password));
+      });
+
+      await asyncMap(scenarioData.namespaces, async (namespace) => {
+        const creator = owners.find(o => o.username === namespace.creator);
+        const createdNamespace = await new NamespaceService(LOGGER).createNamespace({
+          namespaceName: namespace.name,
+          avatarColor: getRandomColor(),
+          avatarUrl: null,
+        }, creator);
+
+        await asyncMap(namespace.users, async (user) => {
+          const invitor = owners.find(o => o.username === user.invitor);
+          const invitation = await InvitationHelpersService.inviteToNamespace(
+            transaction,
+            user.email,
+            createdNamespace.id,
+            invitor.id,
+          );
+
+          const invitedOwner = owners.find(o => o.username === user.owner);
+          await InvitationHelpersService.acceptInvitation(
+            transaction,
+            invitation.invitationKey,
+            invitedOwner.id,
+            user.name,
+          );
+        });
+
+        await asyncMap(namespace.paymentEvents, async (paymentEvent) => {
+          const creator = owners.find(o => o.username === paymentEvent.owner);
+          const namespaceView = await new NamespaceService(LOGGER)
+            .getNamespaceViewForOwner(createdNamespace.id, creator.id);
+
+          const userId = namespaceView.ownerUsers
+            .find(o => o.name === paymentEvent.user)?.id;
+
+          const pe: PaymentEvent = {
+            id: 0,
+            created: paymentEvent.data.created,
+            edited: paymentEvent.data.edited,
+            createdBy: userId,
+            editedBy: userId,
+            benefitors: paymentEvent.data.benefitors.map(b => ({
+              userId: (namespaceView.users.find(u => u.name === b.user)?.id) as number,
+              amount: b.amount,
+              currency: b.currency,
+            })),
+            paidBy: paymentEvent.data.paidBy.map(p => ({
+              userId: (namespaceView.users.find(u => u.name === p.user)?.id) as number,
+              amount: p.amount,
+              currency: p.currency,
+            })),
+            namespaceId: createdNamespace.id,
+            settlementId: null,
+            description: paymentEvent.data.description,
+            notes: paymentEvent.data.notes,
+          };
+
+          await new PaymentEventService(LOGGER)
+            .addPaymentEventBackdoor(pe);
+        });
+
+        return namespace;
+      });
+
+      return CYBACKDOOR_SERVICE.load(owners.map(o => o.id));
+    });
   },
 };

@@ -1,22 +1,27 @@
-import { Logger } from '@angular-monorepo/utils';
-import { getTransaction } from '../mysql-adapter';
+import { Transaction } from '../mysql-adapter';
 import { Owner } from '@angular-monorepo/entities';
 
 export class HelpersService {
 
-  constructor(
-    private readonly logger: Logger,
-  ) {}
-
-  async getOwnerByKey(
+  static async getOwnerByKey(
+    transaction: Transaction,
     ownerKey: string,
   ) {
-    const transaction = await getTransaction(this.logger);
     const owner = (await transaction.query<Owner[]>(
       'SELECT * FROM `Owner` WHERE `key` = ?',
       [ownerKey],
     ))[0];
-    await transaction.commit();
     return owner;
+  }
+
+  static async getOwnerFromUsername(
+    transaction: Transaction,
+    username: string,
+  ) {
+    const owners = await transaction.query<Owner[]>(`
+      SELECT * FROM \`Owner\`
+      WHERE \`username\` = ?`,
+    [username]);
+    return owners[0];
   }
 }

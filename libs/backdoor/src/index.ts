@@ -23,16 +23,6 @@ export class NamespaceTestResource {
     }
   }
 
-  async dispose () {
-    try {
-      await BACKDOOR_ACTIONS.deleteNamespaceByName(
-        this.DATA_PROVIDER_URL, this.name);
-    } catch (error) {
-      throw Error('NamespaceTestResource dispose error - '
-        + (error as Error).message);
-    }
-  }
-
   constructor (
     private readonly DATA_PROVIDER_URL: string,
     private readonly name: string,

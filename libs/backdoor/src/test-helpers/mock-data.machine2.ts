@@ -9,6 +9,7 @@ import {
   User,
   SettlementPayloadBackdoor,
   SettlementPayload,
+  BackdoorScenarioData,
 } from '@angular-monorepo/entities';
 
 export interface OwnerData {
@@ -17,7 +18,7 @@ export interface OwnerData {
   data: BackdoorLoadData
 }
 
-export class MockDataMachine2 {
+class MockDataMachine2Internal {
   private defaultPassword = 'testPaswword';
   private currentProfile = 'default';
   private readonly STORAGE_PREFIX = 'mock-data-';
@@ -220,34 +221,48 @@ export class MockDataMachine2 {
     return res;
   }
 
-  private save(
+  public save(
     owners: { username: string; password: string; id: number }[])
     : void {
     this.storage.setItem(this.getStorageKey('testOwner'), JSON.stringify(owners));
   }
 
+  private readLsData () {
+    const lsData = this.storage.getItem(this.getStorageKey('testOwner'));
+    if (!lsData) {
+      return;
+    }
+
+    return JSON.parse(lsData) as unknown as { username: string; password: string; id: number }[];
+  }
+
+  private mapToState (
+    backdoorLoadData: BackdoorLoadData[],
+    data: { username: string; password: string; id: number }[],
+  ) {
+    return backdoorLoadData.map((d) => ({
+      ownerId: d.owner.id,
+      password: data
+        .find((dp) => dp.id === d.owner.id)?.password
+        || this.defaultPassword,
+      data: d,
+    }));
+  }
+
   private async load(): Promise<void> {
     try {
-      const lsData = this.storage.getItem(this.getStorageKey('testOwner'));
-      if (!lsData) {
+
+      const data = this.readLsData();
+      if (!data) {
         this.state = [];
         return;
       }
-
-      const data = JSON.parse(lsData) as unknown as { username: string; password: string; id: number }[];
       const res = await TestOwner.load(
         this.dataProviderUrl,
         await this.getBackdoorToken(),
         data.map((d) => d.id),
       );
-      this.state = res.map((d) => ({
-        ownerId: d.owner.id,
-        password: data
-          .find((dp) => dp.id === d.owner.id)?.password
-          || this.defaultPassword,
-        data: d,
-      }));
-
+      this.state = this.mapToState(res, data);
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const err = error as any;
@@ -257,6 +272,16 @@ export class MockDataMachine2 {
       }
       else throw error;
     }
+  }
+
+  public setState(backdoorLoadData: BackdoorLoadData[]): void {
+    const data = this.readLsData();
+    if (!data) {
+      this.state = [];
+      return;
+    }
+
+    this.state = this.mapToState(backdoorLoadData, data);
   }
 
   private getStorageKey(key: string): string {
@@ -339,5 +364,130 @@ export class MockDataMachine2 {
         },
       );
     return this.backdoorToken;
+  }
+}
+
+export class MockDataMachine2 {
+  private mockDataMachine2Internal: MockDataMachine2Internal;
+
+  constructor(
+    dataProviderUrl: string,
+    BACKDOOR_USERNAME: string,
+    BACKDOOR_PASSWORD: string,
+    mockDataMachine2Internal?: MockDataMachine2Internal,
+  ) {
+    if (mockDataMachine2Internal) {
+      this.mockDataMachine2Internal = mockDataMachine2Internal;
+      return;
+    } else {
+      this.mockDataMachine2Internal = new MockDataMachine2Internal(
+        dataProviderUrl,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+      );
+    }
+  }
+
+  async createOwner (username: string, password?: string) {
+    return this.mockDataMachine2Internal
+      .createOwner(username, password);
+  }
+
+  async createNamespace (ownerName: string, namespaceName: string) {
+    return this.mockDataMachine2Internal
+      .createNamespace(ownerName, namespaceName);
+  }
+
+  async inviteToNamespace (
+    ownerName: string,
+    namespaceName: string,
+    email: string,
+  ) {
+    return this.mockDataMachine2Internal
+      .inviteToNamespace(ownerName, namespaceName, email);
+  }
+
+  async acceptInvitation (
+    ownerName: string,
+    namespaceName: string,
+    invitedEmail: string,
+    namespaceUserUserName: string,
+  ) {
+    return this.mockDataMachine2Internal
+      .acceptInvitation(ownerName, namespaceName, invitedEmail, namespaceUserUserName);
+  }
+
+  async addPaymentEvent (
+    ownerName: string,
+    namespaceName: string,
+    user: string,
+    paymentEvent: CreatePaymentEventDataBackdoor,
+  ) {
+    return this.mockDataMachine2Internal
+      .addPaymentEvent(ownerName, namespaceName, user, paymentEvent);
+  }
+
+  async settleRecords (
+    ownerName: string,
+    namespaceName: string,
+    user: string,
+    settlementPayload: SettlementPayload,
+    settledOn: Date,
+  ) {
+    return this.mockDataMachine2Internal
+      .settleRecords(ownerName, namespaceName, user, settlementPayload, settledOn);
+  }
+
+  public getOwner (username: string): Owner {
+    return this.mockDataMachine2Internal
+      .getOwner(username);
+  }
+
+  public getNamespace (namespaceName: string): NamespaceView {
+    return this.mockDataMachine2Internal
+      .getNamespace(namespaceName);
+  }
+
+  public getNamespaceUser (namespaceName: string, namespaceUserUsername: string): User {
+    return this.mockDataMachine2Internal
+      .getNamespaceUser(namespaceName, namespaceUserUsername);
+  }
+
+  public getNamespacePaymentEventIds (namespaceName: string): number[] {
+    return this.mockDataMachine2Internal
+      .getNamespacePaymentEventIds(namespaceName);
+  }
+
+  public loginOwner (ownerName: string): Promise<string> {
+    return this.mockDataMachine2Internal
+      .loginOwner(ownerName);
+  }
+
+  public async getAuthHeaders (
+    ownerName: string,
+  ): Promise<{ headers: { Authorization: string } }> {
+    return this.mockDataMachine2Internal
+      .getAuthHeaders(ownerName);
+  }
+
+  public static async createScenario (
+    DATA_PROVIDER_URL: string,
+    BACKDOOR_USERNAME: string,
+    BACKDOOR_PASSWORD: string,
+    backdoorScenarioData: BackdoorScenarioData,
+  ): Promise<MockDataMachine2> {
+    const backdoorToken = await TestOwner.sBackdoorLogin(DATA_PROVIDER_URL, { username: BACKDOOR_USERNAME, password: BACKDOOR_PASSWORD });
+    const data = await TestOwner.createScenario(DATA_PROVIDER_URL, backdoorToken, backdoorScenarioData);
+    const dmi = new MockDataMachine2Internal(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+
+    const dm = new MockDataMachine2(
+      DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, dmi);
+    dmi.save(backdoorScenarioData.owners.map((o) => ({
+      username: o.name,
+      password: o.password || 'testpassword',
+      id: data.find((d) => d.owner.username === o.name)!.owner.id,
+    })));
+    dmi.setState(data);
+    return dm;
   }
 }

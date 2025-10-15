@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AUTH_SERVICE } from '../../modules/auth/auth';
+import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
 import { LOGGER, registerRoute } from '../../helpers';
 import { VALIDATE } from '@angular-monorepo/entities';
 import {
@@ -38,7 +38,7 @@ registerRoute(
       },
     );
   },
-  AUTH_SERVICE.namespaceAuth,
+  AUTH_MIDDLEWARE.namespaceAuth,
   [ body('email')
     .isString()
     .trim().escape()
@@ -53,7 +53,7 @@ registerRoute(
       params.invitationKey,
     );
   },
-  AUTH_SERVICE.noAuth,
+  AUTH_MIDDLEWARE.noAuth,
 );
 
 registerRoute(
@@ -70,5 +70,5 @@ registerRoute(
       payload.name,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );

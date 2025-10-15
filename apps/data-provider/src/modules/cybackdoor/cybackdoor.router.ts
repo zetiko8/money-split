@@ -3,8 +3,8 @@ import { CYBACKDOOR_SERVICE } from './cybackdoor.service';
 import { LOGGER, registerRoute } from '../../helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { query } from '../../connection/connection';
-import { loadApiBackdoor, settleConfirmApiBackdoor, sqlBackdoor } from '@angular-monorepo/api-interface';
-import { AUTH_SERVICE } from '../auth/auth';
+import { createScenarioApiBackdoor, loadApiBackdoor, settleConfirmApiBackdoor, sqlBackdoor } from '@angular-monorepo/api-interface';
+import { AUTH_MIDDLEWARE } from '../auth/auth-middleware';
 import { settleRouter } from '../settle/settle.router';
 import { SETTLE_SERVICE } from '../settle/settle';
 import { mysqlDate } from '../../connection/helper';
@@ -39,7 +39,7 @@ registerRoute(
 
     return result;
   },
-  AUTH_SERVICE.backdoorAuth,
+  AUTH_MIDDLEWARE.backdoorAuth,
 );
 
 registerRoute(
@@ -56,7 +56,7 @@ registerRoute(
       throw error;
     }
   },
-  AUTH_SERVICE.backdoorAuth,
+  AUTH_MIDDLEWARE.backdoorAuth,
 );
 
 registerRoute(
@@ -65,5 +65,14 @@ registerRoute(
   async (payload) => {
     return await CYBACKDOOR_SERVICE.load(payload);
   },
-  AUTH_SERVICE.backdoorAuth,
+  AUTH_MIDDLEWARE.backdoorAuth,
+);
+
+registerRoute(
+  createScenarioApiBackdoor(),
+  cyBackdoorRouter,
+  async (payload) => {
+    return await CYBACKDOOR_SERVICE.createScenario(payload);
+  },
+  AUTH_MIDDLEWARE.backdoorAuth,
 );

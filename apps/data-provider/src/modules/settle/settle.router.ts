@@ -1,19 +1,20 @@
 import { Router } from 'express';
 import { SETTLE_SERVICE } from './settle';
-import { AUTH_SERVICE } from '../../modules/auth/auth';
-import { numberRouteParam, registerRoute } from '../../helpers';
+import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
+import { LOGGER, registerRoute } from '../../helpers';
 import { ERROR_CODE, SettlementPayload, VALIDATE } from '@angular-monorepo/entities';
-import { PAYMENT_EVENT_SERVICE } from '../payment-event/payment-event';
-import { TypedRequestBody } from '../../types';
-import { logRequestMiddleware } from '../../request/service';
 
 import {
+  markAsSettledApi,
+  markAsUnsettledApi,
   settleConfirmApi,
   settlePreviewApi,
   settleSettingsApi,
 } from '@angular-monorepo/api-interface';
+import { getTransactionContext, PaymentEventHelpersService, Transaction } from '@angular-monorepo/mysql-adapter';
 
 async function validateSettlementPayload(
+  transaction: Transaction,
   payload: SettlementPayload,
   namespaceId: number,
   ownerId: number,
@@ -27,10 +28,8 @@ async function validateSettlementPayload(
   VALIDATE.currencyObject(payload.currencies);
 
   // Validate payment events
-  const namespaceEvents = await PAYMENT_EVENT_SERVICE.getNamespacePaymentEventsView(
-    namespaceId,
-    ownerId,
-  );
+  const namespaceEvents = await PaymentEventHelpersService
+    .getNamespacePaymentEventsView(transaction, namespaceId, ownerId);;
   const paymentEventIds = new Set(namespaceEvents.map(pe => pe.id));
   for (const eventId of payload.paymentEvents) {
     if (!paymentEventIds.has(eventId)) {
@@ -54,17 +53,23 @@ registerRoute(
         context.owner.id,
       );
   },
-  AUTH_SERVICE.namespaceAuth,
+  AUTH_MIDDLEWARE.namespaceAuth,
 );
 
 registerRoute(
   settlePreviewApi(),
   settleRouter,
   async (payload, params, context) => {
-    await validateSettlementPayload(
-      payload,
-      Number(params.namespaceId),
-      context.owner.id,
+    await getTransactionContext(
+      { logger: LOGGER },
+      async (transaction) => {
+        await validateSettlementPayload(
+          transaction,
+          payload,
+          Number(params.namespaceId),
+          context.owner.id,
+        );
+      },
     );
 
     const settlmentPreview = await SETTLE_SERVICE
@@ -76,17 +81,23 @@ registerRoute(
 
     return settlmentPreview;
   },
-  AUTH_SERVICE.namespaceAuth,
+  AUTH_MIDDLEWARE.namespaceAuth,
 );
 
 registerRoute(
   settleConfirmApi(),
   settleRouter,
   async (payload, params, context) => {
-    await validateSettlementPayload(
-      payload,
-      Number(params.namespaceId),
-      context.owner.id,
+    await getTransactionContext(
+      { logger: LOGGER },
+      async (transaction) => {
+        await validateSettlementPayload(
+          transaction,
+          payload,
+          Number(params.namespaceId),
+          context.owner.id,
+        );
+      },
     );
 
     const result = await SETTLE_SERVICE
@@ -99,51 +110,37 @@ registerRoute(
 
     return result;
   },
-  AUTH_SERVICE.namespaceAuth,
+  AUTH_MIDDLEWARE.namespaceAuth,
 );
 
-settleRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-settled/:byUser/:settlementDebtId',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      await AUTH_SERVICE.getOwnerFromRequest(req);
+registerRoute(
+  markAsSettledApi(),
+  settleRouter,
+  async (_, params) => {
+    const result = await SETTLE_SERVICE
+      .setDebtIsSettled(
+        Number(params.byUser),
+        Number(params.settlementDebtId),
+        true,
+      );
 
-      const result = await SETTLE_SERVICE
-        .setDebtIsSettled(
-          numberRouteParam(req, 'byUser'),
-          numberRouteParam(req, 'settlementDebtId'),
-          true,
-        );
+    return result;
+  },
+  AUTH_MIDDLEWARE.namespaceAuth,
+);
 
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
+registerRoute(
+  markAsUnsettledApi(),
+  settleRouter,
+  async (_, params) => {
+    const result = await SETTLE_SERVICE
+      .setDebtIsSettled(
+        Number(params.byUser),
+        Number(params.settlementDebtId),
+        false,
+      );
 
-settleRouter.get('/:ownerKey/namespace/:namespaceId/settle/mark-as-unsettled/:byUser/:settlementDebtId',
-  logRequestMiddleware(),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      await AUTH_SERVICE.getOwnerFromRequest(req);
-
-      const result = await SETTLE_SERVICE
-        .setDebtIsSettled(
-          numberRouteParam(req, 'byUser'),
-          numberRouteParam(req, 'settlementDebtId'),
-          false,
-        );
-
-      res.json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
+    return result;
+  },
+  AUTH_MIDDLEWARE.namespaceAuth,
+);

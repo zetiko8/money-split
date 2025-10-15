@@ -1,8 +1,8 @@
 import { IInvitationService } from '@angular-monorepo/data-adapter';
-import { getTransaction } from '../mysql-adapter';
-import { Invitation, InvitationViewData } from '@angular-monorepo/entities';
+import { getTransactionContext } from '../mysql-adapter';
+import { InvitationViewData } from '@angular-monorepo/entities';
 import { Logger } from '@angular-monorepo/utils';
-import { randomUUID } from 'crypto';
+import { InvitationHelpersService } from './invitation.helpers.service';
 
 export class InvitationService implements IInvitationService {
 
@@ -15,31 +15,28 @@ export class InvitationService implements IInvitationService {
     ownerId: number,
     name: string,
   ) {
-    const transaction = await getTransaction(this.logger);
-    const result = await transaction.jsonProcedure<Invitation>(
-      'call acceptInvitation(?, ?, ?);',
-      [
-        invitationKey,
-        ownerId,
-        name,
-      ],
-    );
-    await transaction.commit();
-    return result;
+    return await getTransactionContext(
+      { logger: this.logger },
+      async (transaction) => {
+        return await InvitationHelpersService
+          .acceptInvitation(transaction, invitationKey, ownerId, name);
+      });
   }
 
   async getInvitationViewData(
     invitationKey: string,
   ) {
-    const transaction = await getTransaction(this.logger);
-    const result = await transaction.jsonProcedure<InvitationViewData>(
-      'call getInvitationView(?);',
-      [
-        invitationKey,
-      ],
-    );
-    await transaction.commit();
-    return result;
+    return await getTransactionContext(
+      { logger: this.logger },
+      async (transaction) => {
+        const result = await transaction.jsonProcedure<InvitationViewData>(
+          'call getInvitationView(?);',
+          [
+            invitationKey,
+          ],
+        );
+        return result;
+      });
   }
 
   async inviteToNamespace(
@@ -48,28 +45,15 @@ export class InvitationService implements IInvitationService {
     ownerId: number,
     sendMail: (invitationKey: string) => Promise<void>,
   ) {
-    const transaction = await getTransaction(this.logger, false);
-    try {
-      const invitation = await transaction.jsonProcedure<Invitation>(
-        'call createInvitation(?, ?, ?, ?);',
-        [
-          email,
-          ownerId,
-          randomUUID(),
-          namespaceId,
-        ],
-      );
+    return await getTransactionContext(
+      { logger: this.logger },
+      async (transaction) => {
+        const invitation = await InvitationHelpersService
+          .inviteToNamespace(transaction, email, namespaceId, ownerId);
 
-      invitation.accepted = !!(invitation.accepted);
-      invitation.rejected = !!(invitation.rejected);
+        await sendMail(invitation.invitationKey);
 
-      await sendMail(invitation.invitationKey);
-
-      await transaction.commit();
-      return invitation;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+        return invitation;
+      });
   }
 };

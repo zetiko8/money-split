@@ -95,22 +95,6 @@ export const ACTIONS = {
       method: 'POST',
     }).then(res => res.body);
   },
-  deleteNamespace (
-    namespaceId: number,
-  ) {
-    return cy.request<MNamespace>({
-      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/namespace/${namespaceId}`,
-      method: 'DELETE',
-    }).then(res => res.body);
-  },
-  deleteNamespaceByName (
-    namespaceName: string,
-  ) {
-    return cy.request<MNamespace>({
-      url: `${ENV().DATA_PROVIDER_URL}/cybackdoor/namespaceName/${namespaceName}`,
-      method: 'DELETE',
-    }).then(res => res.body);
-  },
   deleteInvitation (
     email: string,
   ) {

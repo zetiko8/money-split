@@ -1,6 +1,13 @@
 export * from './lib/mysql-adapter';
 export * from './lib/modules/invitation.service';
+export * from './lib/modules/invitation.helpers.service';
 export * from './lib/modules/helpers.service';
 export * from './lib/modules/user.service';
 export * from './lib/modules/user.helpers.service';
-
+export * from './lib/modules/namespace.service';
+export * from './lib/modules/namespace.helpers.service';
+export * from './lib/modules/owner.service';
+export * from './lib/modules/avatar.service';
+export * from './lib/modules/profile.service';
+export * from './lib/modules/payment-event.service';
+export * from './lib/modules/payment-event.helpers.service';

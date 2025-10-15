@@ -1,4 +1,4 @@
-import { User } from '@angular-monorepo/entities';
+import { OwnerRole, OwnerRoleDb, User } from '@angular-monorepo/entities';
 import { Transaction } from '../mysql-adapter';
 
 export class UserHelpersService {
@@ -38,5 +38,29 @@ export class UserHelpersService {
       [namespaceId, ownerId],
     );
     return ownerUsers;
+  }
+
+  static async getOwnerRoles (
+    transaction: Transaction,
+    ownerId: number,
+  ): Promise<OwnerRole[]> {
+    const roles = await transaction.query<OwnerRoleDb[]>(`
+    SELECT * FROM \`OwnerRole\`
+    WHERE \`ownerId\` = ?`,
+    [ownerId]);
+
+    if (!roles || !roles.length)
+      return [ OwnerRole.USER ];
+
+    return roles.map(r => r.role);
+  }
+
+  static async isOwnerAdmin (
+    transaction: Transaction,
+    ownerId: number,
+  ): Promise<boolean> {
+    const roles = await UserHelpersService.getOwnerRoles(transaction, ownerId);
+
+    return roles.includes(OwnerRole.ADMIN);
   }
 }

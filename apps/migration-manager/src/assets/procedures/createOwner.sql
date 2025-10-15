@@ -9,51 +9,61 @@ CREATE PROCEDURE `main`.`createOwner`(
 )
 BEGIN
 
-  	   DECLARE ERROR varchar(100);
-  	   DECLARE AVATAR_ID BigInt;
+  DECLARE jsonResult TEXT;
+  DECLARE procedureError TEXT;
 
-	   if (
-	   	(
-	   	SELECT COUNT(*)  FROM Owner o
-	   	WHERE o.username = argUsername
-	   	)
-	   ) THEN
-	  	SET ERROR = "OWNER_USERNAME_ALREADY_EXISTS";
-	   ELSE
-	  	   INSERT INTO `Avatar`
-	  	   (
-	  	   	`color`,
-	  	   	`url`
-	  	   )
-	  	   VALUES(
-	  	  	argAvatarColor,
-	  	  	argAvatarUrl
-	  	   );
+  DECLARE AVATAR_ID BigInt;
 
-	  	  SET AVATAR_ID = LAST_INSERT_ID();
+  IF (
+    (
+    SELECT COUNT(*)  FROM Owner o
+    WHERE o.username = argUsername
+    )
+   ) THEN
+    SELECT JSON_OBJECT('procedureError', 'OWNER_USERNAME_ALREADY_EXISTS')
+    INTO procedureError;
+  ELSE
+    INSERT INTO `Avatar`
+    (
+     `color`,
+     `url`
+    )
+    VALUES(
+     argAvatarColor,
+     argAvatarUrl
+    );
 
-	  	  INSERT INTO `Owner`
-	  	  (
-	  	  	`key`,
-	  	  	`username`,
-	  	  	`hash`,
-	  	  	`avatarId`
-	  	  )
-	  	  VALUES(
-	  	  	argOwnerKey,
-	  	  	argUsername,
-	  	  	argHash,
-	  	  	AVATAR_ID
-	  	  );
+    SET AVATAR_ID = LAST_INSERT_ID();
 
-	  	 SELECT
-	  	 	o.`key`,
-	  	 	o.id,
-	  	 	o.username,
-	  	 	o.avatarId
-	  	 FROM Owner o
-	 	 WHERE o.id = LAST_INSERT_ID();
-	   END IF;
+    INSERT INTO `Owner`
+    (
+      `key`,
+      `username`,
+      `hash`,
+      `avatarId`
+    )
+    VALUES(
+      argOwnerKey,
+      argUsername,
+      argHash,
+      AVATAR_ID
+    );
 
-	 SELECT ERROR;
-   END
+    SELECT (
+        SELECT JSON_OBJECT(
+          'key', o.`key`,
+          'id', o.id,
+          'username', o.username,
+          'avatarId', o.avatarId
+        )
+        FROM `Owner` o
+        WHERE o.id = LAST_INSERT_ID()
+        LIMIT 1
+    ) INTO jsonResult;
+
+   END IF;
+
+  -- Return result
+  SELECT procedureError;
+  SELECT jsonResult;
+END;

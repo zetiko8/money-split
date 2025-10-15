@@ -119,6 +119,9 @@ function getPoolConnection(): Promise<PoolConnection> {
   });
 }
 
+/**
+ * @deprecated Use getTransactionContext instead
+ */
 export async function getTransaction(
   logger: Logger,
   autoRollbackOnError = true,
@@ -126,3 +129,25 @@ export async function getTransaction(
   const connection: PoolConnection = await getPoolConnection();
   return new Transaction(connection, logger, autoRollbackOnError);
 }
+
+export async function getTransactionContext<T>(
+  options: {
+    logger: Logger,
+    autoRollbackOnError?: boolean,
+  },
+  callback: (transaction: Transaction) => Promise<T>,
+): Promise<T> {
+  if (options.autoRollbackOnError === undefined) options.autoRollbackOnError = true;
+
+  const transaction = await getTransaction(options.logger, options.autoRollbackOnError);
+  try {
+    const result = await callback(transaction);
+    await transaction.commit();
+    return result;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+}
+
+

@@ -182,10 +182,14 @@ export const testWrap = (
           await fn();
         } catch (error) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if ((error as any).message)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            throw new Error((error as any).message);
-          throw error;
+          const err = error as any;
+          if (err.message) {
+            throw new Error(err.message);
+          } else if (err.code) {
+            throw new Error(err.code);
+          } else {
+            throw error;
+          }
         }
       },
     );
@@ -197,10 +201,14 @@ export const testWrap = (
           await fn();
         } catch (error) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if ((error as any).message)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            throw new Error((error as any).message);
-          throw error;
+          const err = error as any;
+          if (err.message) {
+            throw new Error(err.message);
+          } else if (err.code) {
+            throw new Error(err.code);
+          } else {
+            throw error;
+          }
         }
       },
     );

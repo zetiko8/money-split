@@ -1,4 +1,4 @@
-import { User } from '@angular-monorepo/entities';
+import { User, ViewUserViewData } from '@angular-monorepo/entities';
 
 export interface IUserService {
   getNamespaceOwnerUsers(
@@ -18,4 +18,9 @@ export interface IUserService {
     userId: number,
     avatarId: number,
   ): Promise<void>;
+
+  getViewUserViewData(
+    userId: number,
+    namespaceId: number,
+  ): Promise<ViewUserViewData>
 }

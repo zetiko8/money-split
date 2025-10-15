@@ -1,11 +1,7 @@
 import { Router } from 'express';
-import { NAMESPACE_SERVICE } from './namespace';
-import { AUTH_SERVICE } from '../../modules/auth/auth';
-import { registerRoute } from '../../helpers';
-import { ERROR_CODE, MNamespace, RecordView } from '@angular-monorepo/entities';
-import { TypedRequestBody } from '../../types';
-import { logRequestMiddleware } from '../../request/service';
-import { RECORD_SERVICE } from '../record/record';
+import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
+import { LOGGER, registerRoute } from '../../helpers';
+import { ERROR_CODE } from '@angular-monorepo/entities';
 
 import {
   createNamespaceApi,
@@ -14,6 +10,7 @@ import {
   getNamespaceViewApi,
   getOwnerNamespacesApi,
 } from '@angular-monorepo/api-interface';
+import { NamespaceService } from '@angular-monorepo/mysql-adapter';
 
 export const namespaceRouter = Router();
 
@@ -30,82 +27,44 @@ registerRoute(
     ) throw Error(ERROR_CODE.INVALID_REQUEST);
 
     payload.namespaceName = payload.namespaceName.trim();
-    return await NAMESPACE_SERVICE.createNamespace(
+    return await new NamespaceService(LOGGER).createNamespace(
       payload, context.owner);
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
 registerRoute(
   getNamespaceViewApi(),
   namespaceRouter,
   async (payload, params, context) => {
-    return await NAMESPACE_SERVICE.getNamespaceViewForOwner(
+    return await new NamespaceService(LOGGER).getNamespaceViewForOwner(
       Number(params.namespaceId),
       context.owner.id,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
-
-namespaceRouter.get(
-  '/:ownerKey/namespace/:namespaceId/edit/record/:recordId',
-  logRequestMiddleware('GET edit record'),
-  async (
-    req: TypedRequestBody<null>,
-    res,
-    next,
-  ) => {
-    try {
-      const owner = await AUTH_SERVICE.getOwnerFromRequest(req);
-
-      const recordId = Number(req.params['recordId'] as string);
-
-      const mNamaespace = await NAMESPACE_SERVICE.getNamespaceViewForOwner(
-        Number(req.params['namespaceId'] as string),
-        owner.id,
-      );
-
-      const record = await RECORD_SERVICE
-        .getRecordById(recordId);
-
-      const editRecordView: {
-        namespace: MNamespace,
-        record: RecordView,
-      } = {
-        namespace: mNamaespace,
-        record: (await NAMESPACE_SERVICE.mapToRecordView(
-          record,
-          mNamaespace,
-        )),
-      };
-
-      res.json(editRecordView);
-    } catch (error) {
-      next(error);
-    }
-  });
 
 registerRoute(
   getOwnerNamespacesApi(),
   namespaceRouter,
   async (payload, params, context) => {
-    return await NAMESPACE_SERVICE.getNamespacesForOwner(
+    return await new NamespaceService(LOGGER).getNamespacesForOwner(
       context.owner.id,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
 registerRoute(
   getNamespaceSettingsApi(),
   namespaceRouter,
   async (_, params) => {
-    return await NAMESPACE_SERVICE.getNamespaceSettings(
+    return await new NamespaceService(LOGGER).getNamespaceSettings(
       Number(params.namespaceId),
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
 registerRoute(
@@ -122,11 +81,12 @@ registerRoute(
 
     payload.namespaceName = payload.namespaceName.trim();
 
-    return await NAMESPACE_SERVICE.editNamespaceSettings(
-      context.owner.id,
-      Number(params.namespaceId),
-      payload,
-    );
+    return await new NamespaceService(LOGGER)
+      .editNamespaceSettings(
+        context.owner.id,
+        Number(params.namespaceId),
+        payload,
+      );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );

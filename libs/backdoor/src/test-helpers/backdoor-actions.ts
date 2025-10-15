@@ -196,20 +196,6 @@ export const BACKDOOR_ACTIONS = {
 
     return res.data;
   },
-  deleteNamespace: async (
-    DATA_PROVIDER_URL: string,
-    namespaceId: number,
-  ) => {
-    return await axios
-      .delete(`${DATA_PROVIDER_URL}/cybackdoor/namespace/${namespaceId}`);
-  },
-  deleteNamespaceByName: async (
-    DATA_PROVIDER_URL: string,
-    namespaceName: string,
-  ) => {
-    return await axios
-      .delete(`${DATA_PROVIDER_URL}/cybackdoor/namespaceName/${namespaceName}`);
-  },
   deleteInvitation: async (
     DATA_PROVIDER_URL: string,
     email: string,

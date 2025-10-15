@@ -26,44 +26,6 @@ export enum EntityPropertyType {
 
 export type Entity = Record<string, EntityPropertyType>;
 
-export const OwnerEntity: Entity = {
-  id: EntityPropertyType.AUTO_ID,
-  key: EntityPropertyType.NON_EMPTY_STRING,
-  username: EntityPropertyType.NON_EMPTY_STRING,
-  hash: EntityPropertyType.NON_EMPTY_STRING,
-  avatarId: EntityPropertyType.ID,
-};
-
-export const NamespaceOwnerEntity: Entity = {
-  ownerId: EntityPropertyType.ID,
-  namespaceId: EntityPropertyType.ID,
-};
-
-export const MNamespaceEntity: Entity = {
-  id: EntityPropertyType.AUTO_ID,
-  name: EntityPropertyType.NON_EMPTY_STRING,
-  avatarId: EntityPropertyType.ID,
-};
-
-export const UserEntity: Entity = {
-  id: EntityPropertyType.AUTO_ID,
-  namespaceId: EntityPropertyType.ID,
-  name: EntityPropertyType.NON_EMPTY_STRING,
-  ownerId: EntityPropertyType.ID,
-  avatarId: EntityPropertyType.ID,
-};
-
-export const RecordEntity: Entity = {
-  id: EntityPropertyType.AUTO_ID,
-  created: EntityPropertyType.DATETIME,
-  edited: EntityPropertyType.DATETIME,
-  createdBy: EntityPropertyType.ID,
-  editedBy: EntityPropertyType.ID,
-  data: EntityPropertyType.JSON,
-  namespaceId: EntityPropertyType.ID,
-  settlementId: EntityPropertyType.NULLABLE_ID,
-};
-
 export const SettlementDebtEntity: Entity = {
   id: EntityPropertyType.AUTO_ID,
   created: EntityPropertyType.DATETIME,
@@ -85,25 +47,6 @@ export const SettlementEntity: Entity = {
   createdBy: EntityPropertyType.ID,
   editedBy: EntityPropertyType.ID,
   namespaceId: EntityPropertyType.ID,
-};
-
-export const InvitationEntity: Entity = {
-  id: EntityPropertyType.AUTO_ID,
-  email: EntityPropertyType.NON_EMPTY_STRING,
-  created: EntityPropertyType.DATETIME,
-  edited: EntityPropertyType.DATETIME,
-  namespaceId: EntityPropertyType.ID,
-  createdBy: EntityPropertyType.ID,
-  editedBy: EntityPropertyType.ID,
-  accepted: EntityPropertyType.BOOL,
-  rejected: EntityPropertyType.BOOL,
-  invitationKey: EntityPropertyType.NON_EMPTY_STRING,
-};
-
-export const AvatarEntity: Entity = {
-  id: EntityPropertyType.AUTO_ID,
-  color: EntityPropertyType.STRING,
-  url: EntityPropertyType.STRING,
 };
 
 export interface AppError {

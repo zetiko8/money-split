@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { PAYMENT_EVENT_SERVICE } from './payment-event';
-import { AUTH_SERVICE } from '../../modules/auth/auth';
-import { registerRoute } from '../../helpers';
+import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
+import { LOGGER, registerRoute } from '../../helpers';
 import {
   addPaymentEventApi,
   editPaymentEventApi,
@@ -9,7 +8,6 @@ import {
   getEditPaymentEventViewApi,
   addPaymentEventApiBackdoor,
 } from '@angular-monorepo/api-interface';
-import { NAMESPACE_SERVICE } from '../namespace/namespace';
 import {
   CreatePaymentEventData,
   ERROR_CODE,
@@ -18,6 +16,7 @@ import {
   validatePaymentEvent,
 } from '@angular-monorepo/entities';
 import { AppError } from '../../types';
+import { PaymentEventService } from '@angular-monorepo/mysql-adapter';
 
 export const paymentEventRouter = Router();
 
@@ -25,34 +24,26 @@ registerRoute(
   getEditPaymentEventViewApi(),
   paymentEventRouter,
   async (payload, params, context) => {
-    const [namespace, paymentEvent] = await Promise.all([
-      NAMESPACE_SERVICE.getNamespaceViewForOwner(
-        Number(params.namespaceId),
-        context.owner.id,
-      ),
-      PAYMENT_EVENT_SERVICE.getPaymentEvent(
-        Number(params.namespaceId),
-        Number(params.paymentEventId),
-        context.owner.id,
-      ),
-    ]);
-
-    return { namespace, paymentEvent };
+    return new PaymentEventService(LOGGER).getEditPaymentEventView(
+      Number(params.namespaceId),
+      Number(params.paymentEventId),
+      context.owner.id,
+    );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
 registerRoute(
   getPaymentEventApi(),
   paymentEventRouter,
   async (payload, params, context) => {
-    return await PAYMENT_EVENT_SERVICE.getPaymentEvent(
+    return await new PaymentEventService(LOGGER).getPaymentEvent(
       Number(params.namespaceId),
       Number(params.paymentEventId),
       context.owner.id,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
 registerRoute(
@@ -63,7 +54,7 @@ registerRoute(
 
     validatePaymentEventApi(payload);
 
-    return await PAYMENT_EVENT_SERVICE.editPaymentEvent(
+    return await new PaymentEventService(LOGGER).editPaymentEvent(
       Number(params.namespaceId),
       Number(params.userId),
       Number(params.paymentEventId),
@@ -71,7 +62,7 @@ registerRoute(
       context.owner.id,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
 registerRoute(
@@ -81,16 +72,17 @@ registerRoute(
     VALIDATE.requiredPayload(payload);
     validatePaymentEventApi(payload);
 
-    return await PAYMENT_EVENT_SERVICE.addPaymentEvent(
+    return await new PaymentEventService(LOGGER).addPaymentEvent(
       Number(params.namespaceId),
       Number(params.userId),
       payload,
       context.owner.id,
     );
   },
-  AUTH_SERVICE.auth,
+  AUTH_MIDDLEWARE.auth,
 );
 
+// TODO - move to cybackdoor router
 registerRoute(
   addPaymentEventApiBackdoor(),
   paymentEventRouter,
@@ -98,11 +90,11 @@ registerRoute(
     VALIDATE.requiredPayload(payload);
     validatePaymentEventApi(payload);
 
-    return await PAYMENT_EVENT_SERVICE.addPaymentEventBackdoor(
+    return await new PaymentEventService(LOGGER).addPaymentEventBackdoor(
       payload,
     );
   },
-  AUTH_SERVICE.backdoorAuth,
+  AUTH_MIDDLEWARE.backdoorAuth,
 );
 
 function validatePaymentEventApi (

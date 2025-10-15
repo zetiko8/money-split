@@ -207,6 +207,44 @@ export interface CreatePaymentEventDataBackdoor {
   edited: Date;
 }
 
+export interface BackdoorScenarioData {
+  owners: { name: string, password?: string }[],
+  namespaces: {
+    name: string,
+    creator: string,
+    users: {
+      name: string,
+      email?: string,
+      owner?: string,
+      invitor?: string,
+    }[],
+    paymentEvents: {
+      user: string,
+      owner?: string,
+      data: CreatePaymentEventDataBackdoor
+    }[],
+  }[],
+}
+
+export interface BackdoorScenarioDataFixed {
+  owners: { name: string, password: string }[],
+  namespaces: {
+    name: string,
+    creator: string,
+    users: {
+      name: string,
+      email: string,
+      owner: string,
+      invitor: string,
+    }[],
+    paymentEvents: {
+      user: string,
+      owner: string,
+      data: CreatePaymentEventDataBackdoor
+    }[],
+  }[],
+}
+
 export interface PaymentNode {
   userId: number,
   amount: number,

@@ -6,83 +6,6 @@ import { ApiDefinition } from '@angular-monorepo/api-interface';
 import { Logger } from '@angular-monorepo/utils';
 import { validationResult } from 'express-validator';
 
-export function getControler <B, T>(
-  router: Router,
-  path: string,
-  logic: (
-        req: TypedRequestBody<B>,
-    ) => Promise<T>,
-) {
-  router.get(path,
-    logRequestMiddleware('GET : ' + path),
-    async (
-      req: TypedRequestBody<B>,
-      res,
-      next,
-    ) => {
-      try {
-        const result: T
-            = await logic(req);
-        res.json(result);
-      } catch (error) {
-        next(error);
-      }
-    });
-}
-
-export function stringRouteParam (
-  request: Request,
-  paramName: string,
-  options = {
-    required: true,
-  },
-): string {
-  const param = request.params[paramName];
-  if (options.required && !param) throw Error(
-    ERROR_CODE.INVALID_REQUEST);
-
-  return param;
-}
-
-export function numberRouteParam (
-  request: Request,
-  paramName: string,
-  options = {
-    required: true,
-  },
-): number {
-  const param = request.params[paramName];
-  if (options.required && param === undefined) throw Error(
-    ERROR_CODE.INVALID_REQUEST);
-
-  const numberParam = Number(param);
-  if (Number.isNaN(numberParam)) throw Error(
-    ERROR_CODE.INVALID_REQUEST);
-
-  return numberParam;
-}
-
-export function parseNumberRouteParam (
-  value: string,
-  options = {
-    required: true,
-  },
-): number {
-  const param = Number(value);
-  if (options.required && param === undefined) throw Error(
-    ERROR_CODE.INVALID_REQUEST);
-
-  const numberParam = Number(param);
-  if (Number.isNaN(numberParam)) throw Error(
-    ERROR_CODE.INVALID_REQUEST);
-
-  return numberParam;
-}
-
-export function getRandomColor () {
-  return '#000000'.replace(/0/g,function(){return (~~(Math.random()*16)).toString(16);});
-}
-
 export function registerRoute <
     Payload,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -189,16 +112,6 @@ export function registerRoute <
       },
     );
   }
-}
-
-export function errorAppStack (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: Error | any,
-  stack: string,
-) {
-  if (!error.appStack)
-    error.appStack = [];
-  error.appStack.push(stack);
 }
 
 export function appError (
