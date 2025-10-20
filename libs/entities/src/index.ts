@@ -176,8 +176,8 @@ export interface PaymentEventView {
 }
 
 export interface PaymentEventViewFromDb {
-  paidBy: string,
-  benefitors: string,
+  paidBy: PaymentNode[],
+  benefitors: PaymentNode[],
   id: number,
   created: Date,
   edited: Date,

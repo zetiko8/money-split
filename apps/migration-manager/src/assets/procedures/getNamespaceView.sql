@@ -102,8 +102,30 @@ BEGIN
             'settledOn', s.created,
             'description', pe.description,
             'notes', pe.notes,
-            'paidBy', pe.paidBy,
-            'benefitors', pe.benefitors
+            'paidBy', COALESCE(
+              (SELECT JSON_ARRAYAGG(
+                JSON_OBJECT(
+                  'userId', pn.userId,
+                  'amount', pn.amount,
+                  'currency', pn.currency
+                )
+              )
+              FROM PaymentNode pn
+              WHERE pn.paymentEventId = pe.id AND pn.type = 'P'),
+              JSON_ARRAY()
+            ),
+            'benefitors', COALESCE(
+              (SELECT JSON_ARRAYAGG(
+                JSON_OBJECT(
+                  'userId', pn.userId,
+                  'amount', pn.amount,
+                  'currency', pn.currency
+                )
+              )
+              FROM PaymentNode pn
+              WHERE pn.paymentEventId = pe.id AND pn.type = 'B'),
+              JSON_ARRAY()
+            )
           )
         )
         FROM PaymentEvent pe

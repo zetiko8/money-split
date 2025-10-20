@@ -652,8 +652,6 @@ describe(API_NAME, () => {
         edited: Date;
         createdBy: number;
         editedBy: number;
-        paidBy: string;
-        benefitors: string;
         namespaceId: number;
         settlementId: number | null;
         description: string | null;
@@ -669,8 +667,6 @@ describe(API_NAME, () => {
       const dbRow = response[0];
       const parsedRow = {
         ...dbRow,
-        paidBy: JSON.parse(dbRow.paidBy),
-        benefitors: JSON.parse(dbRow.benefitors),
       };
 
       expect(parsedRow).toEqual({
@@ -679,14 +675,51 @@ describe(API_NAME, () => {
         edited: expect.any(String),
         createdBy: userId,
         editedBy: userId,
-        paidBy: [{ userId, amount: 3, currency: 'EUR' }],
-        benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
         namespaceId,
         settlementId: null,
         description: 'test description',
         notes: 'test notes',
       });
       expect(response).toHaveLength(1);
+    });
+
+    it('saves payment nodes in the db', async () => {
+      interface PaymentNodeDbRow {
+        id: number;
+        paymentEventId: number;
+        userId: number;
+        amount: string;
+        currency: string;
+        type: string;
+      }
+
+      const response = (await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `SELECT * FROM PaymentNode WHERE paymentEventId = ${paymentEventId} ORDER BY type DESC, id ASC`,
+      )) as PaymentNodeDbRow[];
+
+      expect(response).toHaveLength(2);
+
+      // First should be paidBy (type 'P')
+      expect(response[0]).toEqual({
+        id: expect.any(Number),
+        paymentEventId,
+        userId,
+        amount: '3.00',
+        currency: 'EUR',
+        type: 'P',
+      });
+
+      // Second should be benefitor (type 'B')
+      expect(response[1]).toEqual({
+        id: expect.any(Number),
+        paymentEventId,
+        userId: creatorUserId,
+        amount: '3.00',
+        currency: 'EUR',
+        type: 'B',
+      });
     });
   });
 });

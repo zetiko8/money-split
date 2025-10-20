@@ -21,9 +21,6 @@ export class PaymentEventHelpersService {
       ],
     );
 
-    res.paidBy = JSON.parse(res.paidBy as unknown as string);
-    res.benefitors = JSON.parse(res.benefitors as unknown as string);
-
     return res;
   }
 
@@ -54,7 +51,7 @@ export class PaymentEventHelpersService {
         },
       };
       paymentEventView.paidBy = await asyncMap(
-          JSON.parse(paymentEventFromDb.paidBy) as PaymentNode[],
+          paymentEventFromDb.paidBy as PaymentNode[],
           async (paidByFromDb) => {
             const paidBy: PaymentNodeView = {
               amount: paidByFromDb.amount,
@@ -64,7 +61,7 @@ export class PaymentEventHelpersService {
             return paidBy;
           });
       paymentEventView.benefitors = await asyncMap(
-          JSON.parse(paymentEventFromDb.benefitors) as PaymentNode[],
+          paymentEventFromDb.benefitors as PaymentNode[],
           async (benefitorFromDb) => {
             const benefitor: PaymentNodeView = {
               amount: benefitorFromDb.amount,
@@ -97,32 +94,12 @@ export class PaymentEventHelpersService {
     const paymentEvents = await asyncMap(res, async (paymentEventFromDb) => {
       const paymentEvent: PaymentEvent = {
         ...paymentEventFromDb,
-        paidBy: [],
-        benefitors: [],
+        paidBy: paymentEventFromDb.paidBy,
+        benefitors: paymentEventFromDb.benefitors,
         namespaceId: paymentEventFromDb.namespaceId,
         createdBy: paymentEventFromDb.createdBy.id,
         editedBy: paymentEventFromDb.editedBy.id,
       };
-      paymentEvent.paidBy = await asyncMap(
-          JSON.parse(paymentEventFromDb.paidBy) as PaymentNode[],
-          async (paidByFromDb) => {
-            const paidBy: PaymentNode = {
-              amount: paidByFromDb.amount,
-              currency: paidByFromDb.currency,
-              userId: paidByFromDb.userId,
-            };
-            return paidBy;
-          });
-      paymentEvent.benefitors = await asyncMap(
-          JSON.parse(paymentEventFromDb.benefitors) as PaymentNode[],
-          async (benefitorFromDb) => {
-            const benefitor: PaymentNode = {
-              amount: benefitorFromDb.amount,
-              currency: benefitorFromDb.currency,
-              userId: benefitorFromDb.userId,
-            };
-            return benefitor;
-          });
 
       return paymentEvent;
     });

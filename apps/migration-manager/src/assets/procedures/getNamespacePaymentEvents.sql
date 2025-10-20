@@ -32,7 +32,7 @@ BEGIN
   END IF;
 
   SELECT procedureError;
-  -- Get payment events
+  -- Get payment events with aggregated payment nodes
   SELECT COALESCE(
     JSON_ARRAYAGG(
       JSON_OBJECT(
@@ -56,8 +56,30 @@ BEGIN
         'edited', pe.edited,
         'settlementId', pe.settlementId,
         'settledOn', settlement.createdBy,
-        'paidBy', pe.paidBy,
-        'benefitors', pe.benefitors,
+        'paidBy', COALESCE(
+          (SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'userId', pn.userId,
+              'amount', pn.amount,
+              'currency', pn.currency
+            )
+          )
+          FROM PaymentNode pn
+          WHERE pn.paymentEventId = pe.id AND pn.type = 'P'),
+          JSON_ARRAY()
+        ),
+        'benefitors', COALESCE(
+          (SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'userId', pn.userId,
+              'amount', pn.amount,
+              'currency', pn.currency
+            )
+          )
+          FROM PaymentNode pn
+          WHERE pn.paymentEventId = pe.id AND pn.type = 'B'),
+          JSON_ARRAY()
+        ),
         'description', pe.description,
         'notes', pe.notes
       )

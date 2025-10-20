@@ -69,8 +69,8 @@ export class NamespaceHelpersService {
   ): Promise<NamespaceView> {
     const data = await transaction.jsonProcedure<NamespaceView & {
           paymentEvents: Array<Omit<PaymentEventView, 'paidBy' | 'benefitors'> & {
-            paidBy: string;
-            benefitors: string;
+            paidBy: PaymentNode[];
+            benefitors: PaymentNode[];
           }>;
           settlements: Array<Omit<SettlementListView, 'settleRecords'> & {
             settleRecords: Array<Omit<SettlementDebtView, 'data'> & { data: string }>;
@@ -87,16 +87,13 @@ export class NamespaceHelpersService {
     const paymentEvents: PaymentEventView[] = await asyncMap(
       data.paymentEvents || [],
       async (pe) => {
-        const paidByNodes = JSON.parse(pe.paidBy) as PaymentNode[];
-        const benefitorNodes = JSON.parse(pe.benefitors) as PaymentNode[];
-
-        const paidBy = await asyncMap(paidByNodes, async (node) => ({
+        const paidBy = await asyncMap(pe.paidBy, async (node) => ({
           amount: node.amount,
           currency: node.currency,
           user: await UserHelpersService.getUserById(transaction, node.userId),
         }));
 
-        const benefitors = await asyncMap(benefitorNodes, async (node) => ({
+        const benefitors = await asyncMap(pe.benefitors, async (node) => ({
           amount: node.amount,
           currency: node.currency,
           user: await UserHelpersService.getUserById(transaction, node.userId),

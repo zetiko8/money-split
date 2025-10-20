@@ -50,7 +50,6 @@ export class NamespaceService implements INamespaceService {
     return await getTransactionContext(
       { logger: this.logger },
       async (transaction) => {
-        console.log('JUHI');
         const result = await transaction.jsonProcedure<MNamespace>(
           'call createNamespace(?, ?, ?, ?, ?, ?);',
           [payload.namespaceName,
@@ -61,7 +60,6 @@ export class NamespaceService implements INamespaceService {
             owner.avatarId,
           ],
         );
-        console.log('NO JUHI');
         return result;
       });
   }
