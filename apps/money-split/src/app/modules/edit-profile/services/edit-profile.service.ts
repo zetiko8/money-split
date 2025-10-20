@@ -1,15 +1,13 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ConfigService } from '../../../services/config.service';
 import { Observable, mergeMap } from 'rxjs';
 import { EditProfileData, MNamespace, OwnerProfileView } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
+import { DataService } from '../../data.service';
 
 @Injectable()
 export class EditProfileService {
 
-  private readonly http = inject(HttpClient);
-  private readonly config = inject(ConfigService);
+  private readonly dataService = inject(DataService);
   private readonly routingService = inject(RoutingService);
 
   public createNewNamespace (
@@ -19,14 +17,7 @@ export class EditProfileService {
   ): Observable<MNamespace> {
     return this.routingService.getOwnerKey()
       .pipe(
-        mergeMap(ownerKey => this.http.post<MNamespace>(
-          this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace',
-          { name: data.namespaceName },
-        ),
-        ),
+        mergeMap(ownerKey => this.dataService.createNewNamespace(ownerKey, { namespaceName: data.namespaceName, avatarColor: null, avatarUrl: null })),
       );
   }
 
@@ -34,13 +25,7 @@ export class EditProfileService {
   ): Observable<OwnerProfileView> {
     return this.routingService.getOwnerKey()
       .pipe(
-        mergeMap(ownerKey => this.http.get<OwnerProfileView>(
-          this.config.getConfig().middlewareUrl
-                    + '/'
-                    + ownerKey
-                    + '/profile',
-        ),
-        ),
+        mergeMap(ownerKey => this.dataService.getProfile(ownerKey)),
       );
   }
 
@@ -49,14 +34,7 @@ export class EditProfileService {
   ): Observable<OwnerProfileView> {
     return this.routingService.getOwnerKey()
       .pipe(
-        mergeMap(ownerKey => this.http.post<OwnerProfileView>(
-          this.config.getConfig().middlewareUrl
-                    + '/'
-                    + ownerKey
-                    + '/profile',
-          profile,
-        ),
-        ),
+        mergeMap(ownerKey => this.dataService.editProfile(ownerKey, profile)),
       );
   }
 }

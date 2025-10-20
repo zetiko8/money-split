@@ -1,6 +1,4 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ConfigService } from '../../../services/config.service';
 import { Observable, catchError, combineLatest, mergeMap, throwError } from 'rxjs';
 import {
   CreateNamespacePayload,
@@ -12,20 +10,17 @@ import {
   MNamespace,
   MNamespaceSettings,
   NamespaceView,
-  PaymentEvent,
-  Record,
   SettlementPayload,
   SettlementPreview,
   SettlementSettings,
 } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
-import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
+import { DataService } from '../../data.service';
 
 @Injectable()
 export class NamespaceService {
 
-  private readonly http = inject(HttpClient);
-  private readonly config = inject(ConfigService);
+  private readonly dataService = inject(DataService);
   private readonly routingService = inject(RoutingService);
 
   public getNamespace (): Observable<NamespaceView> {
@@ -34,14 +29,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this.http.get<NamespaceView>(
-          this.config.getConfig().middlewareUrl
-                    + '/'
-                    + ownerKey
-                    + '/namespace/'
-                    + namespaceId,
-        ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.getNamespace(ownerKey, namespaceId)),
       );
   }
 
@@ -53,16 +41,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.getEditPaymentEventViewApi.callObservable(
-            null,
-            { ownerKey, namespaceId, paymentEventId: recordId },
-            (url) => {
-              return this.http.get<EditPaymentEventViewData>(this.config.getConfig().middlewareUrl + url);
-            },
-          );
-        },
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.getPaymentEventView(ownerKey, namespaceId, recordId)),
       );
   }
 
@@ -74,16 +53,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
-          this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/invite',
-          { email },
-        ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.inviteOwner(ownerKey, namespaceId, email)),
         catchError(
           err => {
             if (
@@ -108,18 +78,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this.http.post<MNamespace>(
-          this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/'
-                        + recordData.createdBy
-                        + '/add',
-          recordData,
-        ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.addRecord(ownerKey, namespaceId, recordData)),
       );
   }
 
@@ -129,16 +88,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.addPaymentEventApi.callObservable(
-            paymentEventData,
-            { ownerKey, namespaceId, userId: paymentEventData.createdBy },
-            (url, method, payload) => {
-              return this.http.post<PaymentEvent>(this.config.getConfig().middlewareUrl + url, payload);
-            },
-          );
-        },
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.addPaymentEvent(ownerKey, namespaceId, paymentEventData)),
       );
   }
 
@@ -148,19 +98,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this.http.post<Record>(
-          this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/'
-                        + recordData.createdBy
-                        + '/edit/record/'
-                        + recordData.recordId,
-          recordData,
-        ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.editRecord(ownerKey, namespaceId, recordData)),
       );
   }
 
@@ -173,16 +111,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.editPaymentEventApi.callObservable(
-            paymentEventData,
-            { ownerKey, namespaceId, userId: paymentEventData.createdBy, paymentEventId },
-            (url, method, payload) => {
-              return this.http.post<PaymentEvent>(this.config.getConfig().middlewareUrl + url, payload);
-            },
-          );
-        },
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.editPaymentEvent(ownerKey, namespaceId, paymentEventId, paymentEventData)),
       );
   }
 
@@ -194,18 +123,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.settlePreviewApi.callObservable(
-            payload,
-            { ownerKey, namespaceId },
-            (url) => {
-              return this.http.post<SettlementPreview>(
-                this.config.getConfig().middlewareUrl + url,
-                payload,
-              );
-            },
-          );
-        }),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.settlePreview(ownerKey, namespaceId, payload)),
       );
   }
 
@@ -215,17 +133,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.settleSettingsApi.callObservable(
-            null,
-            { ownerKey, namespaceId },
-            (url) => {
-              return this.http.get<SettlementSettings>(
-                this.config.getConfig().middlewareUrl + url,
-              );
-            },
-          );
-        }),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.settleSettings(ownerKey, namespaceId)),
       );
   }
 
@@ -238,18 +146,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this
-          .http.post<SettlementPreview>(
-            this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/settle/confirm/'
-                        + byUser,
-            payload,
-          ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.settle(ownerKey, namespaceId, byUser, payload)),
       );
   }
 
@@ -262,19 +159,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this
-          .http.get<void>(
-            this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/settle/mark-as-settled/'
-                        + byUser
-                        + '/'
-                        + settlementDebtId,
-          ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.markAsSettled(ownerKey, namespaceId, settlementDebtId, byUser)),
       );
   }
 
@@ -287,19 +172,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => this
-          .http.get<void>(
-            this.config.getConfig().middlewareUrl
-                        + '/'
-                        + ownerKey
-                        + '/namespace/'
-                        + namespaceId
-                        + '/settle/mark-as-unsettled/'
-                        + byUser
-                        + '/'
-                        + settlementDebtId,
-          ),
-        ),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.markAsUnSettled(ownerKey, namespaceId, settlementDebtId, byUser)),
       );
   }
 
@@ -309,18 +182,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.editNamespaceSettingApi.callObservable(
-            payload,
-            { ownerKey, namespaceId },
-            (url) => {
-              return this.http.post<MNamespaceSettings>(
-                this.config.getConfig().middlewareUrl + url,
-                payload,
-              );
-            },
-          );
-        }),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.editNamespace(ownerKey, namespaceId, payload)),
       );
   }
 
@@ -330,17 +192,7 @@ export class NamespaceService {
       this.routingService.getNamespaceId(),
     ])
       .pipe(
-        mergeMap(([ownerKey, namespaceId]) => {
-          return DATA_PROVIDER_API.getNamespaceSettingsApi.callObservable(
-            null,
-            { ownerKey, namespaceId },
-            (url) => {
-              return this.http.get<MNamespaceSettings>(
-                this.config.getConfig().middlewareUrl + url,
-              );
-            },
-          );
-        }),
+        mergeMap(([ownerKey, namespaceId]) => this.dataService.getNamespaceSetting(ownerKey, namespaceId)),
       );
   }
 }

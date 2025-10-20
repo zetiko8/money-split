@@ -1,15 +1,13 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ConfigService } from '../../../services/config.service';
 import { Observable, combineLatest, mergeMap } from 'rxjs';
 import { Invitation, InvitationViewData } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
+import { DataService } from '../../data.service';
 
 @Injectable()
 export class InvitationService {
 
-  private readonly http = inject(HttpClient);
-  private readonly config = inject(ConfigService);
+  private readonly dataService = inject(DataService);
   private readonly routingService = inject(RoutingService);
 
   public getInvitationView (): Observable<InvitationViewData> {
@@ -17,13 +15,7 @@ export class InvitationService {
       this.routingService.getInvitationId(),
     ])
       .pipe(
-        mergeMap(([invitationId]) => this.http.get<InvitationViewData>(
-          this.config.getConfig().middlewareUrl
-                    + '/'
-                    + 'invitation/'
-                    + invitationId,
-        ),
-        ),
+        mergeMap(([invitationId]) => this.dataService.getInvitationView(invitationId)),
       );
   }
 
@@ -32,14 +24,7 @@ export class InvitationService {
       this.routingService.getInvitationId(),
     ])
       .pipe(
-        mergeMap(([invitationId]) => this.http.post<Invitation>(
-          this.config.getConfig().middlewareUrl
-                        + '/invitation/'
-                        + invitationId
-                        + '/accept',
-                    	{ name },
-        ),
-        ),
+        mergeMap(([invitationId]) => this.dataService.acceptInvitation(invitationId, name)),
       );
   }
 
@@ -48,14 +33,7 @@ export class InvitationService {
       this.routingService.getInvitationId(),
     ])
       .pipe(
-        mergeMap(([invitationId]) => this.http.get<Invitation>(
-          this.config.getConfig().middlewareUrl
-                        + '/invitation/'
-                        + invitationId
-                        + '/reject',
-
-        ),
-        ),
+        mergeMap(([invitationId]) => this.dataService.rejectInvitation(invitationId)),
       );
   }
 }

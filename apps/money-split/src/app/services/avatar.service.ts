@@ -1,14 +1,12 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, debounceTime, filter, map, of, takeWhile } from 'rxjs';
 import { AvatarData } from '@angular-monorepo/entities';
-import { ConfigService } from './config.service';
+import { DataService } from '../modules/data.service';
 
 @Injectable()
 export class AvatarService {
 
-  private readonly http = inject(HttpClient);
-  private readonly config = inject(ConfigService);
+  private readonly dataService = inject(DataService);
 
   private readonly line$ = new BehaviorSubject<number[]>([]);
 
@@ -31,14 +29,7 @@ export class AvatarService {
   private loadAvatars (
     ids: number[],
   ): Observable<AvatarData[]> {
-    return this.http.get<AvatarData[]>(
-      this.config.getConfig().middlewareUrl + '/avatar',
-      {
-        params: new HttpParams({
-          fromObject: { avatarIds: ids },
-        }),
-      },
-    );
+    return this.dataService.loadAvatars(ids);
   }
 
   private getAvatarFromLine (
