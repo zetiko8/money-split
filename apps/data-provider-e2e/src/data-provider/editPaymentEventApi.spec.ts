@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { editPaymentEventApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
@@ -59,7 +59,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
       ));
@@ -67,7 +67,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('requires paidBy to be provided', async () => {
+    testWrap('', 'requires paidBy to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -81,7 +81,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates userId is a non-negative bigint in paidBy nodes - string value', async () => {
+    testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - string value', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -95,7 +95,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates userId is a non-negative bigint in paidBy nodes - float value', async () => {
+    testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - float value', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -109,7 +109,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates userId is a non-negative bigint in paidBy nodes - negative value', async () => {
+    testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - negative value', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -123,7 +123,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates amount is a number in paidBy nodes', async () => {
+    testWrap('', 'validates amount is a number in paidBy nodes', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -137,7 +137,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates currency in paidBy nodes', async () => {
+    testWrap('', 'validates currency in paidBy nodes', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -151,7 +151,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('requires benefitors to be provided', async () => {
+    testWrap('', 'requires benefitors to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -165,7 +165,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates userId is a non-negative bigint in benefitors nodes - float value', async () => {
+    testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - float value', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -179,7 +179,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates amount is a number in benefitors nodes', async () => {
+    testWrap('', 'validates amount is a number in benefitors nodes', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -195,7 +195,7 @@ describe(API_NAME, () => {
 
     it.todo('validates that users in paidBy and benefitors arrays exist in the namespace');
 
-    it('requires paidBy array to not be empty', async () => {
+    testWrap('', 'requires paidBy array to not be empty', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -209,7 +209,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('requires benefitors array to not be empty', async () => {
+    testWrap('', 'requires benefitors array to not be empty', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -223,7 +223,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('requires paidBy nodes to have userId', async () => {
+    testWrap('', 'requires paidBy nodes to have userId', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -237,7 +237,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('requires benefitor nodes to have userId', async () => {
+    testWrap('', 'requires benefitor nodes to have userId', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -251,7 +251,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates description is a string when provided', async () => {
+    testWrap('', 'validates description is a string when provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -265,7 +265,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates notes is a string when provided', async () => {
+    testWrap('', 'validates notes is a string when provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -279,7 +279,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates payment event exists', async () => {
+    testWrap('', 'validates payment event exists', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/999999`,
@@ -295,7 +295,7 @@ describe(API_NAME, () => {
 
     it.todo('validates payment event belongs to namespace');
 
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
@@ -327,7 +327,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('updates payment event', async () => {
+    testWrap('', 'updates payment event', async () => {
       // Wait a bit to ensure timestamps will be different
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -357,7 +357,7 @@ describe(API_NAME, () => {
 
     });
 
-    it('sets edited timestamp newer than created timestamp', async () => {
+    testWrap('', 'sets edited timestamp newer than created timestamp', async () => {
       // Wait a bit to ensure timestamps will be different
       await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -377,7 +377,7 @@ describe(API_NAME, () => {
   });
 
   describe('dbState', () => {
-    it('persists changes to database', async () => {
+    testWrap('', 'persists changes to database', async () => {
       // Make the edit
       await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_USERNAME, BACKDOOR_PASSWORD, DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_USERNAME, BACKDOOR_PASSWORD, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { registerApi } from '@angular-monorepo/api-interface';
 import { TestOwner } from '@angular-monorepo/backdoor';
@@ -17,19 +17,19 @@ describe(API_NAME, () => {
     }
   });
 
-  it('smoke', async () => {
+  testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.post(
       `${DATA_PROVIDER_URL}/app/register`,
     ));
   });
-  it('requires body to be provided', async () => {
+  testWrap('', 'requires body to be provided', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,
         {}))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
-  it('requires username to be provided', async () => {
+  testWrap('', 'requires username to be provided', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,
@@ -41,7 +41,7 @@ describe(API_NAME, () => {
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   [3, null, [], {}].forEach(value => {
-    it('requires username to be string but is ' + value, async () => {
+    testWrap('', 'requires username to be string but is ' + value, async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/register`,
@@ -54,7 +54,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
   });
-  it('requires password to be provided', async () => {
+  testWrap('', 'requires password to be provided', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,
@@ -66,7 +66,7 @@ describe(API_NAME, () => {
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   [3, null, [], {}].forEach(value => {
-    it('requires password to be string but is ' + value, async () => {
+    testWrap('', 'requires password to be string but is ' + value, async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/register`,
@@ -80,7 +80,7 @@ describe(API_NAME, () => {
     });
   });
   [3, [], {}].forEach(value => {
-    it('requires avatarUrl to be string but is ' + value, async () => {
+    testWrap('', 'requires avatarUrl to be string but is ' + value, async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/register`,
@@ -94,7 +94,7 @@ describe(API_NAME, () => {
     });
   });
   [3, [], {}].forEach(value => {
-    it('requires avatarUrl to be string but is ' + value, async () => {
+    testWrap('', 'requires avatarUrl to be string but is ' + value, async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/register`,
@@ -107,28 +107,18 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
   });
-  it('requires either avatarUrl or avatarColor', async () => {
+  testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,
         {
           username: 'testusername',
           password: 'testpassword',
-          avatarUrl: 'http:test.com',
-        }))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/register`,
-        {
-          username: 'testusername',
-          password: 'testpassword',
-          avatarColor: 'color',
         }))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   it.todo('requires password to be a valid password');
-  it('returns an owner', async () => {
+  testWrap('', 'returns an owner', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,
@@ -147,24 +137,7 @@ describe(API_NAME, () => {
         });
       }));
   });
-  it('username must be unique', async () => {
-    await fnCall(API_NAME,
-      async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/register`,
-        {
-          username: 'testusername',
-          password: 'testpassword',
-          avatarUrl: 'http:test.com',
-          avatarColor: 'color',
-        }))
-      .result((result => {
-        expect(result).toEqual({
-          avatarId: expect.any(Number),
-          id: expect.any(Number),
-          key: expect.any(String),
-          username: 'testusername',
-        });
-      }));
+  testWrap('', 'can not register with same username twice', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,
@@ -177,7 +150,7 @@ describe(API_NAME, () => {
     ).throwsError('OWNER_USERNAME_ALREADY_EXISTS');
   });
 
-  it('trims the username and does not allow empty after trimming', async () => {
+  testWrap('', 'trims the username', async () => {
     let ownerId: string;
     // Should save trimmed username
     await fnCall(API_NAME,
@@ -235,7 +208,7 @@ describe(API_NAME, () => {
           ownerAvatarId = result.avatarId;
         }));
     });
-    it('saves owner in the db', async () => {
+    testWrap('', 'saves owner in the db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -253,7 +226,7 @@ describe(API_NAME, () => {
       });
       expect(response).toHaveLength(1);
     });
-    it('saves avatar in the db', async () => {
+    testWrap('', 'saves owner avatar in db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,

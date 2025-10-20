@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { settlePreviewApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
@@ -78,7 +78,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
         {
@@ -93,7 +93,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -124,7 +124,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates namespace exists', async () => {
+    testWrap('', 'validates namespace exists', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/999999/settle/preview`,
@@ -132,9 +132,9 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates user has access to namespace', async () => {
+    testWrap('', 'validates user has access to namespace', async () => {
       // Create a new namespace where test user is not a member
-      const { selectedNamespace : newNamespace } = await machine.createNewNamespace('other-namespace');
+      const { selectedNamespace: newNamespace } = await machine.createNewNamespace('other-namespace');
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${newNamespace.id}/settle/preview`,
@@ -142,7 +142,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates owner key exists', async () => {
+    testWrap('', 'validates owner key exists', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invalid-key/namespace/${namespaceId}/settle/preview`,
@@ -156,7 +156,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates payload with missing fields', async () => {
+    testWrap('', 'validates payload with missing fields', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -165,7 +165,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates payload with missing currencies field', async () => {
+    testWrap('', 'validates payload with missing currencies field', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -178,7 +178,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates payload with missing mainCurrency field', async () => {
+    testWrap('', 'validates payload with missing mainCurrency field', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -191,7 +191,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates negative currency value', async () => {
+    testWrap('', 'validates negative currency value', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -205,7 +205,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid currency code', async () => {
+    testWrap('', 'validates invalid currency code', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -219,7 +219,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid main currency', async () => {
+    testWrap('', 'validates invalid main currency', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -233,7 +233,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid separatedSettlementPerCurrency type', async () => {
+    testWrap('', 'validates invalid separatedSettlementPerCurrency type', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -247,7 +247,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid currencies type', async () => {
+    testWrap('', 'validates invalid currencies type', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -261,7 +261,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid currency value type', async () => {
+    testWrap('', 'validates invalid currency value type', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -275,7 +275,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates empty paymentEvents array', async () => {
+    testWrap('', 'validates empty paymentEvents array', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -289,7 +289,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates payment event from different namespace', async () => {
+    testWrap('', 'validates payment event from different namespace', async () => {
       // Create a new namespace and payment event
       const { selectedNamespace: otherNamespace } = await machine.createNewNamespace('other-namespace');
       const otherNamespaceCreatorUser = machineState.getUserByName('creator');
@@ -315,7 +315,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid payment event ID', async () => {
+    testWrap('', 'validates invalid payment event ID', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -329,7 +329,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('validates invalid paymentEvents type', async () => {
+    testWrap('', 'validates invalid paymentEvents type', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
@@ -345,7 +345,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns correct settlement preview structure', async () => {
+    testWrap('', 'returns correct settlement preview structure', async () => {
       const response = await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/preview`,
         {

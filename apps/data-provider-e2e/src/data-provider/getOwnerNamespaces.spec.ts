@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { getOwnerNamespacesApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
@@ -31,13 +31,13 @@ describe(API_NAME, () => {
       .map(ns => ({ namespaceId: ns.id }));
   });
 
-  it('smoke', async () => {
+  testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.get(
       `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
     ));
   });
   it.todo('invalid owner key - does not match owner id');
-  it('throws 401 with invalid token', async () => {
+  testWrap('', 'throws 401 with invalid token', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -54,7 +54,7 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it('returns an namespaces for owner', async () => {
+  testWrap('', 'returns an namespaces for owner', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -96,7 +96,7 @@ describe(API_NAME + ' bugs', () => {
     testOwner = await testOwnerState.getUserOwnerByName('testowner');
   });
 
-  it('should not throw when there are no namespaces created', async () => {
+  testWrap('', 'should not throw when there are no namespaces created', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,

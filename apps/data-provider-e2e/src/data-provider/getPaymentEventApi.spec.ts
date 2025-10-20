@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { getPaymentEventApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
@@ -65,14 +65,14 @@ describe(API_NAME, () => {
     }
   });
 
-  it('smoke', async () => {
+  testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.get(
       `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}`,
     ));
   });
 
   describe('validation', () => {
-    it('returns 404 when payment event does not exist', async () => {
+    testWrap('', 'returns 404 when payment event does not exist', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/999999`,
@@ -81,7 +81,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
 
-    it('returns 404 when namespace does not exist', async () => {
+    testWrap('', 'returns 404 when namespace does not exist', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/999999/payment-event/${paymentEventId}`,
@@ -90,7 +90,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
 
-    it('returns 401 with missing token', async () => {
+    testWrap('', 'returns 401 with missing token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}`,
@@ -98,7 +98,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('returns 401 with invalid token', async () => {
+    testWrap('', 'returns 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}`,
@@ -113,7 +113,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns payment event', async () => {
+    testWrap('', 'returns payment event', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}`,

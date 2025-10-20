@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE, Invitation } from '@angular-monorepo/entities';
 import { getInvitationViewApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
@@ -43,7 +43,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
       ));
@@ -51,7 +51,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('not found invitation key', async () => {
+    testWrap('', 'not found invitation key', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}`,
@@ -60,7 +60,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
 
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
@@ -78,7 +78,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('allow unauthenticated access', async () => {
+    testWrap('', 'allow unauthenticated access', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,
@@ -86,7 +86,7 @@ describe(API_NAME, () => {
         .throwsNoError();
     });
 
-    it('returns an invitationView', async () => {
+    testWrap('', 'returns an invitationView', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}`,

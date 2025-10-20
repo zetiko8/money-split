@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 import { getOwnerProfileApi } from '@angular-monorepo/api-interface';
@@ -38,11 +38,11 @@ describe(API_NAME, () => {
     ownerKeyOtherOwner = otherOwner.owner.key;
   });
 
-  it('smoke', async () => {
+  testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.get(
       `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`));
   });
-  it('throws 401 with invalid token', async () => {
+  testWrap('', 'throws 401 with invalid token', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
@@ -59,7 +59,7 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it('throws 401 with invalid ownerKey', async () => {
+  testWrap('', 'throws 401 with invalid ownerKey', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/profile`,
@@ -67,7 +67,7 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it('returns an owner profile view', async () => {
+  testWrap('', 'returns an owner profile view', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,

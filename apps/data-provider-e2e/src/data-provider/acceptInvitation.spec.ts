@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { acceptInvitationApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
@@ -45,7 +45,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
       ));
@@ -53,7 +53,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('requires name to be provided', async () => {
+    testWrap('', 'requires name to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
@@ -61,7 +61,7 @@ describe(API_NAME, () => {
           testOwner.authHeaders()))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
-    it('requires name to be a string', async () => {
+    testWrap('', 'requires name to be a string', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
@@ -69,7 +69,7 @@ describe(API_NAME, () => {
           testOwner.authHeaders()))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
-    it('not found invitation key', async () => {
+    testWrap('', 'not found invitation key', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}/accept`,
@@ -77,7 +77,7 @@ describe(API_NAME, () => {
           testOwner.authHeaders()))
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
@@ -96,7 +96,7 @@ describe(API_NAME, () => {
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
-    it('returns an invitation', async () => {
+    testWrap('', 'returns an invitation', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
@@ -117,7 +117,7 @@ describe(API_NAME, () => {
           });
         }));
     });
-    it('trims the name and does not allow empty after trimming', async () => {
+    testWrap('', 'trims the name and does not allow empty after trimming', async () => {
     // Should save trimmed name
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -161,7 +161,7 @@ describe(API_NAME, () => {
           invitationId = res.id;
         }));
     });
-    it('saves invitation in the db', async () => {
+    testWrap('', 'saves invitation in the db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -184,7 +184,7 @@ describe(API_NAME, () => {
       });
       expect(response).toHaveLength(1);
     });
-    it('adds owner to the namespace', async () => {
+    testWrap('', 'adds owner to the namespace', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -200,7 +200,7 @@ describe(API_NAME, () => {
       });
       expect(response).toHaveLength(1);
     });
-    it('adds user to the namespace', async () => {
+    testWrap('', 'adds user to the namespace', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,

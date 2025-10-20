@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { getEditPaymentEventViewApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
@@ -62,7 +62,7 @@ describe(API_NAME, () => {
 
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}/edit`,
       ));
@@ -70,7 +70,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}/edit`,
@@ -83,7 +83,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('throws 404 when payment event does not exist', async () => {
+    testWrap('', 'throws 404 when payment event does not exist', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/999999/edit`,
@@ -92,7 +92,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
 
-    it('throws 404 when namespace does not exist', async () => {
+    testWrap('', 'throws 404 when namespace does not exist', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/999999/payment-event/${paymentEventId}/edit`,
@@ -101,7 +101,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
 
-    it('throws 403 when user is not a member of the namespace', async () => {
+    testWrap('', 'throws 403 when user is not a member of the namespace', async () => {
       const otherOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'otherowner', 'testpassword');
       await fnCall(API_NAME,
         async () => await axios.get(
@@ -113,7 +113,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns namespace and payment event data', async () => {
+    testWrap('', 'returns namespace and payment event data', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/payment-event/${paymentEventId}/edit`,

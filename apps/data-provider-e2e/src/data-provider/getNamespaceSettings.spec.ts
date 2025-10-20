@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE, MNamespaceSettings } from '@angular-monorepo/entities';
 import { getNamespaceSettingsApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
@@ -42,14 +42,14 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`));
     });
   });
 
   describe('validation', () => {
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`,
@@ -68,7 +68,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('throws 401 with invalid ownerKey', async () => {
+    testWrap('', 'throws 401 with invalid ownerKey', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/namespace/${namespaceId}/settings`,
@@ -77,7 +77,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('namespace does not exist', async () => {
+    testWrap('', 'namespace does not exist', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/20000000/settings`,
@@ -88,7 +88,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns namespace settings', async () => {
+    testWrap('', 'returns namespace settings', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`,

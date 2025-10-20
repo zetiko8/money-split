@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
 
@@ -18,11 +18,11 @@ describe(API_NAME, () => {
     await machine.createNewCluster('testusername', 'testpassword');
   });
 
-  it('smoke', async () => {
+  testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.post(
       `${DATA_PROVIDER_URL}/app/login`));
   });
-  it('requires username and password to be provided', async () => {
+  testWrap('', 'requires username and password to be provided', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/login`))
@@ -46,7 +46,7 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
-  it('throws 401 with invalid credentials', async () => {
+  testWrap('', 'throws 401 with invalid credentials', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/login`,
@@ -75,7 +75,7 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it('returns a token', async () => {
+  testWrap('', 'returns a token', async () => {
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/login`,

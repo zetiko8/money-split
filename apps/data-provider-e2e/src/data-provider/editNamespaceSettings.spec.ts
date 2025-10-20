@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { editNamespaceSettingApi } from '@angular-monorepo/api-interface';
@@ -37,7 +37,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('should handle basic namespace settings update', async () => {
+    testWrap('', 'should handle basic namespace settings update', async () => {
       await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
         {
@@ -50,7 +50,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('requires namespaceName to be provided', async () => {
+    testWrap('', 'requires namespaceName to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
@@ -70,7 +70,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('requires either avatarUrl or avatarColor to be provided', async () => {
+    testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
@@ -81,7 +81,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
@@ -100,7 +100,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('throws 401 with invalid ownerKey', async () => {
+    testWrap('', 'throws 401 with invalid ownerKey', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invalid/namespace/${namespaceId}/settings`,
@@ -113,7 +113,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('can not change to a duplicate namespace name', async () => {
+    testWrap('', 'can not change to a duplicate namespace name', async () => {
       await machine.createNewNamespace('duplicatename');
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -130,7 +130,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns updated namespace settings', async () => {
+    testWrap('', 'returns updated namespace settings', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
@@ -151,7 +151,7 @@ describe(API_NAME, () => {
         }));
     });
 
-    it('trims the namespace name', async () => {
+    testWrap('', 'trims the namespace name', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
@@ -166,7 +166,7 @@ describe(API_NAME, () => {
         }));
     });
 
-    it('can leave everything the name as it is', async () => {
+    testWrap('', 'can leave everything the name as it is', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
@@ -201,7 +201,7 @@ describe(API_NAME, () => {
         ))
         .result(() => void 0);
     });
-    it('updates namespace in the db', async () => {
+    testWrap('', 'updates namespace in the db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -216,7 +216,7 @@ describe(API_NAME, () => {
         name: 'dbtestnamespace',
       });
     });
-    it('updates namespace avatar in db', async () => {
+    testWrap('', 'updates namespace avatar in db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -252,7 +252,7 @@ describe(API_NAME, () => {
             namespaceId = res.id;
           }));
       });
-      it('trims the namespace name', async () => {
+      testWrap('', 'trims the namespace name', async () => {
         const response = await queryDb(
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,

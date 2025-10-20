@@ -72,7 +72,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('smoke', async () => {
+    testWrap('', 'smoke', async () => {
       await smoke(API_NAME, async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
       ));
@@ -80,7 +80,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
@@ -99,7 +99,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates namespace exists', async () => {
+    testWrap('', 'validates namespace exists', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/999999/settle/settings`,
@@ -107,7 +107,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates user has access to namespace', async () => {
+    testWrap('', 'validates user has access to namespace', async () => {
       // Create a new namespace where test user is not a member
       const { selectedNamespace : newNamespace } = await machine.createNewNamespace('other-namespace');
       await fnCall(API_NAME,
@@ -117,7 +117,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
-    it('validates owner key exists', async () => {
+    testWrap('', 'validates owner key exists', async () => {
       await fnCall(API_NAME,
         async () => await axios.get(
           `${DATA_PROVIDER_URL}/app/invalid-key/namespace/${namespaceId}/settle/settings`,

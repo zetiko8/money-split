@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, expectEqual, fnCall, queryDb, smoke } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, expectEqual, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
 import { createNamespaceApi } from '@angular-monorepo/api-interface';
@@ -34,7 +34,7 @@ describe(API_NAME, () => {
   });
 
   describe('smoke', () => {
-    it('should handle basic namespace creation', async () => {
+    testWrap('', 'should handle basic namespace creation', async () => {
       await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
         {
@@ -47,7 +47,7 @@ describe(API_NAME, () => {
   });
 
   describe('validation', () => {
-    it('requires namespaceName to be provided', async () => {
+    testWrap('', 'requires namespaceName to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -68,7 +68,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('requires either avatarUrl or avatarColor to be provided', async () => {
+    testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -79,7 +79,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
-    it('throws 401 with invalid token', async () => {
+    testWrap('', 'throws 401 with invalid token', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -103,7 +103,7 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    it('returns a namespace', async () => {
+    testWrap('', 'returns a namespace', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -123,7 +123,7 @@ describe(API_NAME, () => {
         }));
     });
 
-    it('trims the namespace name', async () => {
+    testWrap('', 'trims the namespace name', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -137,7 +137,7 @@ describe(API_NAME, () => {
           expect(result.name).toBe('testnamespace');
         }));
     });
-    it('can not have two namespaces with same name', async () => {
+    testWrap('', 'can not have two namespaces with same name', async () => {
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
@@ -178,7 +178,7 @@ describe(API_NAME, () => {
           avatarId = res.avatarId;
         }));
     });
-    it('saves namespace in the db', async () => {
+    testWrap('', 'saves namespace in the db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -193,7 +193,7 @@ describe(API_NAME, () => {
       );
       expect(response).toHaveLength(1);
     });
-    it('saves namespace avatar in db', async () => {
+    testWrap('', 'saves namespace avatar in db', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -208,7 +208,7 @@ describe(API_NAME, () => {
       );
       expect(response).toHaveLength(1);
     });
-    it('adds owner to namespace', async () => {
+    testWrap('', 'adds owner to namespace', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -224,7 +224,7 @@ describe(API_NAME, () => {
       );
       expect(response).toHaveLength(1);
     });
-    it('adds user to namespace', async () => {
+    testWrap('', 'adds user to namespace', async () => {
       const users = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -263,7 +263,7 @@ describe(API_NAME, () => {
           namespaceId = res.id;
         }));
     });
-    it('trims the namespace name', async () => {
+    testWrap('', 'trims the namespace name', async () => {
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DATA_PROVIDER_URL, fnCall, smoke, testEnv, throwBeforeEachError } from '../test-helpers';
+import { DATA_PROVIDER_URL, fnCall, smoke, testEnv, testWrap, throwBeforeEachError } from '../test-helpers';
 import { ERROR_CODE, User } from '@angular-monorepo/entities';
 import { getViewUserApi } from '@angular-monorepo/api-interface';
 import { BACKDOOR_ACTIONS, TestOwner, TestScenarioNamespace } from '@angular-monorepo/backdoor';
@@ -38,11 +38,11 @@ describe(API_NAME, () => {
     }
   });
 
-  it('smoke', async () => {
+  testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.get(
       `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/user/${userId}`));
   });
-  it('throws 401 with invalid token', async () => {
+  testWrap('', 'throws 401 with invalid token', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/user/${userId}`,
@@ -59,7 +59,7 @@ describe(API_NAME, () => {
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
-  it('throws 401 with invalid ownerKey', async () => {
+  testWrap('', 'throws 401 with invalid ownerKey', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/namespace/${namespaceId}/user/${userId}`,
@@ -80,7 +80,7 @@ describe(API_NAME, () => {
     // }
   );
   it.todo('user does not exist');
-  it('returns a namespace view', async () => {
+  testWrap('', 'returns a namespace view', async () => {
     await fnCall(API_NAME,
       async () => await axios.get(
         `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/user/${userId}`,
