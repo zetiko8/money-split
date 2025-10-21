@@ -2,91 +2,186 @@ import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { acceptInvitationApi } from '@angular-monorepo/api-interface';
-import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 
 const api = acceptInvitationApi();
 const API_NAME = api.ajax.method
   + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
-  let namespaceId!: number;
-  let testOwner!: TestOwner;
-  let inviterOwnerId!: number;
-  let invitationKey!: string;
-  let machineState!: MockDataState;
-
-  beforeEach(async () => {
-    try {
-      const machine = new MockDataMachine(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      // dispose any existing owners with the same name
-      await machine.dispose('creator');
-      await machine.dispose('test@email.com');
-
-      // Create new cluster and namespace
-      await machine.createNewCluster('creator', 'testpassword');
-      await machine.createNewNamespace('testnamespace');
-
-      // Create invitation for inviteduser
-      machineState = await machine.createNewInvitation('test@email.com');
-      const invitation = machineState.getInvitationByEmail('test@email.com');
-      invitationKey = invitation.invitationKey;
-
-      // Get namespace ID and owners
-      namespaceId = machineState.selectedNamespace!.id;
-      inviterOwnerId = (await machineState.getUserOwnerByName('creator')).owner.id;
-
-      testOwner = await MockDataMachine
-        .createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'test@email.com');
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-  });
 
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+
       await smoke(API_NAME, async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+        `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
       ));
     });
   });
 
   describe('validation', () => {
     testWrap('', 'requires name to be provided', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           {},
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
     testWrap('', 'requires name to be a string', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 3 },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
     testWrap('', 'not found invitation key', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/invitation/${'not-found'}/accept`,
           { name: 'invitedowner' },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.RESOURCE_NOT_FOUND);
     });
     testWrap('', 'throws 401 with invalid token', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'invitedowner' },
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'invitedowner' },
           {
             headers: {
@@ -97,33 +192,90 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
     testWrap('', 'returns an invitation', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+      const creatorOwner = mockDataMachine.getOwner('creator');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'invitedowner' },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .result((result => {
           expect(result).toEqual({
-            namespaceId: namespaceId,
+            namespaceId: namespace.id,
             accepted: true,
             rejected: false,
             id: expect.any(Number),
             email: 'test@email.com',
             created: expect.any(String),
             edited: expect.any(String),
-            createdBy: inviterOwnerId,
-            editedBy: testOwner.owner.id,
-            invitationKey: invitationKey,
+            createdBy: creatorOwner.id,
+            editedBy: testOwner.id,
+            invitationKey: invitation.invitationKey,
           });
         }));
     });
     testWrap('', 'trims the name and does not allow empty after trimming', async () => {
-    // Should save trimmed name
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
+      // Should save trimmed name
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: '   inviteduser   ' },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .result(() => {});
 
       // Check by querying the DB
@@ -131,17 +283,17 @@ describe(API_NAME, () => {
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         `SELECT * FROM \`User\` 
-                WHERE namespaceId = ${namespaceId} 
-                AND ownerId = ${testOwner.owner.id}`,
+                WHERE namespaceId = ${namespace.id} 
+                AND ownerId = ${testOwner.id}`,
       );
       expect(userRes[0].name).toBe('inviteduser');
 
       // Should not allow name with only spaces
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: '   ' },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
     it.todo('edited date is corrected');
@@ -150,18 +302,46 @@ describe(API_NAME, () => {
   });
 
   describe('dbState', () => {
-    let invitationId!: number;
-    beforeEach(async () => {
+    testWrap('', 'saves invitation in the db', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+      const creatorOwner = mockDataMachine.getOwner('creator');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
+      let invitationId!: number;
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invitation/${invitationKey}/accept`,
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'inviteduser' },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .result((async res => {
           invitationId = res.id;
         }));
-    });
-    testWrap('', 'saves invitation in the db', async () => {
+
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -171,48 +351,118 @@ describe(API_NAME, () => {
         `,
       );
       expect(response[0]).toEqual({
-        namespaceId: namespaceId,
+        namespaceId: namespace.id,
         accepted: 1,
         rejected: 0,
         id: expect.any(Number),
         email: 'test@email.com',
         created: expect.any(String),
         edited: expect.any(String),
-        createdBy: inviterOwnerId,
-        editedBy: testOwner.owner.id,
+        createdBy: creatorOwner.id,
+        editedBy: testOwner.id,
         invitationKey: expect.any(String),
       });
       expect(response).toHaveLength(1);
     });
     testWrap('', 'adds owner to the namespace', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'inviteduser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .result(() => {});
+
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         `
         SELECT * FROM NamespaceOwner
-        WHERE namespaceId = ${namespaceId}
-        AND ownerId = ${testOwner.owner.id}
+        WHERE namespaceId = ${namespace.id}
+        AND ownerId = ${testOwner.id}
         `,
       );
       expect(response[0]).toEqual({
-        namespaceId: namespaceId,
-        ownerId: testOwner.owner.id,
+        namespaceId: namespace.id,
+        ownerId: testOwner.id,
       });
       expect(response).toHaveLength(1);
     });
     testWrap('', 'adds user to the namespace', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
+      if (!invitation) throw new Error('Invitation not found');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'inviteduser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .result(() => {});
+
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         `
         SELECT * FROM \`User\`
-        WHERE namespaceId = ${namespaceId}
-        AND ownerId = ${testOwner.owner.id}
+        WHERE namespaceId = ${namespace.id}
+        AND ownerId = ${testOwner.id}
         `,
       );
       expect(response[0]).toEqual({
-        namespaceId: namespaceId,
-        ownerId: testOwner.owner.id,
+        namespaceId: namespace.id,
+        ownerId: testOwner.id,
         avatarId: expect.any(Number),
         id: expect.any(Number),
         name: 'inviteduser',
