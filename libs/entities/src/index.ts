@@ -208,6 +208,10 @@ export interface BackdoorScenarioData {
       owner?: string,
       data: CreatePaymentEventDataBackdoor
     }[],
+    invitations?: {
+      email: string,
+      invitor: string,
+    }[],
   }[],
 }
 
@@ -226,6 +230,10 @@ export interface BackdoorScenarioDataFixed {
       user: string,
       owner: string,
       data: CreatePaymentEventDataBackdoor
+    }[],
+    invitations: {
+      email: string,
+      invitor: string,
     }[],
   }[],
 }

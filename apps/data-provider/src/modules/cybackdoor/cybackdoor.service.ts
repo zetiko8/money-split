@@ -72,6 +72,16 @@ export const CYBACKDOOR_SERVICE = {
           );
         });
 
+        await asyncMap(namespace.invitations, async (invitedOnlyUser) => {
+          const invitor = owners.find(o => o.username === invitedOnlyUser.invitor);
+          await InvitationHelpersService.inviteToNamespace(
+            transaction,
+            invitedOnlyUser.email,
+            createdNamespace.id,
+            invitor.id,
+          );
+        });
+
         await asyncMap(namespace.paymentEvents, async (paymentEvent) => {
           const creator = owners.find(o => o.username === paymentEvent.owner);
           const namespaceView = await new NamespaceService(LOGGER)

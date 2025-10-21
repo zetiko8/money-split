@@ -518,6 +518,10 @@ export class TestOwner {
             owner: pe.owner || pe.user,
             data: pe.data,
           })),
+          invitations: n.invitations?.map(i => ({
+            email: i.email,
+            invitor: i.invitor,
+          })) || [],
         };
       }),
     };

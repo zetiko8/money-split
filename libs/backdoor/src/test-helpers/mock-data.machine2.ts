@@ -10,6 +10,7 @@ import {
   SettlementPayloadBackdoor,
   SettlementPayload,
   BackdoorScenarioData,
+  Invitation,
 } from '@angular-monorepo/entities';
 
 export interface OwnerData {
@@ -446,6 +447,14 @@ export class MockDataMachine2 {
   public getNamespace (namespaceName: string): NamespaceView {
     return this.mockDataMachine2Internal
       .getNamespace(namespaceName);
+  }
+
+  public getNamespaceInvitation (namespaceName: string, email: string): Invitation {
+    const namespace = this.mockDataMachine2Internal
+      .getNamespace(namespaceName);
+    const invitation = namespace.invitations.find(i => i.email === email);
+    if (!invitation) throw new Error('MockDataMachine2: Invitation not found');
+    return invitation;
   }
 
   public getNamespaceUser (namespaceName: string, namespaceUserUsername: string): User {

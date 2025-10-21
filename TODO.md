@@ -6,3 +6,4 @@
 [ ] Backwardsa navigation from description view
 [ ] Settlement in different currencies
 [ ] Backwards navigation in general
+[ ] Accepting invitation - name validation (length)

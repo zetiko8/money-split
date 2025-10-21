@@ -26,8 +26,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -35,9 +38,8 @@ describe(API_NAME, () => {
         },
       );
 
-      const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
 
       await smoke(API_NAME, async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
@@ -61,8 +63,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -70,9 +75,8 @@ describe(API_NAME, () => {
         },
       );
 
-      const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -96,8 +100,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -105,9 +112,8 @@ describe(API_NAME, () => {
         },
       );
 
-      const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -160,8 +166,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -169,9 +178,8 @@ describe(API_NAME, () => {
         },
       );
 
-      const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -206,8 +214,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -216,8 +227,8 @@ describe(API_NAME, () => {
       );
 
       const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
       const creatorOwner = mockDataMachine.getOwner('creator');
       const testOwner = mockDataMachine.getOwner('test@email.com');
 
@@ -256,8 +267,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -266,8 +280,8 @@ describe(API_NAME, () => {
       );
 
       const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
       const testOwner = mockDataMachine.getOwner('test@email.com');
 
       // Should save trimmed name
@@ -297,7 +311,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
     it.todo('edited date is corrected');
-    it.todo('the owner accepting the invite can not be the same as the inviter');
+    it.todo('the owner accepting is the same as the inviter');
 
   });
 
@@ -317,8 +331,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -327,8 +344,8 @@ describe(API_NAME, () => {
       );
 
       const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
       const creatorOwner = mockDataMachine.getOwner('creator');
       const testOwner = mockDataMachine.getOwner('test@email.com');
 
@@ -379,8 +396,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -389,8 +409,8 @@ describe(API_NAME, () => {
       );
 
       const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
       const testOwner = mockDataMachine.getOwner('test@email.com');
 
       await fnCall(API_NAME,
@@ -430,8 +450,11 @@ describe(API_NAME, () => {
             {
               name: 'testnamespace',
               creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
               users: [
-                { name: 'test@email.com', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+
               ],
               paymentEvents: [],
             },
@@ -440,8 +463,8 @@ describe(API_NAME, () => {
       );
 
       const namespace = mockDataMachine.getNamespace('testnamespace');
-      const invitation = namespace.invitations.find(i => i.email === 'test@email.com');
-      if (!invitation) throw new Error('Invitation not found');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
       const testOwner = mockDataMachine.getOwner('test@email.com');
 
       await fnCall(API_NAME,

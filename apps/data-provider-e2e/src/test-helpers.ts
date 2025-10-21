@@ -193,6 +193,8 @@ export const testWrap = (
         }
       },
     );
+  } else if (dotOnly === '.todo') {
+    it.todo(description);
   } else {
     it(
       description,
