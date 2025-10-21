@@ -4,6 +4,23 @@ import { randomUUID } from 'crypto';
 
 export class InvitationHelpersService {
 
+  static async acceptInvitationValidation(
+    transaction: Transaction,
+    invitationKey: string,
+    ownerId: number,
+    name: string,
+  ) {
+    const result = await transaction.jsonProcedure<null>(
+      'call acceptInvitationValidation(?, ?, ?);',
+      [
+        invitationKey,
+        ownerId,
+        name,
+      ],
+    );
+    return result;
+  }
+
   static async acceptInvitation(
     transaction: Transaction,
     invitationKey: string,

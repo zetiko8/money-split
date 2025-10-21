@@ -10,6 +10,19 @@ export class InvitationService implements IInvitationService {
     private readonly logger: Logger,
   ) {}
 
+  async acceptInvitationValidation(
+    invitationKey: string,
+    ownerId: number,
+    name: string,
+  ) {
+    return await getTransactionContext(
+      { logger: this.logger },
+      async (transaction) => {
+        return await InvitationHelpersService
+          .acceptInvitationValidation(transaction, invitationKey, ownerId, name);
+      });
+  }
+
   async acceptInvitation(
     invitationKey: string,
     ownerId: number,

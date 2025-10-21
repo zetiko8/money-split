@@ -310,6 +310,243 @@ describe(API_NAME, () => {
           await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
+    testWrap('', 'does not allow name that is too long', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
+      // Name longer than 20 characters
+      const longName = 'a'.repeat(21);
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: longName },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+    testWrap('.todo', 'does not allow already accepted invitation', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'accepteduser', email: 'test@email.com', owner: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = namespace.invitations.find(i => i.email === 'test@email.com' && i.accepted);
+      if (!invitation) throw new Error('Accepted invitation not found');
+
+      // Try to accept again
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'newname' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+    testWrap('', 'does not allow already rejected invitation', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
+      // First reject the invitation
+      await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `UPDATE Invitation SET rejected = 1 WHERE id = ${invitation.id}`,
+      );
+
+      // Try to accept the rejected invitation
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'testuser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
+    testWrap('', 'does not allow name with special characters', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
+      const specialCharNames = ['user@name', 'user#name', 'user$name', 'user%name', 'user&name'];
+
+      for (const name of specialCharNames) {
+        await fnCall(API_NAME,
+          async () => await axios.post(
+            `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+            { name },
+            await mockDataMachine.getAuthHeaders('test@email.com')))
+          .throwsError(ERROR_CODE.INVALID_REQUEST);
+      }
+    });
+    testWrap('', 'allows name with only numbers', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: '12345' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .result(() => {});
+
+      // Verify in DB
+      const userRes = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `SELECT * FROM \`User\` 
+                WHERE namespaceId = ${namespace.id} 
+                AND ownerId = ${testOwner.id}`,
+      );
+      expect(userRes[0].name).toBe('12345');
+    });
+    testWrap('', 'does not allow duplicate user names in namespace', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'existinguser' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'existinguser', email: 'existing@email.com', owner: 'existinguser', invitor: 'creator' },
+              ],
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
+      // Try to use the same name as existing user
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'existinguser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .throwsError(ERROR_CODE.INVALID_REQUEST);
+    });
     it.todo('the owner accepting is the same as the inviter');
 
   });
@@ -524,7 +761,7 @@ describe(API_NAME, () => {
       const editedDateBefore = new Date(invitation.edited);
 
       // Wait a bit to ensure time difference
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -550,6 +787,117 @@ describe(API_NAME, () => {
 
       // Edited date should be updated (greater than before)
       expect(editedDateAfter.getTime()).toBeGreaterThan(editedDateBefore.getTime());
+    });
+    testWrap('', 'creates user avatar', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'inviteduser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .result(() => {});
+
+      // Get the user from DB
+      const userRes = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `SELECT * FROM \`User\` 
+                WHERE namespaceId = ${namespace.id} 
+                AND ownerId = ${testOwner.id}`,
+      );
+
+      const avatarId = userRes[0].avatarId;
+      expect(avatarId).toBeDefined();
+
+      // Verify avatar exists in Avatar table
+      const avatarRes = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `SELECT * FROM Avatar WHERE id = ${avatarId}`,
+      );
+
+      expect(avatarRes).toHaveLength(1);
+      expect(avatarRes[0]).toEqual({
+        id: avatarId,
+        color: expect.any(String),
+        dataUrl: null,
+        url: null,
+      });
+    });
+    testWrap('', 'increments namespace user count', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'user1' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'user1', email: 'user1@test.com', owner: 'user1', invitor: 'creator' },
+              ],
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+      const initialUserCount = namespace.users.length;
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'inviteduser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .result(() => {});
+
+      // Query namespace users count
+      const userCountRes = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `SELECT COUNT(*) as count FROM \`User\` WHERE namespaceId = ${namespace.id}`,
+      );
+
+      expect(userCountRes[0].count).toBe(initialUserCount + 1);
     });
   });
 });

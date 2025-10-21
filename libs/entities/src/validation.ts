@@ -116,6 +116,22 @@ export const VALIDATE = {
     VALIDATE.requiredArray(value);
     VALIDATE.idArray(value);
   },
+
+  userName (value: unknown) {
+    VALIDATE.requiredString(value);
+    const name = (value as string).trim();
+
+    // Validate name length (max 20 characters)
+    if (name.length > 20) {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
+
+    // Validate no special characters (only alphanumeric, spaces, and basic punctuation)
+    const validNamePattern = /^[a-zA-Z0-9\s.-]+$/;
+    if (!validNamePattern.test(name)) {
+      throw Error(ERROR_CODE.INVALID_REQUEST);
+    }
+  },
 };
 
 export function validatePaymentEvent (

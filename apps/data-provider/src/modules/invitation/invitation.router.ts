@@ -13,6 +13,19 @@ import { body } from 'express-validator';
 
 export const invitationRouter = Router();
 
+// Helper function to validate invitation acceptance in database
+async function validateAcceptInvitation(
+  invitationKey: string,
+  ownerId: number,
+  name: string,
+) {
+  await new InvitationService(LOGGER).acceptInvitationValidation(
+    invitationKey,
+    ownerId,
+    name,
+  );
+}
+
 registerRoute(
   createInvitationApi(),
   invitationRouter,
@@ -61,9 +74,17 @@ registerRoute(
   invitationRouter,
   async (payload, params, context) => {
     VALIDATE.requiredPayload(payload);
-    VALIDATE.requiredString(payload.name);
+    VALIDATE.userName(payload.name);
 
     payload.name = payload.name.trim();
+
+    // Run database validation (invitation status, duplicate names, owner already in namespace)
+    await validateAcceptInvitation(
+      params.invitationKey,
+      context.owner.id,
+      payload.name,
+    );
+
     return await new InvitationService(LOGGER).acceptInvitation(
       params.invitationKey,
       context.owner.id,
