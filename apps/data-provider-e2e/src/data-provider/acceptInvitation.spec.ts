@@ -310,7 +310,6 @@ describe(API_NAME, () => {
           await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
-    it.todo('edited date is corrected');
     it.todo('the owner accepting is the same as the inviter');
 
   });
@@ -491,6 +490,66 @@ describe(API_NAME, () => {
         name: 'inviteduser',
       });
       expect(response).toHaveLength(1);
+    });
+    testWrap('', 'edited date is corrected', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              invitations: [
+                { email: 'test@email.com', invitor: 'creator' },
+              ],
+              users: [
+
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
+
+      const createdDate = new Date(invitation.created);
+      const editedDateBefore = new Date(invitation.edited);
+
+      // Wait a bit to ensure time difference
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
+          { name: 'inviteduser' },
+          await mockDataMachine.getAuthHeaders('test@email.com')))
+        .result(() => {});
+
+      // Query the database to check the edited date
+      const response = await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `
+        SELECT * FROM Invitation
+        WHERE id = ${invitation.id}
+        `,
+      );
+
+      const editedDateAfter = new Date(response[0].edited);
+
+      // Created date should remain unchanged
+      expect(new Date(response[0].created).getTime()).toBe(createdDate.getTime());
+
+      // Edited date should be updated (greater than before)
+      expect(editedDateAfter.getTime()).toBeGreaterThan(editedDateBefore.getTime());
     });
   });
 });
