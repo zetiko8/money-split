@@ -1,3 +1,6 @@
+// Load environment variables first
+import './env-loader';
+
 import express, { Request } from 'express';
 import * as path from 'path';
 import * as cors from 'cors';

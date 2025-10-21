@@ -42,6 +42,8 @@ Thumbs.db
 .angular
 config.json
 .env
+.development.env
+.ci.env
 
 tmp*
 
