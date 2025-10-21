@@ -1,16 +1,13 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ConfigService } from '../../../services/config.service';
 import { Observable, combineLatest, mergeMap } from 'rxjs';
 import { ViewUserViewData } from '@angular-monorepo/entities';
 import { RoutingService } from '../../../services/routing/routing.service';
-import { DATA_PROVIDER_API } from '@angular-monorepo/api-interface';
+import { DataService } from '../../data.service';
 
 @Injectable()
 export class ViewUserService {
 
-  private readonly http = inject(HttpClient);
-  private readonly config = inject(ConfigService);
+  private readonly dataService = inject(DataService);
   private readonly routingService = inject(RoutingService);
 
   public getViewUser (
@@ -21,16 +18,7 @@ export class ViewUserService {
       this.routingService.getViewUserId(),
     )
       .pipe(
-        mergeMap(([ownerKey, namespaceId, userId]) => {
-          return DATA_PROVIDER_API.getViewUserApi.callObservable(
-            null,
-            { ownerKey, namespaceId, userId },
-            (url) => {
-              return this.http.get<ViewUserViewData>(this.config.getConfig().middlewareUrl + url);
-            },
-          );
-        },
-        ),
+        mergeMap(([ownerKey, namespaceId, userId]) => this.dataService.getViewUser(ownerKey, namespaceId, userId)),
       );
   }
 }

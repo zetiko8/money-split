@@ -16,6 +16,7 @@ import { AvatarService } from './services/avatar.service';
 import { HomeGuard } from './services/guards/HomeGuard';
 import { AuthGuard } from './services/guards/AuthGuard';
 import { SettlementStateService } from './modules/namespace/services/settlement.state.service';
+import { DataService } from './modules/data.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -54,6 +55,7 @@ export const appConfig: ApplicationConfig = {
       provide: DisplayErrorService,
       useClass: NotificationsService,
     },
+    DataService,
     RoutingService,
     AvatarService,
     HomeGuard,
