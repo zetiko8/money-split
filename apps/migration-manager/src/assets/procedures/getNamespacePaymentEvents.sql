@@ -32,7 +32,7 @@ BEGIN
   END IF;
 
   SELECT procedureError;
-  -- Get payment events
+  -- Get payment events with aggregated payment nodes
   SELECT COALESCE(
     JSON_ARRAYAGG(
       JSON_OBJECT(
@@ -52,12 +52,53 @@ BEGIN
                     'name', edited_u.name,
                     'avatarId', edited_u.avatarId
                    ),
+        'namespace', JSON_OBJECT(
+                    'id', n.id,
+                    'name', n.name,
+                    'avatarId', n.avatarId
+                   ),
         'created', pe.created,
         'edited', pe.edited,
         'settlementId', pe.settlementId,
         'settledOn', settlement.createdBy,
-        'paidBy', pe.paidBy,
-        'benefitors', pe.benefitors,
+        'paidBy', COALESCE(
+          (SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'user', JSON_OBJECT(
+                'id', u.id,
+                'name', u.name,
+                'namespaceId', u.namespaceId,
+                'ownerId', u.ownerId,
+                'avatarId', u.avatarId
+              ),
+              'amount', pn.amount,
+              'currency', pn.currency
+            )
+          )
+          FROM PaymentNode pn
+          INNER JOIN `User` u ON pn.userId = u.id
+          WHERE pn.paymentEventId = pe.id AND pn.type = 'P'),
+          JSON_ARRAY()
+        ),
+        'benefitors', COALESCE(
+          (SELECT JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'user', JSON_OBJECT(
+                'id', u.id,
+                'name', u.name,
+                'namespaceId', u.namespaceId,
+                'ownerId', u.ownerId,
+                'avatarId', u.avatarId
+              ),
+              'amount', pn.amount,
+              'currency', pn.currency
+            )
+          )
+          FROM PaymentNode pn
+          INNER JOIN `User` u ON pn.userId = u.id
+          WHERE pn.paymentEventId = pe.id AND pn.type = 'B'),
+          JSON_ARRAY()
+        ),
         'description', pe.description,
         'notes', pe.notes
       )
@@ -73,6 +114,8 @@ BEGIN
     ON pe.editedBy = edited_u.id
   JOIN `Owner` edited_o
     ON edited_u.ownerId = edited_o.id
+  JOIN Namespace n
+    ON pe.namespaceId = n.id
   LEFT JOIN Settlement settlement
     ON pe.settlementId = settlement.id
   WHERE pe.namespaceId = p_namespaceId

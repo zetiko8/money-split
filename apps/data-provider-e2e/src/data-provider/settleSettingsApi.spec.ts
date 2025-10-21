@@ -202,6 +202,48 @@ describe(API_NAME, () => {
       });
     });
 
+    testWrap('', 'returns payment events to settle - number of payment events', async () => {
+      const response = await axios.get(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
+        testOwner.authHeaders(),
+      );
+
+      expect(response.data.paymentEventsToSettle).toHaveLength(2);
+    });
+
+    testWrap('', 'returns payment events to settle - benefitors structure', async () => {
+      const response = await axios.get(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
+        testOwner.authHeaders(),
+      );
+
+      expect(response.data.paymentEventsToSettle[0].benefitors).toHaveLength(2);
+      expect(response.data.paymentEventsToSettle[0].benefitors).toEqual([
+        {
+          amount: expect.closeTo(50),
+          currency: 'EUR',
+          user: {
+            id: expect.any(Number),
+            name: 'creator',
+            ownerId: expect.any(Number),
+            avatarId: expect.any(Number),
+            namespaceId: namespaceId,
+          },
+        },
+        {
+          amount: expect.closeTo(50),
+          currency: 'EUR',
+          user: {
+            id: expect.any(Number),
+            name: 'test@email.com',
+            ownerId: expect.any(Number),
+            avatarId: expect.any(Number),
+            namespaceId: namespaceId,
+          },
+        },
+      ]);
+    });
+
     it.todo('returns empty arrays when no unsettled payments exist');
   });
 });

@@ -33,9 +33,6 @@ export class PaymentEventService implements IPaymentEventService {
           ],
         );
 
-        res.paidBy = JSON.parse(res.paidBy as unknown as string);
-        res.benefitors = JSON.parse(res.benefitors as unknown as string);
-
         return res;
       });
   }
@@ -63,9 +60,6 @@ export class PaymentEventService implements IPaymentEventService {
             data.notes ? data.notes : null,
           ],
         );
-
-        res.paidBy = JSON.parse(res.paidBy as unknown as string);
-        res.benefitors = JSON.parse(res.benefitors as unknown as string);
 
         return res;
       });
@@ -113,9 +107,6 @@ export class PaymentEventService implements IPaymentEventService {
             new Date(payload.edited),
           ],
         );
-
-        res.paidBy = JSON.parse(res.paidBy as unknown as string);
-        res.benefitors = JSON.parse(res.benefitors as unknown as string);
 
         return res;
       });
