@@ -1,8 +1,6 @@
 import { Transaction } from '../mysql-adapter';
-import { PaymentEvent, PaymentEventView, PaymentEventViewFromDb, PaymentNode, PaymentNodeView } from '@angular-monorepo/entities';
-import { NamespaceHelpersService } from './namespace.helpers.service';
+import { PaymentEvent, PaymentEventView } from '@angular-monorepo/entities';
 import { asyncMap } from '@angular-monorepo/utils';
-import { UserHelpersService } from './user.helpers.service';
 
 export class PaymentEventHelpersService {
   static async getPaymentEvent (
@@ -21,9 +19,6 @@ export class PaymentEventHelpersService {
       ],
     );
 
-    res.paidBy = JSON.parse(res.paidBy as unknown as string);
-    res.benefitors = JSON.parse(res.benefitors as unknown as string);
-
     return res;
   }
 
@@ -32,7 +27,7 @@ export class PaymentEventHelpersService {
     namespaceId: number,
     ownerId: number,
   ): Promise<PaymentEventView[]> {
-    const res = await transaction.jsonProcedure<PaymentEventViewFromDb[]>(
+    const res = await transaction.jsonProcedure<PaymentEventView[]>(
       'call getNamespacePaymentEvents(?, ?);',
       [
         namespaceId,
@@ -40,43 +35,7 @@ export class PaymentEventHelpersService {
       ],
     );
 
-    const namespace = await NamespaceHelpersService.getNamespaceById(transaction, namespaceId);
-
-    const paymentEventsViews = await asyncMap(res, async (paymentEventFromDb) => {
-      const paymentEventView: PaymentEventView = {
-        ...paymentEventFromDb,
-        paidBy: [],
-        benefitors: [],
-        namespace: {
-          id: namespace.id,
-          name: namespace.name,
-          avatarId: namespace.avatarId,
-        },
-      };
-      paymentEventView.paidBy = await asyncMap(
-          JSON.parse(paymentEventFromDb.paidBy) as PaymentNode[],
-          async (paidByFromDb) => {
-            const paidBy: PaymentNodeView = {
-              amount: paidByFromDb.amount,
-              currency: paidByFromDb.currency,
-              user: await UserHelpersService.getUserById(transaction, paidByFromDb.userId),
-            };
-            return paidBy;
-          });
-      paymentEventView.benefitors = await asyncMap(
-          JSON.parse(paymentEventFromDb.benefitors) as PaymentNode[],
-          async (benefitorFromDb) => {
-            const benefitor: PaymentNodeView = {
-              amount: benefitorFromDb.amount,
-              currency: benefitorFromDb.currency,
-              user: await UserHelpersService.getUserById(transaction, benefitorFromDb.userId),
-            };
-            return benefitor;
-          });
-      return paymentEventView;
-    });
-
-    return paymentEventsViews.sort(
+    return res.sort(
       (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
   }
 
@@ -86,43 +45,36 @@ export class PaymentEventHelpersService {
     ownerId: number,
   ): Promise<PaymentEvent[]> {
 
-    const res = await transaction.jsonProcedure<PaymentEventViewFromDb[]>(
-      'call getNamespacePaymentEvents(?, ?);',
+    const res = await transaction.jsonProcedure<PaymentEventView[]>(
+      'call getNamespacePaymentEvents(?, ?)',
       [
         namespaceId,
         ownerId,
       ],
     );
 
-    const paymentEvents = await asyncMap(res, async (paymentEventFromDb) => {
+    const paymentEvents = await asyncMap(res, async (paymentEventView) => {
       const paymentEvent: PaymentEvent = {
-        ...paymentEventFromDb,
-        paidBy: [],
-        benefitors: [],
-        namespaceId: paymentEventFromDb.namespaceId,
-        createdBy: paymentEventFromDb.createdBy.id,
-        editedBy: paymentEventFromDb.editedBy.id,
+        id: paymentEventView.id,
+        created: paymentEventView.created,
+        edited: paymentEventView.edited,
+        createdBy: paymentEventView.createdBy.id,
+        editedBy: paymentEventView.editedBy.id,
+        namespaceId: paymentEventView.namespace.id,
+        settlementId: paymentEventView.settlementId,
+        description: paymentEventView.description,
+        notes: paymentEventView.notes,
+        paidBy: paymentEventView.paidBy.map(node => ({
+          userId: node.user.id,
+          amount: node.amount,
+          currency: node.currency,
+        })),
+        benefitors: paymentEventView.benefitors.map(node => ({
+          userId: node.user.id,
+          amount: node.amount,
+          currency: node.currency,
+        })),
       };
-      paymentEvent.paidBy = await asyncMap(
-          JSON.parse(paymentEventFromDb.paidBy) as PaymentNode[],
-          async (paidByFromDb) => {
-            const paidBy: PaymentNode = {
-              amount: paidByFromDb.amount,
-              currency: paidByFromDb.currency,
-              userId: paidByFromDb.userId,
-            };
-            return paidBy;
-          });
-      paymentEvent.benefitors = await asyncMap(
-          JSON.parse(paymentEventFromDb.benefitors) as PaymentNode[],
-          async (benefitorFromDb) => {
-            const benefitor: PaymentNode = {
-              amount: benefitorFromDb.amount,
-              currency: benefitorFromDb.currency,
-              userId: benefitorFromDb.userId,
-            };
-            return benefitor;
-          });
 
       return paymentEvent;
     });

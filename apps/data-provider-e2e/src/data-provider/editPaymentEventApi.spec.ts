@@ -395,8 +395,6 @@ describe(API_NAME, () => {
         edited: Date;
         createdBy: number;
         editedBy: number;
-        paidBy: string;
-        benefitors: string;
         namespaceId: number;
         settlementId: number | null;
         description: string | null;
@@ -413,8 +411,6 @@ describe(API_NAME, () => {
       const dbRow = response[0];
       const parsedRow = {
         ...dbRow,
-        paidBy: JSON.parse(dbRow.paidBy),
-        benefitors: JSON.parse(dbRow.benefitors),
       };
 
       expect(parsedRow).toEqual({
@@ -423,14 +419,62 @@ describe(API_NAME, () => {
         edited: expect.any(String),
         createdBy: userId,
         editedBy: userId,
-        paidBy: [{ userId, amount: 5, currency: 'USD' }],
-        benefitors: [{ userId: creatorUserId, amount: 5, currency: 'USD' }],
         namespaceId,
         settlementId: null,
         description: 'updated description',
         notes: 'updated notes',
       });
       expect(response).toHaveLength(1);
+    });
+
+    it('persists payment nodes to database', async () => {
+      // Make the edit
+      await axios.post(
+        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
+        {
+          paidBy: [{ userId, amount: 5, currency: 'USD' }],
+          benefitors: [{ userId: creatorUserId, amount: 5, currency: 'USD' }],
+          description: 'updated description',
+          notes: 'updated notes',
+        },
+        testOwner.authHeaders());
+
+      interface PaymentNodeDbRow {
+        id: number;
+        paymentEventId: number;
+        userId: number;
+        amount: string;
+        currency: string;
+        type: string;
+      }
+
+      const response = (await queryDb(
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        `SELECT * FROM PaymentNode WHERE paymentEventId = ${paymentEventId} ORDER BY type DESC, id ASC`,
+      )) as PaymentNodeDbRow[];
+
+      expect(response).toHaveLength(2);
+
+      // First should be paidBy (type 'P')
+      expect(response[0]).toEqual({
+        id: expect.any(Number),
+        paymentEventId,
+        userId,
+        amount: '5.00',
+        currency: 'USD',
+        type: 'P',
+      });
+
+      // Second should be benefitor (type 'B')
+      expect(response[1]).toEqual({
+        id: expect.any(Number),
+        paymentEventId,
+        userId: creatorUserId,
+        amount: '5.00',
+        currency: 'USD',
+        type: 'B',
+      });
     });
   });
 });

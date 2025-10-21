@@ -175,21 +175,6 @@ export interface PaymentEventView {
   notes: string,
 }
 
-export interface PaymentEventViewFromDb {
-  paidBy: string,
-  benefitors: string,
-  id: number,
-  created: Date,
-  edited: Date,
-  createdBy: User,
-  editedBy: User,
-  namespaceId: number,
-  settlementId: number | null,
-  settledOn: Date | null,
-  description: string,
-  notes: string,
-}
-
 export interface CreatePaymentEventData {
   paidBy: PaymentNode[];
   benefitors: PaymentNode[];

@@ -13,6 +13,11 @@ CREATE PROCEDURE editPaymentEvent(
 BEGIN
   DECLARE jsonResult TEXT;
   DECLARE procedureError TEXT;
+  DECLARE i INT DEFAULT 0;
+  DECLARE nodeCount INT;
+  DECLARE nodeUserId BIGINT;
+  DECLARE nodeAmount DECIMAL(10,2);
+  DECLARE nodeCurrency VARCHAR(10);
 
   -- Check if payment event exists
   IF NOT EXISTS (
@@ -33,13 +38,42 @@ BEGIN
     -- Update payment event
     UPDATE PaymentEvent
     SET 
-      paidBy = p_paidBy,
-      benefitors = p_benefitors,
       description = p_description,
       notes = p_notes,
       edited = NOW(),
       editedBy = p_userId
     WHERE id = p_paymentEventId;
+
+    -- Delete existing payment nodes
+    DELETE FROM PaymentNode WHERE paymentEventId = p_paymentEventId;
+
+    -- Insert paidBy nodes (type 'P')
+    SET nodeCount = JSON_LENGTH(p_paidBy);
+    SET i = 0;
+    WHILE i < nodeCount DO
+      SET nodeUserId = JSON_EXTRACT(p_paidBy, CONCAT('$[', i, '].userId'));
+      SET nodeAmount = JSON_EXTRACT(p_paidBy, CONCAT('$[', i, '].amount'));
+      SET nodeCurrency = JSON_UNQUOTE(JSON_EXTRACT(p_paidBy, CONCAT('$[', i, '].currency')));
+      
+      INSERT INTO `PaymentNode`(paymentEventId, userId, amount, currency, type)
+      VALUES (p_paymentEventId, nodeUserId, nodeAmount, nodeCurrency, 'P');
+      
+      SET i = i + 1;
+    END WHILE;
+
+    -- Insert benefitors nodes (type 'B')
+    SET nodeCount = JSON_LENGTH(p_benefitors);
+    SET i = 0;
+    WHILE i < nodeCount DO
+      SET nodeUserId = JSON_EXTRACT(p_benefitors, CONCAT('$[', i, '].userId'));
+      SET nodeAmount = JSON_EXTRACT(p_benefitors, CONCAT('$[', i, '].amount'));
+      SET nodeCurrency = JSON_UNQUOTE(JSON_EXTRACT(p_benefitors, CONCAT('$[', i, '].currency')));
+      
+      INSERT INTO `PaymentNode`(paymentEventId, userId, amount, currency, type)
+      VALUES (p_paymentEventId, nodeUserId, nodeAmount, nodeCurrency, 'B');
+      
+      SET i = i + 1;
+    END WHILE;
 
     -- Get updated payment event as JSON
     CALL getPaymentEventJson(p_paymentEventId, jsonResult);

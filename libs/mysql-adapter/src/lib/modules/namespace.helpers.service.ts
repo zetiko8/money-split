@@ -2,7 +2,6 @@ import {
   MNamespace,
   NamespaceView,
   PaymentEventView,
-  PaymentNode,
   RecordData,
   RecordDataView,
   SettlementDebtView,
@@ -68,10 +67,6 @@ export class NamespaceHelpersService {
     ownerId: number,
   ): Promise<NamespaceView> {
     const data = await transaction.jsonProcedure<NamespaceView & {
-          paymentEvents: Array<Omit<PaymentEventView, 'paidBy' | 'benefitors'> & {
-            paidBy: string;
-            benefitors: string;
-          }>;
           settlements: Array<Omit<SettlementListView, 'settleRecords'> & {
             settleRecords: Array<Omit<SettlementDebtView, 'data'> & { data: string }>;
           }>;
@@ -84,31 +79,7 @@ export class NamespaceHelpersService {
           `,
         );
 
-    const paymentEvents: PaymentEventView[] = await asyncMap(
-      data.paymentEvents || [],
-      async (pe) => {
-        const paidByNodes = JSON.parse(pe.paidBy) as PaymentNode[];
-        const benefitorNodes = JSON.parse(pe.benefitors) as PaymentNode[];
-
-        const paidBy = await asyncMap(paidByNodes, async (node) => ({
-          amount: node.amount,
-          currency: node.currency,
-          user: await UserHelpersService.getUserById(transaction, node.userId),
-        }));
-
-        const benefitors = await asyncMap(benefitorNodes, async (node) => ({
-          amount: node.amount,
-          currency: node.currency,
-          user: await UserHelpersService.getUserById(transaction, node.userId),
-        }));
-
-        return {
-          ...pe,
-          paidBy,
-          benefitors,
-        };
-      },
-    );
+    const paymentEvents: PaymentEventView[] = data.paymentEvents || [];
 
     const settlements: SettlementListView[] = await asyncMap(
       data.settlements || [],
