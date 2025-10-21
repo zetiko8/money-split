@@ -48,7 +48,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/invite`,
           {},
           await machine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('EMAIL');
     });
 
     testWrap('', 'requires email to be a string', async () => {
@@ -71,7 +71,7 @@ describe(API_NAME, () => {
             email: 2,
           },
           await machine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('EMAIL');
     });
 
     testWrap('', 'requires email to be a valid email', async () => {
@@ -94,7 +94,7 @@ describe(API_NAME, () => {
             email: 'test.emailtest.com',
           },
           await machine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('EMAIL');
     });
 
     testWrap('', 'requires email to not be longer than 65 (limit of express validator) characters', async () => {
@@ -117,7 +117,7 @@ describe(API_NAME, () => {
             email: 'a'.repeat(65) + '@test.com',
           },
           await machine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('EMAIL_MAX_LENGTH');
     });
 
     testWrap('', 'throws when owner key is not found', async () => {

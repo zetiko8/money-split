@@ -5,6 +5,7 @@ import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import { ApiDefinition } from '@angular-monorepo/api-interface';
 import { Logger } from '@angular-monorepo/utils';
 import { validationResult } from 'express-validator';
+import { ValidationErrors } from '@angular-monorepo/data-adapter';
 
 export function registerRoute <
     Payload,
@@ -158,4 +159,12 @@ export class SimpleLogger implements Logger {
 }
 
 export const LOGGER = new SimpleLogger();
+
+export const throwValidationError = async (validationFn: () => Promise<ValidationErrors | null>) => {
+  const errors = await validationFn();
+  if (errors) {
+    const firstValidationError = Object.values(errors)[0];
+    throw new Error(firstValidationError);
+  }
+};
 

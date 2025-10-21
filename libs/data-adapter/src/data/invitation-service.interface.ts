@@ -1,6 +1,9 @@
 import { Invitation, InvitationViewData } from '@angular-monorepo/entities';
+import { AcceptInvitationDataValidationFn } from '../validation/validation.service.interface';
 
 export interface IInvitationService {
+  acceptInvitationValidation: AcceptInvitationDataValidationFn;
+
   acceptInvitation(
     invitationKey: string,
     ownerId: number,

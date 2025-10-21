@@ -1,5 +1,6 @@
 import { Logger } from '@angular-monorepo/utils';
 import { createPool, PoolConnection } from 'mysql2';
+import { ValidationErrors } from '@angular-monorepo/data-adapter';
 
 const pool = createPool({
   host: process.env.MYSQL_HOST || 'localhost',
@@ -105,6 +106,34 @@ export class Transaction implements Transaction {
       }
       this.logger.error('SQL', error);
       this.logger.log('Result', result);
+      throw error;
+    }
+  }
+
+  async jsonValidationProcedure(
+    sql: string,
+    params?: unknown[],
+  ): Promise<ValidationErrors> {
+    let result: unknown[];
+
+    try {
+      result = await this.query<unknown[]>(sql, params);
+      if (!result) throw Error('Procedure error');
+      if (!result[0]) throw Error('Procedure error');
+      if (!result[0][0]) throw Error('Procedure error');
+      if (result[0][0].validationErrors) {
+        const validationErrors = JSON
+          .parse(result[0][0].validationErrors);
+        return validationErrors;
+      }
+    } catch (error) {
+      if (error.message && error.message.startsWith(
+        'You have an error in your SQL syntax',
+      )) {
+        this.logger.error('SQL', error);
+      }
+      this.logger.error('VALIDATION SQL', error);
+      this.logger.log('VALIDATION Result', result);
       throw error;
     }
   }

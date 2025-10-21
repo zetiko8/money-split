@@ -83,7 +83,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           {},
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('NAME_REQUIRED');
     });
     testWrap('', 'requires name to be a string', async () => {
 
@@ -120,7 +120,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 3 },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('NAME_REQUIRED');
     });
     testWrap('', 'not found invitation key', async () => {
 
@@ -308,7 +308,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: '   ' },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('NAME_REQUIRED');
     });
     testWrap('', 'does not allow name that is too long', async () => {
 
@@ -345,7 +345,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: longName },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('NAME_MAX_LENGTH');
     });
     testWrap('.todo', 'does not allow already accepted invitation', async () => {
 
@@ -381,7 +381,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'newname' },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVITATION_ALREADY_ACCEPTED');
     });
     testWrap('', 'does not allow already rejected invitation', async () => {
 
@@ -423,7 +423,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'testuser' },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVITATION_ALREADY_REJECTED');
     });
     testWrap('', 'does not allow name with special characters', async () => {
 
@@ -452,7 +452,7 @@ describe(API_NAME, () => {
 
       const invitation = mockDataMachine.getNamespaceInvitation('testnamespace', 'test@email.com');
 
-      const specialCharNames = ['user@name', 'user#name', 'user$name', 'user%name', 'user&name'];
+      const specialCharNames = ['user#name', 'user$name', 'user%name', 'user&name'];
 
       for (const name of specialCharNames) {
         await fnCall(API_NAME,
@@ -460,7 +460,7 @@ describe(API_NAME, () => {
             `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
             { name },
             await mockDataMachine.getAuthHeaders('test@email.com')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('NAME_NO_SPECIAL_CHARACTERS');
       }
     });
     testWrap('', 'allows name with only numbers', async () => {
@@ -545,7 +545,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/invitation/${invitation.invitationKey}/accept`,
           { name: 'existinguser' },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('DUPLICATE_USER_NAME');
     });
     it.todo('the owner accepting is the same as the inviter');
 

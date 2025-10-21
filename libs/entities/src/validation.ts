@@ -1,5 +1,6 @@
 import { CreatePaymentEventData, PaymentEvent, PaymentEventData, validatePaymentAmounts } from '.';
 import { ERROR_CODE } from './error';
+import { isEmail } from 'validator';
 
 export const VALIDATE = {
   requiredString (value: unknown) {
@@ -117,20 +118,25 @@ export const VALIDATE = {
     VALIDATE.idArray(value);
   },
 
-  userName (value: unknown) {
-    VALIDATE.requiredString(value);
-    const name = (value as string).trim();
-
-    // Validate name length (max 20 characters)
-    if (name.length > 20) {
+  stringMaxLength (value: unknown, maxLength: number) {
+    if (value === null || value === undefined) return;
+    VALIDATE.string(value);
+    const trimmedValue = (value as string).trim();
+    if (trimmedValue.length > maxLength) {
       throw Error(ERROR_CODE.INVALID_REQUEST);
     }
+  },
 
-    // Validate no special characters (only alphanumeric, spaces, and basic punctuation)
-    const validNamePattern = /^[a-zA-Z0-9\s.-]+$/;
-    if (!validNamePattern.test(name)) {
+  stringNoSpecialCharacters (value: unknown) {
+    const validNamePattern = /^[a-zA-Z0-9\s.@-]+$/;
+    if (!validNamePattern.test(value as string)) {
       throw Error(ERROR_CODE.INVALID_REQUEST);
     }
+  },
+
+  isEmail (str: unknown) {
+    VALIDATE.requiredString(str);
+    if (!isEmail(str as string)) throw Error(ERROR_CODE.INVALID_REQUEST);
   },
 };
 

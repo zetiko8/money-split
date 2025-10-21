@@ -1,4 +1,4 @@
-import { IInvitationService } from '@angular-monorepo/data-adapter';
+import { IInvitationService, ValidationErrors } from '@angular-monorepo/data-adapter';
 import { getTransactionContext } from '../mysql-adapter';
 import { InvitationViewData } from '@angular-monorepo/entities';
 import { Logger } from '@angular-monorepo/utils';
@@ -14,7 +14,7 @@ export class InvitationService implements IInvitationService {
     invitationKey: string,
     ownerId: number,
     name: string,
-  ) {
+  ): Promise<ValidationErrors> {
     return await getTransactionContext(
       { logger: this.logger },
       async (transaction) => {

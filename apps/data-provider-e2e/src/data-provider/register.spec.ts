@@ -138,6 +138,16 @@ describe(API_NAME, () => {
       }));
   });
   testWrap('', 'can not register with same username twice', async () => {
+    fnCall(API_NAME,
+      async () => await axios.post(
+        `${DATA_PROVIDER_URL}/app/register`,
+        {
+          username: 'testusername',
+          password: 'testpassword',
+          avatarUrl: 'http:test.com',
+          avatarColor: 'color',
+        }),
+    ).toBe200();
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/register`,

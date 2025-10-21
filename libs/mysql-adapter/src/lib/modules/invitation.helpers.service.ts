@@ -10,7 +10,7 @@ export class InvitationHelpersService {
     ownerId: number,
     name: string,
   ) {
-    const result = await transaction.jsonProcedure<null>(
+    const result = await transaction.jsonValidationProcedure(
       'call acceptInvitationValidation(?, ?, ?);',
       [
         invitationKey,
