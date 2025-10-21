@@ -105,24 +105,38 @@ BEGIN
             'paidBy', COALESCE(
               (SELECT JSON_ARRAYAGG(
                 JSON_OBJECT(
-                  'userId', pn.userId,
+                  'user', JSON_OBJECT(
+                    'id', u.id,
+                    'name', u.name,
+                    'namespaceId', u.namespaceId,
+                    'ownerId', u.ownerId,
+                    'avatarId', u.avatarId
+                  ),
                   'amount', pn.amount,
                   'currency', pn.currency
                 )
               )
               FROM PaymentNode pn
+              INNER JOIN `User` u ON pn.userId = u.id
               WHERE pn.paymentEventId = pe.id AND pn.type = 'P'),
               JSON_ARRAY()
             ),
             'benefitors', COALESCE(
               (SELECT JSON_ARRAYAGG(
                 JSON_OBJECT(
-                  'userId', pn.userId,
+                  'user', JSON_OBJECT(
+                    'id', u.id,
+                    'name', u.name,
+                    'namespaceId', u.namespaceId,
+                    'ownerId', u.ownerId,
+                    'avatarId', u.avatarId
+                  ),
                   'amount', pn.amount,
                   'currency', pn.currency
                 )
               )
               FROM PaymentNode pn
+              INNER JOIN `User` u ON pn.userId = u.id
               WHERE pn.paymentEventId = pe.id AND pn.type = 'B'),
               JSON_ARRAY()
             )
