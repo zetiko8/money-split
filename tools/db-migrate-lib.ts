@@ -189,6 +189,7 @@ export class DatabaseMigrationManager {
 
     for (const migration of migrations) {
       if (!migration.isApplied) {
+        console.log(migration.id);
         await this.runMigration(migration.id, true);
         executed.push(migration.id);
       }
