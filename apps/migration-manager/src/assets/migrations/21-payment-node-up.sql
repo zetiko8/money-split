@@ -9,6 +9,3 @@ CREATE TABLE `PaymentNode` (
   KEY `idx_payment_event` (`paymentEventId`),
   CONSTRAINT `fk_payment_node_payment_event` FOREIGN KEY (`paymentEventId`) REFERENCES `PaymentEvent` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
-    

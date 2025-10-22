@@ -66,6 +66,7 @@ ${colors.bright}Commands:${colors.reset}
   ${colors.green}status${colors.reset}          Show migration status
   ${colors.green}reset${colors.reset}           Rollback all migrations
   ${colors.green}fresh${colors.reset}           Reset + migrate + procedures (fresh setup)
+  ${colors.green}schema:export${colors.reset}   Export database schema to a file
   ${colors.green}help${colors.reset}            Show this help message
 
 ${colors.bright}Options:${colors.reset}
@@ -144,6 +145,10 @@ async function main() {
 
       case 'fresh':
         await handleFresh(manager, options);
+        break;
+
+      case 'schema:export':
+        await handleSchemaExport(manager, options);
         break;
 
       default:
@@ -330,6 +335,53 @@ async function handleFresh(manager: DatabaseMigrationManager, options: any) {
   console.log(`${colors.bright}Step 3/3: Running procedures...${colors.reset}`);
   const procedures = await manager.runAllProcedures();
   console.log(`${colors.green}✓${colors.reset} Executed ${procedures.length} procedure(s)`);
+}
+
+async function handleSchemaExport(manager: DatabaseMigrationManager, options: any) {
+  console.log(`${colors.cyan}Exporting database schema...${colors.reset}\n`);
+
+  const config = getDbConfig();
+  const rootDir = path.resolve(__dirname, '..');
+  const outputPath = path.join(rootDir, 'tools', `schema-export-${config.database}.sql`);
+
+  if (options.dryRun) {
+    console.log(`${colors.yellow}Would export schema to: ${outputPath}${colors.reset}`);
+    return;
+  }
+
+  try {
+    // Get all tables
+    const tables = await manager.executeQuery<any[]>('SHOW TABLES');
+    const tableKey = `Tables_in_${config.database}`;
+    const tableNames = tables.map((row: any) => row[tableKey]);
+
+    console.log(`${colors.gray}Found ${tableNames.length} table(s)${colors.reset}`);
+
+    let schemaOutput = `-- Database Schema Export\n`;
+    schemaOutput += `-- Database: ${config.database}\n`;
+    schemaOutput += `-- Generated: ${new Date().toISOString()}\n`;
+    schemaOutput += `-- ================================================\n\n`;
+
+    // Export each table's CREATE statement
+    for (const tableName of tableNames) {
+      console.log(`  ${colors.gray}Exporting table: ${tableName}${colors.reset}`);
+      
+      const createTableResult = await manager.executeQuery<any[]>(`SHOW CREATE TABLE \`${tableName}\``);
+      const createStatement = createTableResult[0]['Create Table'];
+      
+      schemaOutput += `-- Table: ${tableName}\n`;
+      schemaOutput += `${createStatement};\n\n`;
+    }
+
+    // Write to file
+    fs.writeFileSync(outputPath, schemaOutput, 'utf8');
+
+    console.log(`\n${colors.green}✓${colors.reset} Schema exported successfully`);
+    console.log(`${colors.gray}Output file: ${outputPath}${colors.reset}`);
+    console.log(`${colors.gray}File size: ${(fs.statSync(outputPath).size / 1024).toFixed(2)} KB${colors.reset}`);
+  } catch (error: any) {
+    throw new Error(`Failed to export schema: ${error.message}`);
+  }
 }
 
 // Run the CLI

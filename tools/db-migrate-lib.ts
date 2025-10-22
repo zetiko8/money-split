@@ -51,13 +51,17 @@ export class DatabaseMigrationManager {
     });
   }
 
-  private async query<T>(sql: string): Promise<T> {
+  private async query<T>(sql: string, params?: any[]): Promise<T> {
     return new Promise((resolve, reject) => {
-      this.connection.query(sql, (err, rows) => {
+      this.connection.query(sql, params, (err, rows) => {
         if (err) return reject(err);
         else return resolve(rows as unknown as T);
       });
     });
+  }
+
+  public async executeQuery<T = any>(sql: string, params?: any[]): Promise<T> {
+    return this.query<T>(sql, params);
   }
 
   async getAllMigrations(): Promise<MigrationInfo[]> {
