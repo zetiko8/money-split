@@ -16,6 +16,7 @@
     "db:status": "ts-node --project tools/tsconfig.json tools/db-migrate.ts status",
     "db:reset": "ts-node --project tools/tsconfig.json tools/db-migrate.ts reset",
     "db:fresh": "ts-node --project tools/tsconfig.json tools/db-migrate.ts fresh",
+    "db:schema:export": "ts-node --project tools/tsconfig.json tools/db-migrate.ts schema:export",
     "docker-build:admin-dashboard": "cd devops/admin-dashboard && docker build --tag money-split-admin-dashboard .",
     "docker-build:data-provider": "cd devops/data-provider && docker build --tag money-split-data-provider .",
     "docker-build:frontend": "cd devops/frontend && docker build --tag money-split-frontend .",
