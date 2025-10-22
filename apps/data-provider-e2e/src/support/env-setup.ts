@@ -16,26 +16,11 @@ const envPaths = [
 ];
 
 // Load the first environment file that exists
-let loaded = false;
 for (const envPath of envPaths) {
   if (fs.existsSync(envPath)) {
     // eslint-disable-next-line no-console
     console.log(`[data-provider-e2e] Loading environment from: ${envPath}`);
     dotenv.config({ path: envPath });
-    loaded = true;
     break;
   }
 }
-
-if (!loaded) {
-  // eslint-disable-next-line no-console
-  console.warn('[data-provider-e2e] No environment file found, using system environment variables');
-}
-
-// Log loaded configuration (without sensitive values)
-// eslint-disable-next-line no-console
-console.log('[data-provider-e2e] Environment configuration:');
-// eslint-disable-next-line no-console
-console.log(`  MIDDLEWARE_URL: ${process.env.MIDDLEWARE_URL || 'NOT SET'}`);
-// eslint-disable-next-line no-console
-console.log(`  TZ: ${process.env.TZ || 'NOT SET'}`);
