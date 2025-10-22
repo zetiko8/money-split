@@ -24,16 +24,23 @@ DOCKER_CONTAINER_NAME=${DOCKER_CONTAINER_NAME:-money-split-db-local}
 # Function to wait for MySQL to be ready
 wait_for_mysql() {
     echo "⏳ Waiting for MySQL to be ready..."
-    local max_attempts=30
+    local max_attempts=60
     local attempt=1
+    
+    # Give MySQL a moment to start
+    sleep 2
     
     while [ $attempt -le $max_attempts ]; do
         if docker exec $DOCKER_CONTAINER_NAME mysqladmin ping -h localhost -u root -p$MYSQL_PASSWORD --silent 2>/dev/null; then
             echo "✅ MySQL is ready!"
+            # Extra safety: wait a bit more to ensure it's fully ready
+            sleep 2
             return 0
         fi
         
-        echo "   Attempt $attempt/$max_attempts - MySQL not ready yet..."
+        if [ $((attempt % 5)) -eq 0 ]; then
+            echo "   Attempt $attempt/$max_attempts - MySQL not ready yet..."
+        fi
         sleep 1
         attempt=$((attempt + 1))
     done
@@ -55,15 +62,21 @@ if docker ps -a --format '{{.Names}}' | grep -q "^${DOCKER_CONTAINER_NAME}$"; th
     # Check if it's running
     if docker ps --format '{{.Names}}' | grep -q "^${DOCKER_CONTAINER_NAME}$"; then
         echo "✅ Container is already running"
-        wait_for_mysql
-        exit 0
+        if wait_for_mysql; then
+            exit 0
+        else
+            exit 1
+        fi
     else
         echo "🔄 Starting existing container..."
         docker start $DOCKER_CONTAINER_NAME
         if [ $? -eq 0 ]; then
             echo "✅ Container started"
-            wait_for_mysql
-            exit 0
+            if wait_for_mysql; then
+                exit 0
+            else
+                exit 1
+            fi
         else
             echo "❌ Failed to start container"
             exit 1
@@ -78,6 +91,10 @@ docker run -d \
     -e MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD \
     -e MYSQL_DATABASE=$MYSQL_DATABASE \
     -p $MYSQL_PORT:3306 \
+    --health-cmd='mysqladmin ping -h localhost -u root -p$MYSQL_ROOT_PASSWORD || exit 1' \
+    --health-interval=2s \
+    --health-timeout=2s \
+    --health-retries=30 \
     mysql:latest
 
 if [ $? -eq 0 ]; then
@@ -90,7 +107,11 @@ if [ $? -eq 0 ]; then
     echo "   User: root"
     echo "   Password: (from .env)"
     echo ""
-    wait_for_mysql
+    if wait_for_mysql; then
+        exit 0
+    else
+        exit 1
+    fi
 else
     echo "❌ Failed to start MySQL container"
     exit 1
