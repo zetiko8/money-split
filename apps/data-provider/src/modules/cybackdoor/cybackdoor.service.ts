@@ -111,13 +111,13 @@ export const CYBACKDOOR_SERVICE = {
         );
         userIdMap.set(creator.username, creatorUserResult[0].id);
 
-        // Process invitations
+        // Process accepted invitations (users)
         for (const user of namespace.users) {
           const invitor = owners.find(o => o.username === user.invitor);
           const invitedOwner = owners.find(o => o.username === user.owner);
           const invitationKey = randomUUID();
 
-          // Insert Invitation
+          // Insert accepted Invitation
           await transaction.query(
             `INSERT INTO \`Invitation\` 
             (\`email\`, \`created\`, \`edited\`, \`namespaceId\`, \`createdBy\`, \`editedBy\`, \`accepted\`, \`rejected\`, \`invitationKey\`)
@@ -137,6 +137,20 @@ export const CYBACKDOOR_SERVICE = {
             [user.name, namespaceId, invitedOwner.id, invitedOwner.avatarId],
           );
           userIdMap.set(user.name, invitedUserResult.insertId);
+        }
+
+        // Process unaccepted invitations
+        for (const invitation of namespace.invitations) {
+          const invitor = owners.find(o => o.username === invitation.invitor);
+          const invitationKey = randomUUID();
+
+          // Insert unaccepted Invitation
+          await transaction.query(
+            `INSERT INTO \`Invitation\` 
+            (\`email\`, \`created\`, \`edited\`, \`namespaceId\`, \`createdBy\`, \`editedBy\`, \`accepted\`, \`rejected\`, \`invitationKey\`)
+            VALUES (?, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), ?, ?, ?, 0, 0, ?)`,
+            [invitation.email, namespaceId, invitor.id, invitor.id, invitationKey],
+          );
         }
 
         // Process payment events
