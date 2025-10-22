@@ -1,0 +1,55 @@
+{
+  "name": "data-mocker",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/data-mocker/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/data-mocker",
+        "main": "apps/data-mocker/src/main.ts",
+        "tsConfig": "apps/data-mocker/tsconfig.app.json",
+        "assets": ["apps/data-mocker/src/assets"],
+        "webpackConfig": "apps/data-mocker/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "outputPath": "devops/data-mocker/dist"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "data-mocker:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "data-mocker:build:development"
+        },
+        "production": {
+          "buildTarget": "data-mocker:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/data-mocker/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

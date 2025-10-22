@@ -57,6 +57,7 @@ function generateEnvFile() {
 
   // Generate random values
   const apiPort = generatePort(3000, 9000);
+  const dataMockerPort = apiPort + 1; // Data mocker port is always API port + 1
   const mysqlPort = generatePort(10000, 19999);
   
   const randomValues = {
@@ -66,6 +67,7 @@ function generateEnvFile() {
     ADMIN_USERNAME: 'admin',
     ADMIN_MIGRATION_PASSWORD: generatePassword(16),
     PORT: apiPort.toString(),
+    DATA_MOCKER_PORT: dataMockerPort.toString(),
     MYSQL_PORT: mysqlPort.toString(),
     MYSQL_HOST: 'localhost',
     MYSQL_USER: 'root',
@@ -101,6 +103,7 @@ function generateEnvFile() {
   console.log('');
   console.log('📋 Generated ports:');
   console.log(`   API PORT: ${randomValues.PORT}`);
+  console.log(`   DATA_MOCKER_PORT: ${randomValues.DATA_MOCKER_PORT}`);
   console.log(`   MYSQL_PORT: ${randomValues.MYSQL_PORT}`);
   console.log(`   MIDDLEWARE_URL: ${randomValues.MIDDLEWARE_URL}`);
   console.log('');

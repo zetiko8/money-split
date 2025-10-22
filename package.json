@@ -25,6 +25,7 @@
     "docker-compose:production-local": "npx nx run-many -t build && npm run docker-build:admin-dashboard && npm run docker-build:data-provider && npm run docker-build:frontend && npm run docker-build:migration-manager && npm run docker-compose:production-local-up",
     "docker-compose:production-local:migration-manager": "npx nx run-many -t build npm run docker-build:migration-manager && npm run docker-compose:production-local-up",
     "dev:data-provider": "nx run data-provider:serve:development",
+    "dev:data-mocker": "nx run data-mocker:serve:development",
     "dev:migration-manager": "nx run migration-manager:serve:development",
     "dev:money-split": "nx run money-split:serve:development",
     "test:money-split": "nx run money-split-e2e:e2e:development-watch",
