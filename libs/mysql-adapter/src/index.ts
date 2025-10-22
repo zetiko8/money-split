@@ -11,3 +11,5 @@ export * from './lib/modules/avatar.service';
 export * from './lib/modules/profile.service';
 export * from './lib/modules/payment-event.service';
 export * from './lib/modules/payment-event.helpers.service';
+export * from './lib/modules/settle.service';
+export * from './lib/modules/settle.helpers.service';

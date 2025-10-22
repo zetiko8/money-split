@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { SETTLE_SERVICE } from './settle';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
 import { LOGGER, registerRoute } from '../../helpers';
 import { ERROR_CODE, SettlementPayload, VALIDATE } from '@angular-monorepo/entities';
@@ -11,7 +10,7 @@ import {
   settlePreviewApi,
   settleSettingsApi,
 } from '@angular-monorepo/api-interface';
-import { getTransactionContext, PaymentEventHelpersService, Transaction } from '@angular-monorepo/mysql-adapter';
+import { getTransactionContext, PaymentEventHelpersService, Transaction, SettleService } from '@angular-monorepo/mysql-adapter';
 
 async function validateSettlementPayload(
   transaction: Transaction,
@@ -47,7 +46,7 @@ registerRoute(
   settleSettingsApi(),
   settleRouter,
   async (payload, params, context) => {
-    return await SETTLE_SERVICE
+    return await new SettleService(LOGGER)
       .getSettleSettings(
         Number(params.namespaceId),
         context.owner.id,
@@ -72,7 +71,7 @@ registerRoute(
       },
     );
 
-    const settlmentPreview = await SETTLE_SERVICE
+    const settlmentPreview = await new SettleService(LOGGER)
       .settleNamespacePreview(
         Number(params.namespaceId),
         payload,
@@ -100,7 +99,7 @@ registerRoute(
       },
     );
 
-    const result = await SETTLE_SERVICE
+    const result = await new SettleService(LOGGER)
       .settle(
         Number(params.byUser),
         Number(params.namespaceId),
@@ -117,14 +116,12 @@ registerRoute(
   markAsSettledApi(),
   settleRouter,
   async (_, params) => {
-    const result = await SETTLE_SERVICE
+    await new SettleService(LOGGER)
       .setDebtIsSettled(
         Number(params.byUser),
         Number(params.settlementDebtId),
         true,
       );
-
-    return result;
   },
   AUTH_MIDDLEWARE.namespaceAuth,
 );
@@ -133,14 +130,12 @@ registerRoute(
   markAsUnsettledApi(),
   settleRouter,
   async (_, params) => {
-    const result = await SETTLE_SERVICE
+    await new SettleService(LOGGER)
       .setDebtIsSettled(
         Number(params.byUser),
         Number(params.settlementDebtId),
         false,
       );
-
-    return result;
   },
   AUTH_MIDDLEWARE.namespaceAuth,
 );

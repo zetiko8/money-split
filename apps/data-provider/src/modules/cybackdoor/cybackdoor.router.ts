@@ -6,7 +6,7 @@ import { query } from '../../connection/connection';
 import { createScenarioApiBackdoor, loadApiBackdoor, settleConfirmApiBackdoor, sqlBackdoor } from '@angular-monorepo/api-interface';
 import { AUTH_MIDDLEWARE } from '../auth/auth-middleware';
 import { settleRouter } from '../settle/settle.router';
-import { SETTLE_SERVICE } from '../settle/settle';
+import { SettleService } from '@angular-monorepo/mysql-adapter';
 import { mysqlDate } from '../../connection/helper';
 
 export const cyBackdoorRouter = Router();
@@ -21,7 +21,7 @@ registerRoute(
       throw Error(ERROR_CODE.INVALID_REQUEST);
     }
 
-    const result = await SETTLE_SERVICE
+    const result = await new SettleService(LOGGER)
       .settle(
         payload.userId,
         payload.namespaceId,
