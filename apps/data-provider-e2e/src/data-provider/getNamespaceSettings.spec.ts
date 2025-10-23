@@ -2,63 +2,77 @@ import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE, MNamespaceSettings } from '@angular-monorepo/entities';
 import { getNamespaceSettingsApi } from '@angular-monorepo/api-interface';
-import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 
 const api = getNamespaceSettingsApi();
 const API_NAME = api.ajax.method + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
 
-  let ownerKey!: string;
-  let ownerKeyOtherOwner!: string;
-  let testOwner!: TestOwner;
-  let otherOwner!: TestOwner;
-  let namespaceId!: number;
-  let machine!: MockDataMachine;
-  let machineState!: MockDataState;
-
-  beforeEach(async () => {
-    try {
-      machine = new MockDataMachine(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      // Dispose existing test data
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'creator');
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'otherowner');
-
-      // Create cluster and namespace with creator
-      machineState = await machine.createNewCluster('creator', 'testpassword');
-      machineState = await machine.createNewNamespace('testnamespace');
-      namespaceId = machineState.selectedNamespace!.id;
-      testOwner = await machineState.getUserOwnerByName('creator');
-      ownerKey = testOwner.owner.key;
-
-      // Create other owner for validation tests
-      otherOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'otherowner', 'testpassword');
-      ownerKeyOtherOwner = otherOwner.owner.key;
-    } catch (error) {
-      throw Error('beforeEach error: ' + error.message);
-    }
-  });
-
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const creator = mockDataMachine.getOwner('creator');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await smoke(API_NAME, async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`));
+        `${DATA_PROVIDER_URL}/app/${creator.key}/namespace/${namespace.id}/settings`));
     });
   });
 
   describe('validation', () => {
     testWrap('', 'throws 401 with invalid token', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const creator = mockDataMachine.getOwner('creator');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${creator.key}/namespace/${namespace.id}/settings`,
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
 
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${creator.key}/namespace/${namespace.id}/settings`,
           {
             headers: {
               'Authorization': 'Bearer invalid',
@@ -69,19 +83,65 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'throws 401 with invalid ownerKey', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'otherowner' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const otherOwner = mockDataMachine.getOwner('otherowner');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/namespace/${namespaceId}/settings`,
-          testOwner.authHeaders(),
+          `${DATA_PROVIDER_URL}/app/${otherOwner.key}/namespace/${namespace.id}/settings`,
+          await mockDataMachine.getAuthHeaders('creator'),
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
     testWrap('', 'namespace does not exist', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const creator = mockDataMachine.getOwner('creator');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/20000000/settings`,
-          testOwner.authHeaders(),
+          `${DATA_PROVIDER_URL}/app/${creator.key}/namespace/20000000/settings`,
+          await mockDataMachine.getAuthHeaders('creator'),
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
@@ -89,10 +149,33 @@ describe(API_NAME, () => {
 
   describe('happy path', () => {
     testWrap('', 'returns namespace settings', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const creator = mockDataMachine.getOwner('creator');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/settings`,
-          testOwner.authHeaders(),
+          `${DATA_PROVIDER_URL}/app/${creator.key}/namespace/${namespace.id}/settings`,
+          await mockDataMachine.getAuthHeaders('creator'),
         ))
         .result((result: MNamespaceSettings) => {
           expect(result).toEqual({

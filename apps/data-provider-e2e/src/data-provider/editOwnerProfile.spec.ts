@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { editOwnerProfileApi } from '@angular-monorepo/api-interface';
 import { getRandomColor } from '@angular-monorepo/utils';
 
@@ -10,53 +10,63 @@ const API_NAME = api.ajax.method
   + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
-  let ownerKey!: string;
-  let ownerKeyOtherOwner!: string;
-  let testOwner!: TestOwner;
-  let otherOwner!: TestOwner;
-  let namespaceId!: number;
-  let machine!: MockDataMachine;
-  let machineState!: MockDataState;
-
-  beforeEach(async () => {
-    try {
-      machine = new MockDataMachine(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      // Dispose existing owners
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testowner');
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'otherowner');
-
-      // Create first owner and namespace
-      machineState = await machine.createNewCluster('testowner', 'testpassword');
-      machineState = await machine.createNewNamespace('testnamespace');
-      testOwner = await machineState.getUserOwnerByName('testowner');
-      namespaceId = machineState.selectedNamespace!.id;
-      ownerKey = testOwner.owner.key;
-
-      // Create second owner
-      otherOwner = await MockDataMachine.createNewOwnerAndLogHimIn(DATA_PROVIDER_URL, 'otherowner', 'testpassword');
-      ownerKeyOtherOwner = otherOwner.owner.key;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw Error('beforeEach error: ' + error.message);
-      }
-      throw Error('beforeEach error: ' + String(error));
-    }
-  });
 
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+
       await smoke(API_NAME, async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`));
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`));
     });
   });
 
   describe('validation', () => {
     testWrap('', 'throws 401 with invalid token', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
           {
             ownerAvatar: {
               avatarColor: '#FFFH',
@@ -67,7 +77,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
           {
             ownerAvatar: {
               avatarColor: '#FFFH',
@@ -84,16 +94,39 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'throws 401 with invalid ownerKey', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+            { name: 'otherowner' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const otherOwner = mockDataMachine.getOwner('otherowner');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/profile`,
+          `${DATA_PROVIDER_URL}/app/${otherOwner.key}/profile`,
           {
             ownerAvatar: {
               avatarColor: '#FFFH',
               avatarUrl: null,
             },
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
@@ -101,16 +134,39 @@ describe(API_NAME, () => {
 
   describe('happy path', () => {
     testWrap('', 'returns an owner profile view', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
           {
             ownerAvatar: {
               avatarColor: getRandomColor(),
               avatarUrl: null,
             },
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .result((result => {
           expect(result).toEqual({
@@ -120,18 +176,18 @@ describe(API_NAME, () => {
               url: null,
             },
             owner: {
-              key: ownerKey,
-              id: testOwner.owner.id,
-              username: testOwner.owner.username,
+              key: testOwner.key,
+              id: testOwner.id,
+              username: testOwner.username,
               avatarId: expect.any(Number),
             },
             users: [
               {
                 user: {
                   id: expect.any(Number),
-                  name: testOwner.owner.username,
-                  namespaceId: namespaceId,
-                  ownerId: testOwner.owner.id,
+                  name: testOwner.username,
+                  namespaceId: namespace.id,
+                  ownerId: testOwner.id,
                   avatarId: expect.any(Number),
                 },
                 avatar: {
@@ -146,18 +202,41 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'updates url and color', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       const newColor = getRandomColor();
       const newUrl = 'https://example.com';
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
           {
             ownerAvatar: {
               avatarColor: newColor,
               avatarUrl: newUrl,
             },
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .result((result => {
           expect(result).toEqual({
@@ -167,18 +246,18 @@ describe(API_NAME, () => {
               url: newUrl,
             },
             owner: {
-              key: ownerKey,
-              id: testOwner.owner.id,
-              username: testOwner.owner.username,
+              key: testOwner.key,
+              id: testOwner.id,
+              username: testOwner.username,
               avatarId: expect.any(Number),
             },
             users: [
               {
                 user: {
                   id: expect.any(Number),
-                  name: testOwner.owner.username,
-                  namespaceId: namespaceId,
-                  ownerId: testOwner.owner.id,
+                  name: testOwner.username,
+                  namespaceId: namespace.id,
+                  ownerId: testOwner.id,
                   avatarId: expect.any(Number),
                 },
                 avatar: {
