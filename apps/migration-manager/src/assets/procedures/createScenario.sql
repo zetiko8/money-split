@@ -710,4 +710,46 @@ BEGIN
             SELECT jsonResult;
         END IF;
     END IF;
+    
+    -- Process second namespace (namespaces[1]) - simplified version without users/payment events
+    IF JSON_LENGTH(argScenarioData, '$.namespaces') > 1 THEN
+        SET @nsName1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[1].name'));
+        SET @nsCreator1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[1].creator'));
+        
+        -- Find creator owner ID
+        SET @creatorOwnerId1 = CASE @nsCreator1
+            WHEN @name0 THEN @ownerId0
+            WHEN @name1 THEN @ownerId1
+            WHEN @name2 THEN @ownerId2
+            WHEN @name3 THEN @ownerId3
+            WHEN @name4 THEN @ownerId4
+            ELSE NULL
+        END;
+        
+        SET @creatorAvatarId1 = CASE @nsCreator1
+            WHEN @name0 THEN @avatarId0
+            WHEN @name1 THEN @avatarId1
+            WHEN @name2 THEN @avatarId2
+            WHEN @name3 THEN @avatarId3
+            WHEN @name4 THEN @avatarId4
+            ELSE NULL
+        END;
+        
+        IF @creatorOwnerId1 IS NOT NULL THEN
+            -- Create namespace
+            SET @nsColor1 = CONCAT('#', LPAD(HEX(FLOOR(RAND() * 16777215)), 6, '0'));
+            INSERT INTO Avatar (color, url) VALUES (@nsColor1, NULL);
+            SET @nsAvatarId1 = LAST_INSERT_ID();
+            
+            INSERT INTO Namespace (name, avatarId) VALUES (@nsName1, @nsAvatarId1);
+            SET @namespaceId1 = LAST_INSERT_ID();
+            
+            -- Link creator to namespace
+            INSERT INTO NamespaceOwner (ownerId, namespaceId) VALUES (@creatorOwnerId1, @namespaceId1);
+            
+            -- Create creator user
+            INSERT INTO User (name, namespaceId, ownerId, avatarId) 
+            VALUES (@nsCreator1, @namespaceId1, @creatorOwnerId1, @creatorAvatarId1);
+        END IF;
+    END IF;
 END;
