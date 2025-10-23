@@ -735,6 +735,48 @@ BEGIN
         END IF;
     END IF;
     
+    -- Process third namespace (namespaces[2]) - simplified version without users/payment events
+    IF JSON_LENGTH(argScenarioData, '$.namespaces') > 2 THEN
+        SET @nsName2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[2].name'));
+        SET @nsCreator2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[2].creator'));
+        
+        -- Find creator owner ID
+        SET @creatorOwnerId2 = CASE @nsCreator2
+            WHEN @name0 THEN @ownerId0
+            WHEN @name1 THEN @ownerId1
+            WHEN @name2 THEN @ownerId2
+            WHEN @name3 THEN @ownerId3
+            WHEN @name4 THEN @ownerId4
+            ELSE NULL
+        END;
+        
+        SET @creatorAvatarId2 = CASE @nsCreator2
+            WHEN @name0 THEN @avatarId0
+            WHEN @name1 THEN @avatarId1
+            WHEN @name2 THEN @avatarId2
+            WHEN @name3 THEN @avatarId3
+            WHEN @name4 THEN @avatarId4
+            ELSE NULL
+        END;
+        
+        IF @creatorOwnerId2 IS NOT NULL THEN
+            -- Create namespace
+            SET @nsColor2 = CONCAT('#', LPAD(HEX(FLOOR(RAND() * 16777215)), 6, '0'));
+            INSERT INTO Avatar (color, url) VALUES (@nsColor2, NULL);
+            SET @nsAvatarId2 = LAST_INSERT_ID();
+            
+            INSERT INTO Namespace (name, avatarId) VALUES (@nsName2, @nsAvatarId2);
+            SET @namespaceId2 = LAST_INSERT_ID();
+            
+            -- Link creator to namespace
+            INSERT INTO NamespaceOwner (ownerId, namespaceId) VALUES (@creatorOwnerId2, @namespaceId2);
+            
+            -- Create creator user
+            INSERT INTO User (name, namespaceId, ownerId, avatarId) 
+            VALUES (@nsCreator2, @namespaceId2, @creatorOwnerId2, @creatorAvatarId2);
+        END IF;
+    END IF;
+    
     -- Return owner IDs as JSON array (always execute this, even if no namespaces)
     SET jsonResult = CONCAT('[', @ownerId0);
     IF JSON_LENGTH(argScenarioData, '$.owners') > 1 THEN
