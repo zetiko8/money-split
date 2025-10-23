@@ -24,6 +24,7 @@
     "docker-compose:production-local-up": "cd devops && docker-compose --env-file .production-local.env up",
     "docker-compose:production-local": "npx nx run-many -t build && npm run docker-build:admin-dashboard && npm run docker-build:data-provider && npm run docker-build:frontend && npm run docker-build:migration-manager && npm run docker-compose:production-local-up",
     "docker-compose:production-local:migration-manager": "npx nx run-many -t build npm run docker-build:migration-manager && npm run docker-compose:production-local-up",
+    "start:data-provider": "node tools/start-data-provider.js",
     "dev:data-provider": "nx run data-provider:serve:development",
     "dev:data-mocker": "nx run data-mocker:serve:development",
     "dev:migration-manager": "nx run migration-manager:serve:development",
