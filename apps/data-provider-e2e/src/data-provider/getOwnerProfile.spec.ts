@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { getOwnerProfileApi } from '@angular-monorepo/api-interface';
 
 const api = getOwnerProfileApi();
@@ -9,48 +9,64 @@ const API_NAME = api.ajax.method
   + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
-  let ownerKey!: string;
-  let ownerKeyOtherOwner!: string;
-  let testOwner!: TestOwner;
-  let otherOwner!: TestOwner;
-  let namespaceId!: number;
-  let machine!: MockDataMachine;
-
-  beforeEach(async () => {
-    // Clean up existing test data
-    await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testowner');
-    await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'otherowner');
-
-    // Create test owners and namespaces using MockDataMachine
-    machine = new MockDataMachine(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-    await machine.initialize();
-
-    // Create test owner with namespace
-    const testOwnerState = await machine.createNewCluster('testowner', 'testpassword');
-    testOwner = await testOwnerState.getUserOwnerByName('testowner');
-    const namespace = await testOwner.createNamespace('testnamespace');
-    namespaceId = namespace.id;
-    ownerKey = testOwner.owner.key;
-
-    // Create other owner
-    const otherOwnerState = await machine.createNewCluster('otherowner', 'testpassword');
-    otherOwner = await otherOwnerState.getUserOwnerByName('otherowner');
-    ownerKeyOtherOwner = otherOwner.owner.key;
-  });
 
   testWrap('', 'smoke', async () => {
+
+    const mockDataMachine = await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'testowner' },
+        ],
+        namespaces: [
+          {
+            name: 'testnamespace',
+            creator: 'testowner',
+            users: [],
+            paymentEvents: [],
+          },
+        ],
+      },
+    );
+
+    const testOwner = mockDataMachine.getOwner('testowner');
+
     await smoke(API_NAME, async () => await axios.get(
-      `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`));
+      `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`));
   });
   testWrap('', 'throws 401 with invalid token', async () => {
+
+    const mockDataMachine = await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'testowner' },
+        ],
+        namespaces: [
+          {
+            name: 'testnamespace',
+            creator: 'testowner',
+            users: [],
+            paymentEvents: [],
+          },
+        ],
+      },
+    );
+
+    const testOwner = mockDataMachine.getOwner('testowner');
+
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
         {
           headers: {
             'Authorization': 'Bearer invalid',
@@ -60,18 +76,64 @@ describe(API_NAME, () => {
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
   testWrap('', 'throws 401 with invalid ownerKey', async () => {
+
+    const mockDataMachine = await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'testowner' },
+          { name: 'otherowner' },
+        ],
+        namespaces: [
+          {
+            name: 'testnamespace',
+            creator: 'testowner',
+            users: [],
+            paymentEvents: [],
+          },
+        ],
+      },
+    );
+
+    const otherOwner = mockDataMachine.getOwner('otherowner');
+
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${ownerKeyOtherOwner}/profile`,
-        testOwner.authHeaders(),
+        `${DATA_PROVIDER_URL}/app/${otherOwner.key}/profile`,
+        await mockDataMachine.getAuthHeaders('testowner'),
       ))
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
   testWrap('', 'returns an owner profile view', async () => {
+
+    const mockDataMachine = await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'testowner' },
+        ],
+        namespaces: [
+          {
+            name: 'testnamespace',
+            creator: 'testowner',
+            users: [],
+            paymentEvents: [],
+          },
+        ],
+      },
+    );
+
+    const testOwner = mockDataMachine.getOwner('testowner');
+    const namespace = mockDataMachine.getNamespace('testnamespace');
+
     await fnCall(API_NAME,
       async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/profile`,
-        testOwner.authHeaders(),
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/profile`,
+        await mockDataMachine.getAuthHeaders('testowner'),
       ))
       .result((result => {
         expect(result).toEqual({
@@ -81,18 +143,18 @@ describe(API_NAME, () => {
             url: null,
           },
           owner: {
-            key: ownerKey,
-            id: testOwner.owner.id,
-            username: testOwner.owner.username,
+            key: testOwner.key,
+            id: testOwner.id,
+            username: testOwner.username,
             avatarId: expect.any(Number),
           },
           users: [
             {
               user: {
                 id: expect.any(Number),
-                name: testOwner.owner.username,
-                namespaceId: namespaceId,
-                ownerId: testOwner.owner.id,
+                name: testOwner.username,
+                namespaceId: namespace.id,
+                ownerId: testOwner.id,
                 avatarId: expect.any(Number),
               },
               avatar: {

@@ -1,95 +1,143 @@
 import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { settlePreviewApi } from '@angular-monorepo/api-interface';
-import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 
 const api = settlePreviewApi();
 const API_NAME = api.ajax.method + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
-  let namespaceId!: number;
-  let userId!: number;
-  let creatorUserId!: number;
-  let testOwner!: TestOwner;
-  let machine!: MockDataMachine;
-  let machineState!: MockDataState;
-
-  beforeEach(async () => {
-    try {
-      machine = new MockDataMachine(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      // Dispose existing test data
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'creator');
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'test@email.com');
-
-      // Create cluster and namespace with creator
-      machineState = await machine.createNewCluster('creator', 'testpassword');
-      machineState = await machine.createNewNamespace('testnamespace');
-      namespaceId = machineState.selectedNamespace!.id;
-
-      // Create and accept invitation for test owner
-      machineState = await machine.createNewInvitation('test@email.com');
-      machineState = await machine.acceptInvitation(machineState.getInvitationByEmail('test@email.com'));
-      testOwner = await machineState.getUserOwnerByName('test@email.com');
-
-      // Get user IDs
-      const user = machineState.getUserByName('test@email.com');
-      userId = user.id;
-      const creatorUser = machineState.getUserByName('creator');
-      creatorUserId = creatorUser.id;
-
-      // Create test payment events
-      await machine.addPaymentEventToNamespace(
-        namespaceId, userId, {
-          paidBy: [{ userId, amount: 100, currency: 'EUR' }],
-          benefitors: [
-            { userId: creatorUserId, amount: 50, currency: 'EUR' },
-            { userId, amount: 50, currency: 'EUR' },
-          ],
-          description: 'test payment 1',
-          createdBy: userId,
-          notes: '',
-        });
-
-      await machine.addPaymentEventToNamespace(
-        namespaceId, creatorUserId, {
-          paidBy: [{ userId: creatorUserId, amount: 60, currency: 'EUR' }],
-          benefitors: [
-            { userId: creatorUserId, amount: 30, currency: 'EUR' },
-            { userId, amount: 30, currency: 'EUR' },
-          ],
-          description: 'test payment 2',
-          createdBy: creatorUserId,
-          notes: '',
-        });
-
-      await testOwner.login();
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-  });
 
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await smoke(API_NAME, async () => await axios.get(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
       ));
     });
   });
 
   describe('validation', () => {
     testWrap('', 'throws 401 with invalid token', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
 
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
           {
             headers: {
               Authorization: 'Bearer invalid-token',
@@ -100,37 +148,231 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'validates namespace exists', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/999999/settle/settings`,
-          testOwner.authHeaders()))
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/999999/settle/settings`,
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
     testWrap('', 'validates user has access to namespace', async () => {
-      // Create a new namespace where test user is not a member
-      const { selectedNamespace : newNamespace } = await machine.createNewNamespace('other-namespace');
+
+      // Create scenario with two namespaces - test user only has access to first one
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [],
+            },
+            {
+              name: 'other-namespace',
+              creator: 'creator',
+              users: [],  // test@email.com is NOT a member
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const otherNamespace = mockDataMachine.getNamespace('other-namespace');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${newNamespace.id}/settle/settings`,
-          testOwner.authHeaders()))
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${otherNamespace.id}/settle/settings`,
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
     testWrap('', 'validates owner key exists', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.get(
-          `${DATA_PROVIDER_URL}/app/invalid-key/namespace/${namespaceId}/settle/settings`,
-          testOwner.authHeaders()))
+          `${DATA_PROVIDER_URL}/app/invalid-key/namespace/${namespace.id}/settle/settings`,
+          await mockDataMachine.getAuthHeaders('test@email.com')))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
   });
 
   describe('happy path', () => {
     testWrap('', 'returns payment events to settle', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       const response = await axios.get(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
-        testOwner.authHeaders(),
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
+        await mockDataMachine.getAuthHeaders('test@email.com'),
       );
 
       expect(response.data.paymentEventsToSettle).toHaveLength(2);
@@ -145,7 +387,7 @@ describe(API_NAME, () => {
               name: 'creator',
               ownerId: expect.any(Number),
               avatarId: expect.any(Number),
-              namespaceId: namespaceId,
+              namespaceId: namespace.id,
             },
           },
           {
@@ -156,7 +398,7 @@ describe(API_NAME, () => {
               name: 'test@email.com',
               ownerId: expect.any(Number),
               avatarId: expect.any(Number),
-              namespaceId: namespaceId,
+              namespaceId: namespace.id,
             },
           },
         ],
@@ -167,23 +409,23 @@ describe(API_NAME, () => {
           name: 'test@email.com',
           ownerId: expect.any(Number),
           avatarId: expect.any(Number),
-          namespaceId: namespaceId,
+          namespaceId: namespace.id,
         },
         editedBy: {
           id: expect.any(Number),
           name: 'test@email.com',
           ownerId: expect.any(Number),
           avatarId: expect.any(Number),
-          namespaceId: namespaceId,
+          namespaceId: namespace.id,
         },
         description: 'test payment 1',
         notes: null,
         namespace: {
-          id: namespaceId,
+          id: namespace.id,
           avatarId: expect.any(Number),
           name: 'testnamespace',
         },
-        namespaceId,
+        namespaceId: namespace.id,
         paidBy: [
           {
             amount: 100,
@@ -193,7 +435,7 @@ describe(API_NAME, () => {
               name: 'test@email.com',
               ownerId: expect.any(Number),
               avatarId: expect.any(Number),
-              namespaceId: namespaceId,
+              namespaceId: namespace.id,
             },
           },
         ],
@@ -203,18 +445,128 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'returns payment events to settle - number of payment events', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       const response = await axios.get(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
-        testOwner.authHeaders(),
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
+        await mockDataMachine.getAuthHeaders('test@email.com'),
       );
 
       expect(response.data.paymentEventsToSettle).toHaveLength(2);
     });
 
     testWrap('', 'returns payment events to settle - benefitors structure', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
       const response = await axios.get(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settle/settings`,
-        testOwner.authHeaders(),
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
+        await mockDataMachine.getAuthHeaders('test@email.com'),
       );
 
       expect(response.data.paymentEventsToSettle[0].benefitors).toHaveLength(2);
@@ -227,7 +579,7 @@ describe(API_NAME, () => {
             name: 'creator',
             ownerId: expect.any(Number),
             avatarId: expect.any(Number),
-            namespaceId: namespaceId,
+            namespaceId: namespace.id,
           },
         },
         {
@@ -238,7 +590,7 @@ describe(API_NAME, () => {
             name: 'test@email.com',
             ownerId: expect.any(Number),
             avatarId: expect.any(Number),
-            namespaceId: namespaceId,
+            namespaceId: namespace.id,
           },
         },
       ]);

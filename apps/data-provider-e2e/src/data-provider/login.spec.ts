@@ -1,28 +1,18 @@
 import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { MockDataMachine, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 
 const API_NAME = '/login';
 
 describe(API_NAME, () => {
-  let machine!: MockDataMachine;
-
-  beforeAll(async () => {
-    // Clean up existing test data
-    await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testusername');
-
-    // Create test owner using MockDataMachine
-    machine = new MockDataMachine(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-    await machine.initialize();
-    await machine.createNewCluster('testusername', 'testpassword');
-  });
 
   testWrap('', 'smoke', async () => {
     await smoke(API_NAME, async () => await axios.post(
       `${DATA_PROVIDER_URL}/app/login`));
   });
   testWrap('', 'requires username and password to be provided', async () => {
+    // No scenario needed - testing validation only
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/login`))
@@ -47,6 +37,19 @@ describe(API_NAME, () => {
       .throwsError(ERROR_CODE.INVALID_REQUEST);
   });
   testWrap('', 'throws 401 with invalid credentials', async () => {
+
+    await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'testusername' },
+        ],
+        namespaces: [],
+      },
+    );
+
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/login`,
@@ -76,6 +79,19 @@ describe(API_NAME, () => {
       .throwsError(ERROR_CODE.UNAUTHORIZED);
   });
   testWrap('', 'returns a token', async () => {
+
+    await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'testusername' },
+        ],
+        namespaces: [],
+      },
+    );
+
     await fnCall(API_NAME,
       async () => await axios.post(
         `${DATA_PROVIDER_URL}/app/login`,
