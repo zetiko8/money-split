@@ -690,24 +690,6 @@ BEGIN
                 SET @peIdx = @peIdx + 1;
             END WHILE;
             
-            -- Return owner IDs as JSON array
-            SET jsonResult = CONCAT('[', @ownerId0);
-            IF JSON_LENGTH(argScenarioData, '$.owners') > 1 THEN
-                SET jsonResult = CONCAT(jsonResult, ',', @ownerId1);
-            END IF;
-            IF JSON_LENGTH(argScenarioData, '$.owners') > 2 THEN
-                SET jsonResult = CONCAT(jsonResult, ',', @ownerId2);
-            END IF;
-            IF JSON_LENGTH(argScenarioData, '$.owners') > 3 THEN
-                SET jsonResult = CONCAT(jsonResult, ',', @ownerId3);
-            END IF;
-            IF JSON_LENGTH(argScenarioData, '$.owners') > 4 THEN
-                SET jsonResult = CONCAT(jsonResult, ',', @ownerId4);
-            END IF;
-            SET jsonResult = CONCAT(jsonResult, ']');
-            
-            SELECT procedureError;
-            SELECT jsonResult;
         END IF;
     END IF;
     
@@ -752,4 +734,23 @@ BEGIN
             VALUES (@nsCreator1, @namespaceId1, @creatorOwnerId1, @creatorAvatarId1);
         END IF;
     END IF;
+    
+    -- Return owner IDs as JSON array (always execute this, even if no namespaces)
+    SET jsonResult = CONCAT('[', @ownerId0);
+    IF JSON_LENGTH(argScenarioData, '$.owners') > 1 THEN
+        SET jsonResult = CONCAT(jsonResult, ',', @ownerId1);
+    END IF;
+    IF JSON_LENGTH(argScenarioData, '$.owners') > 2 THEN
+        SET jsonResult = CONCAT(jsonResult, ',', @ownerId2);
+    END IF;
+    IF JSON_LENGTH(argScenarioData, '$.owners') > 3 THEN
+        SET jsonResult = CONCAT(jsonResult, ',', @ownerId3);
+    END IF;
+    IF JSON_LENGTH(argScenarioData, '$.owners') > 4 THEN
+        SET jsonResult = CONCAT(jsonResult, ',', @ownerId4);
+    END IF;
+    SET jsonResult = CONCAT(jsonResult, ']');
+    
+    SELECT procedureError;
+    SELECT jsonResult;
 END;
