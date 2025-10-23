@@ -319,14 +319,15 @@ BEGIN
                     VALUES (@peCreatedClean0, @peEditedClean0, @peUserId0, @peUserId0, @namespaceId, NULL, @peDescription0, @peNotes0);
                     SET @paymentEventId0 = LAST_INSERT_ID();
                     
-                    -- Process paidBy nodes
+                    -- Process paidBy nodes (handle up to 5)
                     SET @paidByCount0 = JSON_LENGTH(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy');
+                    
+                    -- PaidBy 0
                     IF @paidByCount0 > 0 THEN
                         SET @pbUser0 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[0].user'));
                         SET @pbAmount0 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[0].amount'));
                         SET @pbCurrency0 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[0].currency'));
                         
-                        -- Find user ID
                         IF @pbUser0 = @nsCreator THEN
                             SET @pbUserId0 = @creatorUserId;
                         ELSEIF @pbUser0 = @userName0 THEN
@@ -342,6 +343,102 @@ BEGIN
                         IF @pbUserId0 IS NOT NULL THEN
                             INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
                             VALUES (@pbUserId0, @pbAmount0, @pbCurrency0, @paymentEventId0, 'P');
+                        END IF;
+                    END IF;
+                    
+                    -- PaidBy 1
+                    IF @paidByCount0 > 1 THEN
+                        SET @pbUser0_1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[1].user'));
+                        SET @pbAmount0_1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[1].amount'));
+                        SET @pbCurrency0_1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[1].currency'));
+                        
+                        IF @pbUser0_1 = @nsCreator THEN
+                            SET @pbUserId0_1 = @creatorUserId;
+                        ELSEIF @pbUser0_1 = @userName0 THEN
+                            SET @pbUserId0_1 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_1 = @userName1 THEN
+                            SET @pbUserId0_1 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_1 = @userName2 THEN
+                            SET @pbUserId0_1 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE
+                            SET @pbUserId0_1 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId0_1 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId0_1, @pbAmount0_1, @pbCurrency0_1, @paymentEventId0, 'P');
+                        END IF;
+                    END IF;
+                    
+                    -- PaidBy 2
+                    IF @paidByCount0 > 2 THEN
+                        SET @pbUser0_2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[2].user'));
+                        SET @pbAmount0_2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[2].amount'));
+                        SET @pbCurrency0_2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[2].currency'));
+                        
+                        IF @pbUser0_2 = @nsCreator THEN
+                            SET @pbUserId0_2 = @creatorUserId;
+                        ELSEIF @pbUser0_2 = @userName0 THEN
+                            SET @pbUserId0_2 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_2 = @userName1 THEN
+                            SET @pbUserId0_2 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_2 = @userName2 THEN
+                            SET @pbUserId0_2 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE
+                            SET @pbUserId0_2 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId0_2 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId0_2, @pbAmount0_2, @pbCurrency0_2, @paymentEventId0, 'P');
+                        END IF;
+                    END IF;
+                    
+                    -- PaidBy 3
+                    IF @paidByCount0 > 3 THEN
+                        SET @pbUser0_3 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[3].user'));
+                        SET @pbAmount0_3 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[3].amount'));
+                        SET @pbCurrency0_3 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[3].currency'));
+                        
+                        IF @pbUser0_3 = @nsCreator THEN
+                            SET @pbUserId0_3 = @creatorUserId;
+                        ELSEIF @pbUser0_3 = @userName0 THEN
+                            SET @pbUserId0_3 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_3 = @userName1 THEN
+                            SET @pbUserId0_3 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_3 = @userName2 THEN
+                            SET @pbUserId0_3 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE
+                            SET @pbUserId0_3 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId0_3 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId0_3, @pbAmount0_3, @pbCurrency0_3, @paymentEventId0, 'P');
+                        END IF;
+                    END IF;
+                    
+                    -- PaidBy 4
+                    IF @paidByCount0 > 4 THEN
+                        SET @pbUser0_4 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[4].user'));
+                        SET @pbAmount0_4 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[4].amount'));
+                        SET @pbCurrency0_4 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[0].data.paidBy[4].currency'));
+                        
+                        IF @pbUser0_4 = @nsCreator THEN
+                            SET @pbUserId0_4 = @creatorUserId;
+                        ELSEIF @pbUser0_4 = @userName0 THEN
+                            SET @pbUserId0_4 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_4 = @userName1 THEN
+                            SET @pbUserId0_4 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser0_4 = @userName2 THEN
+                            SET @pbUserId0_4 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE
+                            SET @pbUserId0_4 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId0_4 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId0_4, @pbAmount0_4, @pbCurrency0_4, @paymentEventId0, 'P');
                         END IF;
                     END IF;
                     
@@ -502,8 +599,10 @@ BEGIN
                     VALUES (@peCreatedClean1, @peEditedClean1, @peUserId1, @peUserId1, @namespaceId, NULL, @peDescription1, @peNotes1);
                     SET @paymentEventId1 = LAST_INSERT_ID();
                     
-                    -- Process paidBy for event 1
-                    IF JSON_LENGTH(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy') > 0 THEN
+                    -- Process paidBy for event 1 (handle up to 5)
+                    SET @paidByCount1 = JSON_LENGTH(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy');
+                    
+                    IF @paidByCount1 > 0 THEN
                         SET @pbUser1_0 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[0].user'));
                         SET @pbAmount1_0 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[0].amount'));
                         SET @pbCurrency1_0 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[0].currency'));
@@ -518,6 +617,78 @@ BEGIN
                         IF @pbUserId1_0 IS NOT NULL THEN
                             INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
                             VALUES (@pbUserId1_0, @pbAmount1_0, @pbCurrency1_0, @paymentEventId1, 'P');
+                        END IF;
+                    END IF;
+                    
+                    IF @paidByCount1 > 1 THEN
+                        SET @pbUser1_1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[1].user'));
+                        SET @pbAmount1_1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[1].amount'));
+                        SET @pbCurrency1_1 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[1].currency'));
+                        
+                        IF @pbUser1_1 = @nsCreator THEN SET @pbUserId1_1 = @creatorUserId;
+                        ELSEIF @pbUser1_1 = @userName0 THEN SET @pbUserId1_1 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_1 = @userName1 THEN SET @pbUserId1_1 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_1 = @userName2 THEN SET @pbUserId1_1 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE SET @pbUserId1_1 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId1_1 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId1_1, @pbAmount1_1, @pbCurrency1_1, @paymentEventId1, 'P');
+                        END IF;
+                    END IF;
+                    
+                    IF @paidByCount1 > 2 THEN
+                        SET @pbUser1_2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[2].user'));
+                        SET @pbAmount1_2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[2].amount'));
+                        SET @pbCurrency1_2 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[2].currency'));
+                        
+                        IF @pbUser1_2 = @nsCreator THEN SET @pbUserId1_2 = @creatorUserId;
+                        ELSEIF @pbUser1_2 = @userName0 THEN SET @pbUserId1_2 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_2 = @userName1 THEN SET @pbUserId1_2 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_2 = @userName2 THEN SET @pbUserId1_2 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE SET @pbUserId1_2 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId1_2 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId1_2, @pbAmount1_2, @pbCurrency1_2, @paymentEventId1, 'P');
+                        END IF;
+                    END IF;
+                    
+                    IF @paidByCount1 > 3 THEN
+                        SET @pbUser1_3 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[3].user'));
+                        SET @pbAmount1_3 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[3].amount'));
+                        SET @pbCurrency1_3 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[3].currency'));
+                        
+                        IF @pbUser1_3 = @nsCreator THEN SET @pbUserId1_3 = @creatorUserId;
+                        ELSEIF @pbUser1_3 = @userName0 THEN SET @pbUserId1_3 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_3 = @userName1 THEN SET @pbUserId1_3 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_3 = @userName2 THEN SET @pbUserId1_3 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE SET @pbUserId1_3 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId1_3 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId1_3, @pbAmount1_3, @pbCurrency1_3, @paymentEventId1, 'P');
+                        END IF;
+                    END IF;
+                    
+                    IF @paidByCount1 > 4 THEN
+                        SET @pbUser1_4 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[4].user'));
+                        SET @pbAmount1_4 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[4].amount'));
+                        SET @pbCurrency1_4 = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, '$.namespaces[0].paymentEvents[1].data.paidBy[4].currency'));
+                        
+                        IF @pbUser1_4 = @nsCreator THEN SET @pbUserId1_4 = @creatorUserId;
+                        ELSEIF @pbUser1_4 = @userName0 THEN SET @pbUserId1_4 = (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_4 = @userName1 THEN SET @pbUserId1_4 = (SELECT id FROM User WHERE name = @userName1 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSEIF @pbUser1_4 = @userName2 THEN SET @pbUserId1_4 = (SELECT id FROM User WHERE name = @userName2 AND namespaceId = @namespaceId LIMIT 1);
+                        ELSE SET @pbUserId1_4 = NULL;
+                        END IF;
+                        
+                        IF @pbUserId1_4 IS NOT NULL THEN
+                            INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
+                            VALUES (@pbUserId1_4, @pbAmount1_4, @pbCurrency1_4, @paymentEventId1, 'P');
                         END IF;
                     END IF;
                     
@@ -647,11 +818,13 @@ BEGIN
                     VALUES (@peCreatedCleanX, @peEditedCleanX, @peUserIdX, @peUserIdX, @namespaceId, NULL, @peDescriptionX, @peNotesX);
                     SET @paymentEventIdX = LAST_INSERT_ID();
                     
-                    -- PaidBy
-                    IF JSON_LENGTH(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy')) > 0 THEN
-                        SET @pbUserX = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy[0].user')));
-                        SET @pbAmountX = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy[0].amount')));
-                        SET @pbCurrencyX = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy[0].currency')));
+                    -- PaidBy (up to 5)
+                    SET @pbCountX = JSON_LENGTH(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy'));
+                    SET @pbIdxX = 0;
+                    WHILE @pbIdxX < @pbCountX AND @pbIdxX < 5 DO
+                        SET @pbUserX = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy[', @pbIdxX, '].user')));
+                        SET @pbAmountX = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy[', @pbIdxX, '].amount')));
+                        SET @pbCurrencyX = JSON_UNQUOTE(JSON_EXTRACT(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.paidBy[', @pbIdxX, '].currency')));
                         SET @pbUserIdX = CASE @pbUserX
                             WHEN @nsCreator THEN @creatorUserId
                             WHEN @userName0 THEN (SELECT id FROM User WHERE name = @userName0 AND namespaceId = @namespaceId LIMIT 1)
@@ -663,7 +836,8 @@ BEGIN
                             INSERT INTO PaymentNode (userId, amount, currency, paymentEventId, type)
                             VALUES (@pbUserIdX, @pbAmountX, @pbCurrencyX, @paymentEventIdX, 'P');
                         END IF;
-                    END IF;
+                        SET @pbIdxX = @pbIdxX + 1;
+                    END WHILE;
                     
                     -- Benefitors (up to 5)
                     SET @benCountX = JSON_LENGTH(argScenarioData, CONCAT('$.namespaces[0].paymentEvents[', @peIdx, '].data.benefitors'));
