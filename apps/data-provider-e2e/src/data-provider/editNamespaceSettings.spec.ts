@@ -1,95 +1,160 @@
 import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
-import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { editNamespaceSettingApi } from '@angular-monorepo/api-interface';
 
 const api = editNamespaceSettingApi();
 const API_NAME = api.ajax.method + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
-  let testOwner!: TestOwner;
-  let namespaceId!: number;
-  let machineState!: MockDataState;
-  let machine!: MockDataMachine;
-
-  beforeEach(async () => {
-    try {
-      machine = new MockDataMachine(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      // dispose any existing owners with the same name
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testowner');
-
-      // Create new cluster and namespace
-      machineState = await machine.createNewCluster('testowner', 'testpassword');
-      machineState = await machine.createNewNamespace('originalnamespace');
-
-      // Get owner and namespace ID
-      testOwner = await machineState.getUserOwnerByName('testowner');
-      namespaceId = machineState.selectedNamespace!.id;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw Error('beforeEach error: ' + error.message);
-      }
-      throw Error('beforeEach error: ' + String(error));
-    }
-  });
 
   describe('smoke', () => {
     testWrap('', 'should handle basic namespace settings update', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await smoke(API_NAME, async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
         {
           namespaceName: 'newnamespace',
           avatarColor: 'blue',
         },
-        testOwner.authHeaders(),
+        await mockDataMachine.getAuthHeaders('testowner'),
       ));
     });
   });
 
   describe('validation', () => {
     testWrap('', 'requires namespaceName to be provided', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             avatarColor: 'green',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('testowner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: '  ',
             avatarColor: 'green',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('testowner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: 'newnamespace',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('testowner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'throws 401 with invalid token', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {},
           {
             headers: {
@@ -101,28 +166,78 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'throws 401 with invalid ownerKey', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/invalid/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/invalid/namespace/${namespace.id}/settings`,
           {
             namespaceName: 'newnamespace',
             avatarColor: 'blue',
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
     testWrap('', 'can not change to a duplicate namespace name', async () => {
-      await machine.createNewNamespace('duplicatename');
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+            {
+              name: 'duplicatename',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: 'duplicatename',
             avatarColor: 'green',
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .throwsError(ERROR_CODE.RESOURCE_ALREADY_EXISTS);
     });
@@ -131,15 +246,38 @@ describe(API_NAME, () => {
 
   describe('happy path', () => {
     testWrap('', 'returns updated namespace settings', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: 'updatednamespace',
             avatarColor: 'red',
             avatarUrl: 'my//url',
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .result((result => {
           expect(result).toEqual({
@@ -152,14 +290,37 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'trims the namespace name', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: '  changedNamespace name  ',
             avatarColor: 'green',
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .result((result => {
           expect(result.namespaceName).toBe('changedNamespace name');
@@ -167,15 +328,38 @@ describe(API_NAME, () => {
     });
 
     testWrap('', 'can leave everything the name as it is', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: 'originalnamespace',
             avatarColor: 'red',
             avatarUrl: 'my//url',
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .result((result => {
           expect(result).toEqual({
@@ -189,34 +373,90 @@ describe(API_NAME, () => {
   });
 
   describe('db state', () => {
-    beforeEach(async () => {
+    testWrap('', 'updates namespace in the db', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/settings`,
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
           {
             namespaceName: 'dbtestnamespace',
             avatarColor: 'yellow',
           },
-          testOwner.authHeaders(),
+          await mockDataMachine.getAuthHeaders('testowner'),
         ))
         .result(() => void 0);
-    });
-    testWrap('', 'updates namespace in the db', async () => {
+
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         `
         SELECT * FROM Namespace
-        WHERE id = ${namespaceId}
+        WHERE id = ${namespace.id}
         `,
       );
       expect(response[0]).toEqual({
-        id: namespaceId,
+        id: namespace.id,
         avatarId: expect.any(Number),
         name: 'dbtestnamespace',
       });
     });
     testWrap('', 'updates namespace avatar in db', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'testowner' },
+          ],
+          namespaces: [
+            {
+              name: 'originalnamespace',
+              creator: 'testowner',
+              users: [],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('testowner');
+      const namespace = mockDataMachine.getNamespace('originalnamespace');
+
+      await fnCall(API_NAME,
+        async () => await axios.post(
+          `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
+          {
+            namespaceName: 'dbtestnamespace',
+            avatarColor: 'yellow',
+          },
+          await mockDataMachine.getAuthHeaders('testowner'),
+        ))
+        .result(() => void 0);
+
       const response = await queryDb(
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
@@ -224,7 +464,7 @@ describe(API_NAME, () => {
         SELECT a.* FROM Avatar a
         LEFT JOIN Namespace n
         ON a.id = n.avatarId
-        WHERE n.id = ${namespaceId}
+        WHERE n.id = ${namespace.id}
         `,
       );
 
@@ -237,28 +477,51 @@ describe(API_NAME, () => {
     });
 
     describe('triming', () => {
-      let namespaceId!: number;
-      beforeEach(async () => {
+      testWrap('', 'trims the namespace name', async () => {
+
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'testowner' },
+            ],
+            namespaces: [
+              {
+                name: 'originalnamespace',
+                creator: 'testowner',
+                users: [],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const testOwner = mockDataMachine.getOwner('testowner');
+        const namespace = mockDataMachine.getNamespace('originalnamespace');
+
+        let newNamespaceId!: number;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace`,
+            `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settings`,
             {
               namespaceName: '  testnamespace  ',
               avatarColor: 'green',
             },
-            testOwner.authHeaders(),
+            await mockDataMachine.getAuthHeaders('testowner'),
           ))
-          .result((async res => {
-            namespaceId = res.id;
+          .result((async () => {
+            newNamespaceId = namespace.id;
           }));
-      });
-      testWrap('', 'trims the namespace name', async () => {
+
         const response = await queryDb(
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           `
           SELECT * FROM Namespace
-          WHERE id = ${namespaceId}
+          WHERE id = ${newNamespaceId}
           `,
         );
         expect(response[0].name).toEqual('testnamespace');
