@@ -7,6 +7,7 @@ import * as cors from 'cors';
 import { cyBackdoorRouter } from './modules/cybackdoor/cybackdoor.router';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { AppError } from '@angular-monorepo/express-lib';
+import { mainRouter } from './router';
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(cors.default());
 app.use(express.json({ limit: '50mb' }));
 app.use('/data-mocker/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/data-mocker/cybackdoor', cyBackdoorRouter);
+app.use('/data-mocker/app', mainRouter);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err, req, res, next) => {

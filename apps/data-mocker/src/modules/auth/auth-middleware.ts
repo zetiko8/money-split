@@ -1,57 +1,10 @@
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { Request } from 'express';
 import { appError, LOGGER } from '../../helpers';
-import { getTransactionContext, NamespaceHelpersService, UserHelpersService } from '@angular-monorepo/mysql-adapter';
+import { getTransactionContext, UserHelpersService } from '@angular-monorepo/mysql-adapter';
 import { AUTHENTICATION } from '../authentication/authentication';
 
 export const AUTH_MIDDLEWARE = {
-  auth: async (
-    request: Request,
-  ) => {
-    try {
-      const owner = await getTransactionContext(
-        { logger: LOGGER },
-        async (transaction) => {
-          return await AUTHENTICATION.getOwnerFromRequest(transaction, request);
-        },
-      );
-      if (
-        request.params['ownerKey']
-        && request.params['ownerKey'] !== owner.key
-      ) throw Error(ERROR_CODE.UNAUTHORIZED);
-      return owner;
-    } catch (error) {
-      throw appError(
-        ERROR_CODE.UNAUTHORIZED,
-        'AUTH_MIDDLEWARE.auth',
-        error,
-      );
-    }
-  },
-  namespaceAuth: async (
-    request: Request,
-  ) => {
-    return await getTransactionContext(
-      { logger: LOGGER },
-      async (transaction) => {
-        const owner = await AUTH_MIDDLEWARE.auth(request);
-        try {
-          const ownerHasAccessToNamespace = await NamespaceHelpersService.ownerHasAccessToNamespace(
-            transaction,
-            owner.id,
-            Number(request.params['namespaceId']),
-          );
-          if (!ownerHasAccessToNamespace) throw Error(ERROR_CODE.UNAUTHORIZED);
-          return owner;
-        } catch (error) {
-          throw appError(
-            ERROR_CODE.UNAUTHORIZED,
-            'AUTH_MIDDLEWARE.namespaceAuth',
-            error,
-          );
-        }
-      });
-  },
   backdoorAuth: async (
     request: Request,
   ) => {

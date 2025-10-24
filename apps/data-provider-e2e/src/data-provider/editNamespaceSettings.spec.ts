@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { editNamespaceSettingApi } from '@angular-monorepo/api-interface';
@@ -13,7 +13,7 @@ describe(API_NAME, () => {
     testWrap('', 'should handle basic namespace settings update', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -49,7 +49,7 @@ describe(API_NAME, () => {
     testWrap('', 'requires namespaceName to be provided', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -92,7 +92,7 @@ describe(API_NAME, () => {
     testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -126,7 +126,7 @@ describe(API_NAME, () => {
     testWrap('', 'throws 401 with invalid token', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -168,7 +168,7 @@ describe(API_NAME, () => {
     testWrap('', 'throws 401 with invalid ownerKey', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -203,7 +203,7 @@ describe(API_NAME, () => {
     testWrap('', 'can not change to a duplicate namespace name', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -248,7 +248,7 @@ describe(API_NAME, () => {
     testWrap('', 'returns updated namespace settings', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -292,7 +292,7 @@ describe(API_NAME, () => {
     testWrap('', 'trims the namespace name', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -330,7 +330,7 @@ describe(API_NAME, () => {
     testWrap('', 'can leave everything the name as it is', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -376,7 +376,7 @@ describe(API_NAME, () => {
     testWrap('', 'updates namespace in the db', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -425,7 +425,7 @@ describe(API_NAME, () => {
     testWrap('', 'updates namespace avatar in db', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {

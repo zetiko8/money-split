@@ -1,4 +1,5 @@
 import { RequestHandler } from 'express';
+import { LOGGER } from '../helpers';
 
 export async function logRequest (
   endpoint: string,
@@ -8,7 +9,7 @@ export async function logRequest (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const json = JSON.stringify(payload);
   // eslint-disable-next-line no-console
-  console.log(endpoint, method);
+  LOGGER.log(endpoint, method);
   // console.log(endpoint, method, payload);
 
   // const sql =             `

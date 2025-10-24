@@ -2,6 +2,7 @@ import { TestOwner } from '@angular-monorepo/backdoor';
 import { AxiosError, AxiosResponse } from 'axios';
 
 export const DATA_PROVIDER_URL = process.env.MIDDLEWARE_URL;
+export const DATA_MOCKER_URL = process.env.DATA_MOCKER_URL;
 
 export const BACKDOOR_USERNAME = 'admin';
 export const BACKDOOR_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -139,6 +140,7 @@ export function expectEqual (
       try {
         expect(actual[key]).toEqual(expected[key]);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.log(key);
         throw error;
       }
@@ -153,14 +155,14 @@ export async function queryDb (
 ) {
   try {
     const bacdoorToken = await TestOwner.sBackdoorLogin(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       {
         username: BACKDOOR_USERNAME,
         password: BACKDOOR_PASSWORD,
       },
     );
     return TestOwner.query(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       bacdoorToken,
       sql,
     );
@@ -168,6 +170,20 @@ export async function queryDb (
     throw Error('queryDb error - ' + error.message);
   }
 }
+
+const handleTestWrapError = (error: unknown) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const err = error as any;
+  if (err.message) {
+    let msg = err.message;
+    if (err.config) msg += ' URL: ' + err.config.url;
+    throw new Error(msg);
+  } else if (err.code) {
+    throw new Error(err.code);
+  } else {
+    throw error;
+  }
+};
 
 export const testWrap = (
   dotOnly: string,
@@ -181,15 +197,7 @@ export const testWrap = (
         try {
           await fn();
         } catch (error) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const err = error as any;
-          if (err.message) {
-            throw new Error(err.message);
-          } else if (err.code) {
-            throw new Error(err.code);
-          } else {
-            throw error;
-          }
+          handleTestWrapError(error);
         }
       },
     );
@@ -202,15 +210,7 @@ export const testWrap = (
         try {
           await fn();
         } catch (error) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const err = error as any;
-          if (err.message) {
-            throw new Error(err.message);
-          } else if (err.code) {
-            throw new Error(err.code);
-          } else {
-            throw error;
-          }
+          handleTestWrapError(error);
         }
       },
     );

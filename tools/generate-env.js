@@ -74,6 +74,7 @@ function generateEnvFile() {
     MYSQL_DATABASE: 'main',
     MIDDLEWARE_URL: `http://localhost:${apiPort}/data-provider`,
     MIDDLEWARE_URL_INTERNAL: `http://localhost:${apiPort}/data-provider`,
+    DATA_MOCKER_URL: `http://localhost:${dataMockerPort}/data-mocker`,
     NODE_ENV: 'development',
     TZ: 'Europe/Amsterdam',
     DOCKER_CONTAINER_NAME: `money-split-db-${generateRandomString(4)}`,
