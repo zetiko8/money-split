@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { LOGGER, registerRoute, throwValidationError } from '../../helpers';
+import { registerRoute, throwValidationError } from '../../helpers';
 import { VALIDATE } from '@angular-monorepo/entities';
 import {
   acceptInvitationApi,
@@ -26,7 +26,7 @@ registerRoute(
       return validationErrors;
     });
 
-    return await new InvitationService(LOGGER).inviteToNamespace(
+    return await new InvitationService(context.logger).inviteToNamespace(
       payload.email,
       NUMBER(params.namespaceId),
       context.owner.id,
@@ -53,8 +53,8 @@ registerRoute(
 registerRoute(
   getInvitationViewApi(),
   invitationRouter,
-  async (payload, params) => {
-    return await new InvitationService(LOGGER).getInvitationViewData(
+  async (payload, params, context) => {
+    return await new InvitationService(context.logger).getInvitationViewData(
       params.invitationKey,
     );
   },
@@ -74,7 +74,7 @@ registerRoute(
           ownerId: number,
           name: string,
         ) => {
-          return new InvitationService(LOGGER).acceptInvitationValidation(
+          return new InvitationService(context.logger).acceptInvitationValidation(
             invitationKey,
             ownerId,
             name,
@@ -86,7 +86,7 @@ registerRoute(
       );
     });
 
-    return await new InvitationService(LOGGER).acceptInvitation(
+    return await new InvitationService(context.logger).acceptInvitation(
       params.invitationKey,
       context.owner.id,
       payload.name,

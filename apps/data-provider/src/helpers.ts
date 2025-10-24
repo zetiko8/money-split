@@ -6,6 +6,7 @@ import { ApiDefinition } from '@angular-monorepo/api-interface';
 import { Logger } from '@angular-monorepo/utils';
 import { validationResult } from 'express-validator';
 import { ValidationErrors } from '@angular-monorepo/data-adapter';
+import { RequestWithId } from './middleware/request-id.middleware';
 
 export function registerRoute <
     Payload,
@@ -20,6 +21,7 @@ export function registerRoute <
     params: Params,
     context: {
       owner: Owner | null,
+      logger: Logger,
     },
   ) => Promise<ReturnType>,
   auth?: ((request: Request) => Promise<Owner>),
@@ -37,13 +39,17 @@ export function registerRoute <
       ) => {
         const expressErrors = validationResult(req);
 
+        // Create request-scoped logger
+        const requestId = (req as RequestWithId).requestId || 'UNKNOWN';
+        const logger = new RequestScopedLogger(requestId);
+
         try {
           if (auth) {
             const owner = await auth(req);
             const response = await implementation(
               req.body,
               req.params as Params,
-              { owner },
+              { owner, logger },
             );
 
             if (!expressErrors.isEmpty())
@@ -54,7 +60,7 @@ export function registerRoute <
             const response = await implementation(
               req.body,
               req.params as Params,
-              { owner: null },
+              { owner: null, logger },
             );
             res.json(response);
           }
@@ -80,6 +86,10 @@ export function registerRoute <
         res,
         next,
       ) => {
+        // Create request-scoped logger
+        const requestId = (req as RequestWithId).requestId || 'UNKNOWN';
+        const logger = new RequestScopedLogger(requestId);
+
         try {
           if (auth) {
             const owner = await auth(req);
@@ -90,14 +100,14 @@ export function registerRoute <
             const response = await implementation(
               req.body,
               req.params as Params,
-              { owner },
+              { owner, logger },
             );
             res.json(response);
           } else {
             const response = await implementation(
               req.body,
               req.params as Params,
-              { owner: null },
+              { owner: null, logger },
             );
             res.json(response);
           }
@@ -155,6 +165,18 @@ export class SimpleLogger implements Logger {
 
   error(message?: unknown, ...optionalParams: unknown[]) {
     console.error(new Date().toISOString(), message, ...optionalParams);
+  }
+}
+
+export class RequestScopedLogger implements Logger {
+  constructor(private requestId: string) {}
+
+  log(message?: unknown, ...optionalParams: unknown[]) {
+    console.log(`[${this.requestId}]`, new Date().toISOString(), message, ...optionalParams);
+  }
+
+  error(message?: unknown, ...optionalParams: unknown[]) {
+    console.error(`[${this.requestId}]`, new Date().toISOString(), message, ...optionalParams);
   }
 }
 

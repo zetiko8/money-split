@@ -55,8 +55,9 @@ export class Authentication {
   async login (
     username: string,
     password: string,
+    logger: Logger,
   ): Promise<string> {
-    const owner = await getTransactionContext({ logger: LOGGER }, async (transaction) => {
+    const owner = await getTransactionContext({ logger }, async (transaction) => {
       return await HelpersService.getOwnerFromUsername(transaction, username);
     });
 

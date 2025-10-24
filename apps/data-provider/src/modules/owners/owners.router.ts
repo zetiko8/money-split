@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { LOGGER, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import { registerApi } from '@angular-monorepo/api-interface';
 import { VALIDATE } from '@angular-monorepo/entities';
 import { OwnerService } from '@angular-monorepo/mysql-adapter';
@@ -10,7 +10,7 @@ export const ownerRouter = Router();
 registerRoute(
   registerApi(),
   ownerRouter,
-  async (payload) => {
+  async (payload, params, context) => {
     VALIDATE.requiredPayload(payload);
     VALIDATE.requiredString(payload.username);
     VALIDATE.requiredString(payload.password);
@@ -20,6 +20,6 @@ registerRoute(
 
     payload.username = payload.username.trim();
     const hash = AUTHENTICATION.getPasswordHash(payload.password);
-    return await new OwnerService(LOGGER).createOwner(payload, hash);
+    return await new OwnerService(context.logger).createOwner(payload, hash);
   },
 );

@@ -1,16 +1,19 @@
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { Request } from 'express';
-import { appError, LOGGER } from '../../helpers';
+import { appError, RequestScopedLogger } from '../../helpers';
 import { getTransactionContext, NamespaceHelpersService, UserHelpersService } from '@angular-monorepo/mysql-adapter';
 import { AUTHENTICATION } from '../authentication/authentication';
+import { RequestWithId } from '../../middleware/request-id.middleware';
 
 export const AUTH_MIDDLEWARE = {
   auth: async (
     request: Request,
   ) => {
     try {
+      const requestId = (request as RequestWithId).requestId || 'UNKNOWN';
+      const logger = new RequestScopedLogger(requestId);
       const owner = await getTransactionContext(
-        { logger: LOGGER },
+        { logger },
         async (transaction) => {
           return await AUTHENTICATION.getOwnerFromRequest(transaction, request);
         },
@@ -31,8 +34,10 @@ export const AUTH_MIDDLEWARE = {
   namespaceAuth: async (
     request: Request,
   ) => {
+    const requestId = (request as RequestWithId).requestId || 'UNKNOWN';
+    const logger = new RequestScopedLogger(requestId);
     return await getTransactionContext(
-      { logger: LOGGER },
+      { logger },
       async (transaction) => {
         const owner = await AUTH_MIDDLEWARE.auth(request);
         try {
@@ -56,8 +61,10 @@ export const AUTH_MIDDLEWARE = {
     request: Request,
   ) => {
     try {
+      const requestId = (request as RequestWithId).requestId || 'UNKNOWN';
+      const logger = new RequestScopedLogger(requestId);
       const { owner, isAdmin} = await getTransactionContext(
-        { logger: LOGGER },
+        { logger },
         async (transaction) => {
           const owner = await AUTHENTICATION.getOwnerFromRequest(transaction, request);
           const isAdmin = await UserHelpersService.isOwnerAdmin(transaction, owner.id);
@@ -83,8 +90,10 @@ export const AUTH_MIDDLEWARE = {
      */
     try {
       if (!request.headers.authorization) return;
+      const requestId = (request as RequestWithId).requestId || 'UNKNOWN';
+      const logger = new RequestScopedLogger(requestId);
       const owner = await getTransactionContext(
-        { logger: LOGGER },
+        { logger },
         async (transaction) => {
           return await AUTHENTICATION.getOwnerFromRequest(transaction, request);
         },

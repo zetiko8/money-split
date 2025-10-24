@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { LOGGER, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 
 import {
@@ -27,7 +27,7 @@ registerRoute(
     ) throw Error(ERROR_CODE.INVALID_REQUEST);
 
     payload.namespaceName = payload.namespaceName.trim();
-    return await new NamespaceService(LOGGER).createNamespace(
+    return await new NamespaceService(context.logger).createNamespace(
       payload, context.owner);
   },
   AUTH_MIDDLEWARE.auth,
@@ -37,7 +37,7 @@ registerRoute(
   getNamespaceViewApi(),
   namespaceRouter,
   async (payload, params, context) => {
-    return await new NamespaceService(LOGGER).getNamespaceViewForOwner(
+    return await new NamespaceService(context.logger).getNamespaceViewForOwner(
       Number(params.namespaceId),
       context.owner.id,
     );
@@ -49,7 +49,7 @@ registerRoute(
   getOwnerNamespacesApi(),
   namespaceRouter,
   async (payload, params, context) => {
-    return await new NamespaceService(LOGGER).getNamespacesForOwner(
+    return await new NamespaceService(context.logger).getNamespacesForOwner(
       context.owner.id,
     );
   },
@@ -59,8 +59,8 @@ registerRoute(
 registerRoute(
   getNamespaceSettingsApi(),
   namespaceRouter,
-  async (_, params) => {
-    return await new NamespaceService(LOGGER).getNamespaceSettings(
+  async (_, params, context) => {
+    return await new NamespaceService(context.logger).getNamespaceSettings(
       Number(params.namespaceId),
     );
   },
@@ -81,7 +81,7 @@ registerRoute(
 
     payload.namespaceName = payload.namespaceName.trim();
 
-    return await new NamespaceService(LOGGER)
+    return await new NamespaceService(context.logger)
       .editNamespaceSettings(
         context.owner.id,
         Number(params.namespaceId),

@@ -8,9 +8,11 @@ import { mainRouter } from './router';
 import { cyBackdoorRouter } from './modules/cybackdoor/cybackdoor.router';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { AppError } from './types';
+import { requestIdMiddleware } from './middleware/request-id.middleware';
 
 const app = express();
 
+app.use(requestIdMiddleware);
 app.use(cors.default());
 app.use(express.json({ limit: '50mb' }));
 app.use('/data-provider/assets', express.static(path.join(__dirname, 'assets')));

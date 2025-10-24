@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { LOGGER, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import {
   editOwnerProfileApi,
   getOwnerProfileApi,
@@ -13,7 +13,7 @@ registerRoute(
   getOwnerProfileApi(),
   profileRouter,
   async (payload, params, context) => {
-    return await new ProfileService(LOGGER).getProfile(
+    return await new ProfileService(context.logger).getProfile(
       context.owner.id,
     );
   },
@@ -24,7 +24,7 @@ registerRoute(
   editOwnerProfileApi(),
   profileRouter,
   async (payload, params, context) => {
-    return await new ProfileService(LOGGER).editProfile(
+    return await new ProfileService(context.logger).editProfile(
       context.owner.id,
       payload,
     );

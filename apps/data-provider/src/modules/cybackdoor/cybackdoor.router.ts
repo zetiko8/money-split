@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { CYBACKDOOR_SERVICE } from './cybackdoor.service';
-import { LOGGER, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { query } from '../../connection/connection';
 import { createScenarioApiBackdoor, loadApiBackdoor, settleConfirmApiBackdoor, sqlBackdoor } from '@angular-monorepo/api-interface';
@@ -14,14 +14,14 @@ export const cyBackdoorRouter = Router();
 registerRoute(
   settleConfirmApiBackdoor(),
   settleRouter,
-  async (payload) => {
+  async (payload, params, context) => {
 
     // Validate settledOn date
     if (!payload.settledOn || isNaN(new Date(payload.settledOn).getTime())) {
       throw Error(ERROR_CODE.INVALID_REQUEST);
     }
 
-    const result = await new SettleService(LOGGER)
+    const result = await new SettleService(context.logger)
       .settle(
         payload.userId,
         payload.namespaceId,
@@ -45,14 +45,14 @@ registerRoute(
 registerRoute(
   sqlBackdoor(),
   cyBackdoorRouter,
-  async (payload) => {
+  async (payload, params, context) => {
     try {
       const result = await query(payload.sql);
 
       return result;
     } catch (error) {
-      LOGGER.log('FAILED BACKDOOR QUERY');
-      LOGGER.log(payload.sql);
+      context.logger.log('FAILED BACKDOOR QUERY');
+      context.logger.log(payload.sql);
       throw error;
     }
   },
@@ -62,8 +62,8 @@ registerRoute(
 registerRoute(
   loadApiBackdoor(),
   cyBackdoorRouter,
-  async (payload) => {
-    return await CYBACKDOOR_SERVICE.load(payload);
+  async (payload, params, context) => {
+    return await CYBACKDOOR_SERVICE.load(payload, context.logger);
   },
   AUTH_MIDDLEWARE.backdoorAuth,
 );
@@ -71,8 +71,8 @@ registerRoute(
 registerRoute(
   createScenarioApiBackdoor(),
   cyBackdoorRouter,
-  async (payload) => {
-    return await CYBACKDOOR_SERVICE.createScenario(payload);
+  async (payload, params, context) => {
+    return await CYBACKDOOR_SERVICE.createScenario(payload, context.logger);
   },
   AUTH_MIDDLEWARE.backdoorAuth,
 );

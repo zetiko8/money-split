@@ -9,13 +9,13 @@ export const authRouter = Router();
 registerRoute(
   loginApi(),
   authRouter,
-  async (payload) => {
+  async (payload, params, context) => {
     if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (!payload.username) throw Error(ERROR_CODE.INVALID_REQUEST);
     if (!payload.password) throw Error(ERROR_CODE.INVALID_REQUEST);
 
     const token =
-        await AUTHENTICATION.login(payload.username, payload.password);
+        await AUTHENTICATION.login(payload.username, payload.password, context.logger);
     return { token };
   },
 );

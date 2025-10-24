@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { LOGGER, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import {
   addPaymentEventApi,
   editPaymentEventApi,
@@ -24,7 +24,7 @@ registerRoute(
   getEditPaymentEventViewApi(),
   paymentEventRouter,
   async (payload, params, context) => {
-    return new PaymentEventService(LOGGER).getEditPaymentEventView(
+    return new PaymentEventService(context.logger).getEditPaymentEventView(
       Number(params.namespaceId),
       Number(params.paymentEventId),
       context.owner.id,
@@ -37,7 +37,7 @@ registerRoute(
   getPaymentEventApi(),
   paymentEventRouter,
   async (payload, params, context) => {
-    return await new PaymentEventService(LOGGER).getPaymentEvent(
+    return await new PaymentEventService(context.logger).getPaymentEvent(
       Number(params.namespaceId),
       Number(params.paymentEventId),
       context.owner.id,
@@ -54,7 +54,7 @@ registerRoute(
 
     validatePaymentEventApi(payload);
 
-    return await new PaymentEventService(LOGGER).editPaymentEvent(
+    return await new PaymentEventService(context.logger).editPaymentEvent(
       Number(params.namespaceId),
       Number(params.userId),
       Number(params.paymentEventId),
@@ -72,7 +72,8 @@ registerRoute(
     VALIDATE.requiredPayload(payload);
     validatePaymentEventApi(payload);
 
-    return await new PaymentEventService(LOGGER).addPaymentEvent(
+    context.logger.log('VALIDATION PASSED');
+    return await new PaymentEventService(context.logger).addPaymentEvent(
       Number(params.namespaceId),
       Number(params.userId),
       payload,
@@ -86,11 +87,11 @@ registerRoute(
 registerRoute(
   addPaymentEventApiBackdoor(),
   paymentEventRouter,
-  async (payload) => {
+  async (payload, params, context) => {
     VALIDATE.requiredPayload(payload);
     validatePaymentEventApi(payload);
 
-    return await new PaymentEventService(LOGGER).addPaymentEventBackdoor(
+    return await new PaymentEventService(context.logger).addPaymentEventBackdoor(
       payload,
     );
   },

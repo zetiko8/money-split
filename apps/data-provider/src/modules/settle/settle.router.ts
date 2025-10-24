@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { LOGGER, registerRoute } from '../../helpers';
+import { registerRoute } from '../../helpers';
 import { ERROR_CODE, SettlementPayload, VALIDATE } from '@angular-monorepo/entities';
 
 import {
@@ -46,7 +46,7 @@ registerRoute(
   settleSettingsApi(),
   settleRouter,
   async (payload, params, context) => {
-    return await new SettleService(LOGGER)
+    return await new SettleService(context.logger)
       .getSettleSettings(
         Number(params.namespaceId),
         context.owner.id,
@@ -60,7 +60,7 @@ registerRoute(
   settleRouter,
   async (payload, params, context) => {
     await getTransactionContext(
-      { logger: LOGGER },
+      { logger: context.logger },
       async (transaction) => {
         await validateSettlementPayload(
           transaction,
@@ -71,7 +71,7 @@ registerRoute(
       },
     );
 
-    const settlmentPreview = await new SettleService(LOGGER)
+    const settlmentPreview = await new SettleService(context.logger)
       .settleNamespacePreview(
         Number(params.namespaceId),
         payload,
@@ -88,7 +88,7 @@ registerRoute(
   settleRouter,
   async (payload, params, context) => {
     await getTransactionContext(
-      { logger: LOGGER },
+      { logger: context.logger },
       async (transaction) => {
         await validateSettlementPayload(
           transaction,
@@ -99,7 +99,7 @@ registerRoute(
       },
     );
 
-    const result = await new SettleService(LOGGER)
+    const result = await new SettleService(context.logger)
       .settle(
         Number(params.byUser),
         Number(params.namespaceId),
@@ -115,8 +115,8 @@ registerRoute(
 registerRoute(
   markAsSettledApi(),
   settleRouter,
-  async (_, params) => {
-    await new SettleService(LOGGER)
+  async (_, params, context) => {
+    await new SettleService(context.logger)
       .setDebtIsSettled(
         Number(params.byUser),
         Number(params.settlementDebtId),
@@ -129,8 +129,8 @@ registerRoute(
 registerRoute(
   markAsUnsettledApi(),
   settleRouter,
-  async (_, params) => {
-    await new SettleService(LOGGER)
+  async (_, params, context) => {
+    await new SettleService(context.logger)
       .setDebtIsSettled(
         Number(params.byUser),
         Number(params.settlementDebtId),

@@ -1,18 +1,17 @@
 import { BackdoorLoadData, BackdoorScenarioData, Owner } from '@angular-monorepo/entities';
 import { query } from '../../connection/connection';
-import { asyncMap } from '@angular-monorepo/utils';
+import { asyncMap, Logger } from '@angular-monorepo/utils';
 import { NamespaceService } from '@angular-monorepo/mysql-adapter';
 import { getTransactionContext } from '@angular-monorepo/mysql-adapter';
-import { LOGGER } from '../../helpers';
 
 export const CYBACKDOOR_SERVICE = {
-  load: async (ownerIds: number[]): Promise<BackdoorLoadData[]> => {
+  load: async (ownerIds: number[], logger: Logger): Promise<BackdoorLoadData[]> => {
 
     const result = await asyncMap(ownerIds, async (ownerId) => {
-      const namespaces = await new NamespaceService(LOGGER).getNamespacesForOwner(ownerId);
+      const namespaces = await new NamespaceService(logger).getNamespacesForOwner(ownerId);
 
       const namespaceViews = await asyncMap(namespaces, async (namespace) => {
-        return new NamespaceService(LOGGER).getNamespaceViewForOwner(namespace.id, ownerId);
+        return new NamespaceService(logger).getNamespaceViewForOwner(namespace.id, ownerId);
       });
 
       const owner = (await query<Owner[]>(`
@@ -30,12 +29,20 @@ export const CYBACKDOOR_SERVICE = {
 
     return result;
   },
-  createScenario: async (scenarioData: BackdoorScenarioData) => {
-    return await getTransactionContext({ logger: LOGGER}, async (transaction) => {
+  createScenario: async (scenarioData: BackdoorScenarioData, logger: Logger) => {
+    return await getTransactionContext({ logger}, async (transaction) => {
+      logger.log('AB');
       // Clean up existing test data
-      await query(
-        `call testDisposeMultiple('[${scenarioData.owners.map(o => ('"' + o.name + '"')).join(', ')}]')`,
-      );
+
+      try {
+        await transaction.query(
+          `call testDisposeMultiple('[${scenarioData.owners.map(o => ('"' + o.name + '"')).join(', ')}]')`,
+        );
+      } catch (error) {
+        logger.log('C');
+      }
+
+      logger.log('B');
 
       // We need to import AUTHENTICATION to hash passwords
       const { AUTHENTICATION } = await import('../authentication/authentication');
@@ -55,7 +62,7 @@ export const CYBACKDOOR_SERVICE = {
         [JSON.stringify(scenarioDataWithHashes)],
       );
 
-      return CYBACKDOOR_SERVICE.load(ownerIds);
+      return CYBACKDOOR_SERVICE.load(ownerIds, logger);
     });
   },
 };
