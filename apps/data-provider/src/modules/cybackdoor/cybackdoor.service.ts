@@ -31,18 +31,11 @@ export const CYBACKDOOR_SERVICE = {
   },
   createScenario: async (scenarioData: BackdoorScenarioData, logger: Logger) => {
     return await getTransactionContext({ logger}, async (transaction) => {
-      logger.log('AB');
       // Clean up existing test data
 
-      try {
-        await transaction.query(
-          `call testDisposeMultiple('[${scenarioData.owners.map(o => ('"' + o.name + '"')).join(', ')}]')`,
-        );
-      } catch (error) {
-        logger.log('C');
-      }
-
-      logger.log('B');
+      await transaction.query(
+        `call testDisposeMultiple('[${scenarioData.owners.map(o => ('"' + o.name + '"')).join(', ')}]')`,
+      );
 
       // We need to import AUTHENTICATION to hash passwords
       const { AUTHENTICATION } = await import('../authentication/authentication');
