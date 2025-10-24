@@ -1491,24 +1491,24 @@ describe(API_NAME, () => {
           .toBe200();
       });
 
-      testWrap('.only', 'allows multiple currencies if sums match - EUR and USD', async () => {
+      testWrap('', 'allows multiple currencies if sums match - EUR and USD', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
           DATA_PROVIDER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
             owners: [
-              { name: 'creator-owner' },
-              { name: 'namespace-owner1' },
-              { name: 'namespace-owner2' },
+              { name: 'cd-creator-owner' },
+              { name: 'cd-namespace-owner1' },
+              { name: 'cd-namespace-owner2' },
             ],
             namespaces: [
               {
-                name: 'testnamespace',
-                creator: 'creator-owner',
+                name: 'cd-testnamespace',
+                creator: 'cd-creator-owner',
                 users: [
-                  { name: 'namespace-owner1', invitor: 'creator-owner' },
-                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                  { name: 'cd-namespace-owner1', invitor: 'cd-creator-owner' },
+                  { name: 'cd-namespace-owner2', invitor: 'cd-creator-owner' },
                 ],
                 paymentEvents: [],
               },
@@ -1516,11 +1516,11 @@ describe(API_NAME, () => {
           },
         );
 
-        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
-        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
-        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
-        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
-        const anotherUserId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner2').id;
+        const ownerKey = mockDataMachine.getOwner('cd-namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('cd-testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('cd-testnamespace', 'cd-namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('cd-testnamespace', 'cd-creator-owner').id;
+        const anotherUserId = mockDataMachine.getNamespaceUser('cd-testnamespace', 'cd-namespace-owner2').id;
 
         await fnCall(API_NAME,
           async () => await axios.post(
@@ -1537,28 +1537,28 @@ describe(API_NAME, () => {
               description: 'a',
               notes: 'a',
             },
-            await mockDataMachine.getAuthHeaders('namespace-owner1')))
+            await mockDataMachine.getAuthHeaders('cd-namespace-owner1')))
           .toBe200();
       });
 
-      testWrap('.only', 'fails if any currency sum does not match - EUR matches but USD does not', async () => {
+      testWrap('', 'fails if any currency sum does not match - EUR matches but USD does not', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
           DATA_PROVIDER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
             owners: [
-              { name: 'creator-owner' },
-              { name: 'namespace-owner1' },
-              { name: 'namespace-owner2' },
+              { name: 'ab-creator-owner' },
+              { name: 'ab-namespace-owner1' },
+              { name: 'ab-namespace-owner2' },
             ],
             namespaces: [
               {
-                name: 'testnamespace',
-                creator: 'creator-owner',
+                name: 'ab-testnamespace',
+                creator: 'ab-creator-owner',
                 users: [
-                  { name: 'namespace-owner1', invitor: 'creator-owner' },
-                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                  { name: 'ab-namespace-owner1', invitor: 'ab-creator-owner' },
+                  { name: 'ab-namespace-owner2', invitor: 'ab-creator-owner' },
                 ],
                 paymentEvents: [],
               },
@@ -1566,11 +1566,11 @@ describe(API_NAME, () => {
           },
         );
 
-        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
-        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
-        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
-        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
-        const anotherUserId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner2').id;
+        const ownerKey = mockDataMachine.getOwner('ab-namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('ab-testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('ab-testnamespace', 'ab-namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('ab-testnamespace', 'ab-creator-owner').id;
+        const anotherUserId = mockDataMachine.getNamespaceUser('ab-testnamespace', 'ab-namespace-owner2').id;
 
         await fnCall(API_NAME,
           async () => await axios.post(
@@ -1587,7 +1587,7 @@ describe(API_NAME, () => {
               description: 'a',
               notes: 'a',
             },
-            await mockDataMachine.getAuthHeaders('namespace-owner1')))
+            await mockDataMachine.getAuthHeaders('ab-namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
     });
