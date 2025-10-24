@@ -1448,7 +1448,7 @@ describe(API_NAME, () => {
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
 
-      testWrap('.only', '3 EUR + 3 EUR == 6 EUR', async () => {
+      testWrap('', '3 EUR + 3 EUR == 6 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
           DATA_PROVIDER_URL,
           BACKDOOR_USERNAME,
