@@ -12,15 +12,29 @@ describe(API_NAME, () => {
 
 
   testWrap('','smoke', async () => {
-    const machine = new MockDataMachine2(
-      DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-    await machine.createOwner('creator-owner');
-    await machine.createNamespace('creator-owner', 'namespace1');
+    const mockDataMachine = await MockDataMachine2.createScenario(
+      DATA_PROVIDER_URL,
+      BACKDOOR_USERNAME,
+      BACKDOOR_PASSWORD,
+      {
+        owners: [
+          { name: 'creator-owner' },
+        ],
+        namespaces: [
+          {
+            name: 'namespace1',
+            creator: 'creator-owner',
+            users: [],
+            paymentEvents: [],
+          },
+        ],
+      },
+    );
 
-    const creatorOwner = machine.getOwner('creator-owner');
-    const namespaceId = machine.getNamespace('namespace1').id;
-    const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+    const creatorOwner = mockDataMachine.getOwner('creator-owner');
+    const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+    const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
     await smoke(API_NAME, async () => await axios.post(
       `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -29,35 +43,49 @@ describe(API_NAME, () => {
 
   describe('validation', () => {
     testWrap('','throws 401 with invalid token', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -66,7 +94,7 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
@@ -77,7 +105,7 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
           {
             headers: {
@@ -88,81 +116,110 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
     testWrap('','throws 401 with invalid ownerKey', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-      await machine.createOwner('other-owner');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+            { name: 'other-owner' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+      const otherOwner = mockDataMachine.getOwner('other-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const otherOwner = machine.getOwner('other-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${otherOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
           {},
-          await machine.getAuthHeaders('creator-owner'),
+          await mockDataMachine.getAuthHeaders('creator-owner'),
         ))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
     testWrap('', 'validates required fields in payload', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       // Missing all fields
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
           {},
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
 
       // Missing mainCurrency
@@ -172,43 +229,57 @@ describe(API_NAME, () => {
           {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
-            paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates currency values', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -216,9 +287,9 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': -1 },
             mainCurrency: 'EUR',
-            paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
 
       await fnCall(API_NAME,
@@ -228,43 +299,58 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'INVALID': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates separatedSettlementPerCurrency type', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const paymentEventIds = mockDataMachine.getNamespacePaymentEventIds('namespace1');
 
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
-      const paymentEventIds = machine.getNamespacePaymentEventIds('namespace1');
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -274,40 +360,54 @@ describe(API_NAME, () => {
             mainCurrency: 'EUR',
             paymentEvents: paymentEventIds,
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates empty payment events array', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -318,40 +418,55 @@ describe(API_NAME, () => {
             mainCurrency: 'EUR',
             paymentEvents: [],
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates invalid payment event IDs', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
       await fnCall(API_NAME,
         async () => await axios.post(
           `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -361,57 +476,78 @@ describe(API_NAME, () => {
             mainCurrency: 'EUR',
             paymentEvents: [999999],
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates payment events from different namespace', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+            {
+              name: 'namespace2',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.createNamespace('creator-owner', 'namespace2');
-      await machine.inviteToNamespace('creator-owner', 'namespace2', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace2', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-      await machine.acceptInvitation('namespace-owner1', 'namespace2', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace2', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-      await machine.addPaymentEvent('creator-owner', 'namespace2', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -420,43 +556,57 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: [machine.getNamespacePaymentEventIds('namespace2')],
+            paymentEvents: [mockDataMachine.getNamespacePaymentEventIds('namespace2')],
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
 
     testWrap('', 'throws 401 with user that does not belong to owner', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const otherUserId = machine.getNamespaceUser('namespace1', 'namespace-owner1').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const otherUserId = mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id;
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -465,42 +615,56 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: [machine.getNamespacePaymentEventIds('namespace1')],
+            paymentEvents: [mockDataMachine.getNamespacePaymentEventIds('namespace1')],
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'throws 404 when record does not exist', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -511,39 +675,53 @@ describe(API_NAME, () => {
             mainCurrency: 'EUR',
             paymentEvents: [999999],
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'throws 404 when namespace does not exist', async () => {
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -552,9 +730,9 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
-          await machine.getAuthHeaders('creator-owner')))
+          await mockDataMachine.getAuthHeaders('creator-owner')))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
   });
@@ -562,49 +740,62 @@ describe(API_NAME, () => {
   describe('happy path', () => {
     testWrap('', 'returns settlement object', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
       const response = await axios.post(
-        `${DATA_PROVIDER_URL}/app/${machine.getOwner('creator-owner').key}/namespace/${machine.getNamespace('namespace1').id}/settle/confirm/${machine.getNamespaceUser('namespace1', 'namespace-owner1').id}`,
+        `${DATA_PROVIDER_URL}/app/${mockDataMachine.getOwner('creator-owner').key}/namespace/${mockDataMachine.getNamespace('namespace1').id}/settle/confirm/${mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id}`,
         {
           separatedSettlementPerCurrency: true,
           currencies: { 'EUR': 1 },
           mainCurrency: 'EUR',
-          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+          paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await machine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('creator-owner'));
 
       expect(response.data).toEqual({
         id: expect.any(Number),
         created: expect.any(String),
         edited: expect.any(String),
-        createdBy: machine.getNamespaceUser('namespace1', 'namespace-owner1').id,
-        editedBy: machine.getNamespaceUser('namespace1', 'namespace-owner1').id,
-        namespaceId: machine.getNamespace('namespace1').id,
+        createdBy: mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id,
+        editedBy: mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id,
+        namespaceId: mockDataMachine.getNamespace('namespace1').id,
       });
 
     });
@@ -613,36 +804,49 @@ describe(API_NAME, () => {
   describe('dbState', () => {
     testWrap('', 'saves SettlementDebts into db', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
-      const namespaceOwner1Id = machine.getNamespaceUser('namespace1', 'namespace-owner1').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const namespaceOwner1Id = mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id;
 
       const settleConfirmResponse = await axios.post(
         `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -650,9 +854,9 @@ describe(API_NAME, () => {
           separatedSettlementPerCurrency: true,
           currencies: { 'EUR': 1 },
           mainCurrency: 'EUR',
-          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+          paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await machine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
         BACKDOOR_USERNAME,
@@ -692,47 +896,62 @@ describe(API_NAME, () => {
   describe('settlement settings', () => {
     testWrap('', 'two currencies, two events, separatedSettlementPerCurrency = true', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'SIT' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'SIT' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'SIT' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'SIT' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'SIT' },
-          { user: 'namespace-owner1', amount: 50, currency: 'SIT' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       const settleConfirmResponse = await axios.post(
         `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -740,9 +959,9 @@ describe(API_NAME, () => {
           separatedSettlementPerCurrency: true,
           currencies: { 'EUR': 1 },
           mainCurrency: 'EUR',
-          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+          paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await machine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
         BACKDOOR_USERNAME,
@@ -770,39 +989,52 @@ describe(API_NAME, () => {
     });
     testWrap('', 'two currencies, one event, separatedSettlementPerCurrency = true', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [
+                      { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+                      { user: 'creator-owner', amount: 5, currency: 'SIT' },
+                    ],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 5, currency: 'SIT' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [
-          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
-          { user: 'creator-owner', amount: 5, currency: 'SIT' },
-        ],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 5, currency: 'SIT' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       const settleConfirmResponse = await axios.post(
         `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -810,9 +1042,9 @@ describe(API_NAME, () => {
           separatedSettlementPerCurrency: true,
           currencies: { 'EUR': 1 },
           mainCurrency: 'EUR',
-          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+          paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await machine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
         BACKDOOR_USERNAME,
@@ -840,47 +1072,62 @@ describe(API_NAME, () => {
     });
     testWrap('', 'two currencies, two events, separatedSettlementPerCurrency = false', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'SIT' }],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'SIT' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'SIT' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'EUR' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [{ user: 'namespace-owner1', amount: 100, currency: 'SIT' }],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'SIT' },
-          { user: 'namespace-owner1', amount: 50, currency: 'SIT' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       const settleConfirmResponse = await axios.post(
         `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -888,9 +1135,9 @@ describe(API_NAME, () => {
           separatedSettlementPerCurrency: false,
           currencies: { 'EUR': 1, 'SIT': 2 },
           mainCurrency: 'EUR',
-          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+          paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await machine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
         BACKDOOR_USERNAME,
@@ -912,39 +1159,52 @@ describe(API_NAME, () => {
     });
     testWrap('', 'two currencies, one event, separatedSettlementPerCurrency = false', async () => {
 
-      const machine = new MockDataMachine2(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'namespace1',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'creator-owner',
+                  data: {
+                    paidBy: [
+                      { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
+                      { user: 'creator-owner', amount: 5, currency: 'SIT' },
+                    ],
+                    benefitors: [
+                      { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
+                      { user: 'namespace-owner1', amount: 5, currency: 'SIT' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
 
-      await machine.createOwner('creator-owner');
-      await machine.createOwner('namespace-owner1');
-      await machine.createOwner('namespace-owner2');
-
-      await machine.createNamespace('creator-owner', 'namespace1');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner1@test.com');
-      await machine.inviteToNamespace('creator-owner', 'namespace1', 'namespace-owner2@test.com');
-
-      await machine.acceptInvitation('namespace-owner1', 'namespace1', 'namespace-owner1@test.com', 'namespace-owner1');
-      await machine.acceptInvitation('namespace-owner2', 'namespace1', 'namespace-owner2@test.com', 'namespace-owner2');
-
-      await machine.addPaymentEvent('creator-owner', 'namespace1', 'creator-owner', {
-        paidBy: [
-          { user: 'namespace-owner1', amount: 100, currency: 'EUR' },
-          { user: 'creator-owner', amount: 5, currency: 'SIT' },
-        ],
-        benefitors: [
-          { user: 'namespace-owner2', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 50, currency: 'EUR' },
-          { user: 'namespace-owner1', amount: 5, currency: 'SIT' },
-        ],
-        description: 'test payment 1',
-        created: new Date(),
-        edited: new Date(),
-        notes: '',
-      });
-
-      const creatorOwner = machine.getOwner('creator-owner');
-      const namespaceId = machine.getNamespace('namespace1').id;
-      const creatorUserId = machine.getNamespaceUser('namespace1', 'creator-owner').id;
+      const creatorOwner = mockDataMachine.getOwner('creator-owner');
+      const namespaceId = mockDataMachine.getNamespace('namespace1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('namespace1', 'creator-owner').id;
 
       const settleConfirmResponse = await axios.post(
         `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
@@ -952,9 +1212,9 @@ describe(API_NAME, () => {
           separatedSettlementPerCurrency: false,
           currencies: { 'EUR': 1, 'SIT': 2 },
           mainCurrency: 'EUR',
-          paymentEvents: machine.getNamespacePaymentEventIds('namespace1'),
+          paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await machine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('creator-owner'));
 
       const response = await queryDb(
         BACKDOOR_USERNAME,

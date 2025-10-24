@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { addPaymentEventApi } from '@angular-monorepo/api-interface';
-import { MockDataMachine, MockDataState, TestOwner } from '@angular-monorepo/backdoor';
+import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
 
 const api = addPaymentEventApi();
@@ -9,52 +9,39 @@ const API_NAME = api.ajax.method
   + ':' + api.ajax.endpoint;
 
 describe(API_NAME, () => {
-  let namespaceId!: number;
-  let userId!: number;
-  let creatorUserId!: number;
-  let anotherUserId!: number;
-  let testOwner!: TestOwner;
-  let machineState!: MockDataState;
-  beforeEach(async () => {
-    try {
-      const machine = new MockDataMachine(
-        DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD);
-
-      // dispose any existing owners with the same name
-      await machine.dispose('creator');
-      await machine.dispose('test@email.com');
-      await machine.dispose('another@email.com');
-
-      /**
-       * 'creator' creates a namespace and invites 'test@email.com' and 'another@email.com'
-       * 'test@email.com' accepts the invitation
-       * 'another@email.com' accepts the invitation
-       */
-      await machine.createNewCluster('creator', 'testpassword');
-      await machine.createNewNamespace('testnamespace');
-      machineState = await machine.createNewInvitation('test@email.com');
-      await machine.acceptInvitation(machineState.getInvitationByEmail('test@email.com'));
-      machineState = await machine.createNewInvitation('another@email.com');
-      await machine.acceptInvitation(machineState.getInvitationByEmail('another@email.com'));
-
-      // prepare variables for the test
-      namespaceId = machineState.selectedNamespace!.id;
-      creatorUserId = machineState.getUserByName('creator').id;
-      userId = machineState.getUserByName('test@email.com').id;
-      anotherUserId = machineState.getUserByName('another@email.com').id;
-      testOwner = await machineState.getUserOwnerByName('test@email.com');
-
-      // login as 'test@email.com'
-      await testOwner.login();
-    } catch (error) {
-      throw Error('beforeAll error: ' + error.message);
-    }
-  });
 
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await smoke(API_NAME, async () => await axios.post(
-        `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+        `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
       ));
     });
   });
@@ -62,170 +49,514 @@ describe(API_NAME, () => {
   describe('validation', () => {
 
     testWrap('', 'requires paidBy to be provided', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             // paidBy is missing (being tested)
             benefitors: [{ userId: creatorUserId, amount: 3 }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - string value', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId: 'invalid', amount: 3, currency: 'EUR' }], // being tested - invalid userId type
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - float value', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId: 1.5, amount: 3, currency: 'EUR' }], // being tested - float userId
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - negative value', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId: -1, amount: 3, currency: 'EUR' }], // being tested - negative userId
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates amount is a number in paidBy nodes', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 'invalid', currency: 'EUR' }], // being tested - invalid amount type
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates currency in paidBy nodes', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'invalid' }], // being tested - invalid currency
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires benefitors to be provided', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
-            paidBy: [{ userId, amount: 3 }],
+            paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             // benefitors is missing (being tested)
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - string value', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: 'invalid', amount: 3, currency: 'EUR' }], // being tested - invalid userId type
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - float value', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: 1.5, amount: 3, currency: 'EUR' }], // being tested - float userId
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - negative value', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: -1, amount: 3, currency: 'EUR' }], // being tested - negative userId
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates amount is a number in benefitors nodes', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 'invalid', currency: 'EUR' }], // being tested - invalid amount type
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates currency in benefitors nodes', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'invalid' }], // being tested - invalid currency
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
@@ -233,142 +564,429 @@ describe(API_NAME, () => {
     it.todo('validates that users in paidBy and benefitors arrays exist in the namespace');
 
     testWrap('', 'requires paidBy array to not be empty', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [], // being tested
             benefitors: [{ userId: creatorUserId, amount: 3 }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires benefitors array to not be empty', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
-            paidBy: [{ userId, amount: 3 }],
+            paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [], // being tested
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires paidBy nodes to have userId', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
-            paidBy: [{ amount: 3 }], // being tested - missing userId
-            benefitors: [{ userId: creatorUserId, amount: 3 }],
+            paidBy: [{ amount: 3, currency: 'EUR' }], // being tested - missing userId
+            benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires paidBy nodes to have amount', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId }], // being tested - missing amount
             benefitors: [{ userId: creatorUserId, amount: 3 }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires benefitor nodes to have userId', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
-            paidBy: [{ userId, amount: 3 }],
-            benefitors: [{ amount: 3 }], // being tested - missing userId
+            paidBy: [{ userId, amount: 3, currency: 'EUR' }],
+            benefitors: [{ amount: 3, currency: 'EUR' }], // being tested - missing userId
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'requires benefitor nodes to have amount', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
-            paidBy: [{ userId, amount: 3 }],
+            paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId }], // being tested - missing amount
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates description is a string when provided', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
-            description: 123, // being tested
+            description: 123, // being tested - invalid type
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'validates notes is a string when provided', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
-            notes: 123, // being tested
+            notes: 123, // being tested - invalid type
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.INVALID_REQUEST);
     });
 
     testWrap('', 'invalid namespaceId', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${999}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${999}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
     testWrap('', 'invalid userId', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${999}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${999}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()))
+          await mockDataMachine.getAuthHeaders('namespace-owner1')))
         .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
@@ -376,9 +994,38 @@ describe(API_NAME, () => {
     it.todo('validates that the creator belongs to the current owner');
 
     testWrap('', 'throws 401 with invalid token', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
@@ -389,7 +1036,7 @@ describe(API_NAME, () => {
         .throwsError(ERROR_CODE.UNAUTHORIZED);
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
@@ -409,9 +1056,39 @@ describe(API_NAME, () => {
   describe('complex payment event validation', () => {
     describe('amount owed must be same as amount paid', () => {
       testWrap('', 'multiple payers must equal benefitors - 2EUR + 3EUR != 4EUR', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+        const anotherUserId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner2').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [
                 { userId, amount: 2, currency: 'EUR' },
@@ -421,14 +1098,44 @@ describe(API_NAME, () => {
               description: 'test description',
               notes: 'test notes',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
 
       testWrap('', 'multiple benefitors must equal payers - 5EUR != 2EUR + 2EUR', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+        const anotherUserId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner2').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 5, currency: 'EUR' }],
               benefitors: [
@@ -438,124 +1145,386 @@ describe(API_NAME, () => {
               description: 'test description',
               notes: 'test notes',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
 
       testWrap('', 'amounts must be positive - negative payer amount', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: -3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
               description: 'test description',
               notes: 'test notes',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
 
       testWrap('', 'amounts must be positive - negative benefitor amount', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: -3, currency: 'EUR' }],
               description: 'test description',
               notes: 'test notes',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
       testWrap('', '3 EUR != 4 EUR', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 4, currency: 'EUR' }],
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
       testWrap('', '3 EUR == 3 EUR', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .toBe200();
       });
 
       testWrap('', '3 EUR != 4 USD', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 4, currency: 'USD' }],
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
 
       testWrap('', '4 USD == 4 USD', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 4, currency: 'USD' }],
               benefitors: [{ userId: creatorUserId, amount: 4, currency: 'USD' }],
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .toBe200();
       });
 
       testWrap('', '3 EUR + 3 EUR != 4 EUR', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }, { userId: creatorUserId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 4, currency: 'EUR' }],
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
 
-      testWrap('', '3 EUR + 3 EUR == 6 EUR', async () => {
+      testWrap('.only', '3 EUR + 3 EUR == 6 EUR', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }, { userId: creatorUserId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 6, currency: 'EUR' }],
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .toBe200();
       });
 
-      testWrap('', 'allows multiple currencies if sums match - EUR and USD', async () => {
+      testWrap('.only', 'allows multiple currencies if sums match - EUR and USD', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+        const anotherUserId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner2').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [
                 { userId, amount: 10, currency: 'EUR' },
@@ -568,14 +1537,44 @@ describe(API_NAME, () => {
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .toBe200();
       });
 
-      testWrap('', 'fails if any currency sum does not match - EUR matches but USD does not', async () => {
+      testWrap('.only', 'fails if any currency sum does not match - EUR matches but USD does not', async () => {
+        const mockDataMachine = await MockDataMachine2.createScenario(
+          DATA_PROVIDER_URL,
+          BACKDOOR_USERNAME,
+          BACKDOOR_PASSWORD,
+          {
+            owners: [
+              { name: 'creator-owner' },
+              { name: 'namespace-owner1' },
+              { name: 'namespace-owner2' },
+            ],
+            namespaces: [
+              {
+                name: 'testnamespace',
+                creator: 'creator-owner',
+                users: [
+                  { name: 'namespace-owner1', invitor: 'creator-owner' },
+                  { name: 'namespace-owner2', invitor: 'creator-owner' },
+                ],
+                paymentEvents: [],
+              },
+            ],
+          },
+        );
+
+        const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+        const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+        const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+        const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+        const anotherUserId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner2').id;
+
         await fnCall(API_NAME,
           async () => await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [
                 { userId, amount: 10, currency: 'EUR' },
@@ -588,7 +1587,7 @@ describe(API_NAME, () => {
               description: 'a',
               notes: 'a',
             },
-            testOwner.authHeaders()))
+            await mockDataMachine.getAuthHeaders('namespace-owner1')))
           .throwsError(ERROR_CODE.INVALID_REQUEST);
       });
     });
@@ -596,16 +1595,45 @@ describe(API_NAME, () => {
 
   describe('happy path', () => {
     testWrap('', 'returns a payment event', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
       await fnCall(API_NAME,
         async () => await axios.post(
-          `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+          `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
           {
             paidBy: [{ userId, amount: 3, currency: 'EUR' }],
             benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
             description: 'test description',
             notes: 'test notes',
           },
-          testOwner.authHeaders()),
+          await mockDataMachine.getAuthHeaders('namespace-owner1')),
       ).result((response: PaymentEvent) => {
         expect(response).toEqual({
           id: expect.any(Number),
@@ -625,27 +1653,54 @@ describe(API_NAME, () => {
   });
 
   describe('dbState', () => {
-    let paymentEventId!: number;
-    beforeEach(async () => {
+    testWrap('', 'saves payment event in the db', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
+      let paymentEventId!: number;
       await fnCall(
         API_NAME,
         async () =>
           await axios.post(
-            `${DATA_PROVIDER_URL}/app/${testOwner.owner.key}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
             {
               paidBy: [{ userId, amount: 3, currency: 'EUR' }],
               benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
               description: 'test description',
               notes: 'test notes',
             },
-            testOwner.authHeaders(),
+            await mockDataMachine.getAuthHeaders('namespace-owner1'),
           ),
       ).result(async (res: PaymentEvent) => {
         paymentEventId = res.id;
       });
-    });
 
-    testWrap('', 'saves payment event in the db', async () => {
       interface PaymentEventDbRow {
         id: number;
         created: Date;
@@ -684,6 +1739,53 @@ describe(API_NAME, () => {
     });
 
     it('saves payment nodes in the db', async () => {
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_PROVIDER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator-owner' },
+            { name: 'namespace-owner1' },
+            { name: 'namespace-owner2' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator-owner',
+              users: [
+                { name: 'namespace-owner1', invitor: 'creator-owner' },
+                { name: 'namespace-owner2', invitor: 'creator-owner' },
+              ],
+              paymentEvents: [],
+            },
+          ],
+        },
+      );
+
+      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
+      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
+      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
+      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
+
+      let paymentEventId!: number;
+      await fnCall(
+        API_NAME,
+        async () =>
+          await axios.post(
+            `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/add-payment-event`,
+            {
+              paidBy: [{ userId, amount: 3, currency: 'EUR' }],
+              benefitors: [{ userId: creatorUserId, amount: 3, currency: 'EUR' }],
+              description: 'test description',
+              notes: 'test notes',
+            },
+            await mockDataMachine.getAuthHeaders('namespace-owner1'),
+          ),
+      ).result(async (res: PaymentEvent) => {
+        paymentEventId = res.id;
+      });
+
       interface PaymentNodeDbRow {
         id: number;
         paymentEventId: number;
