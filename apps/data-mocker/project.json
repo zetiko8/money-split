@@ -28,7 +28,8 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "data-mocker:build"
+        "buildTarget": "data-mocker:build",
+        "inspect": false
       },
       "configurations": {
         "development": {

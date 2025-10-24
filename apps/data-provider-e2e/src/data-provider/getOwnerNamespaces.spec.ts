@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { getOwnerNamespacesApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
@@ -13,7 +13,7 @@ describe(API_NAME, () => {
   testWrap('', 'smoke', async () => {
 
     const mockDataMachine = await MockDataMachine2.createScenario(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       BACKDOOR_USERNAME,
       BACKDOOR_PASSWORD,
       {
@@ -53,7 +53,7 @@ describe(API_NAME, () => {
   testWrap('', 'throws 401 with invalid token', async () => {
 
     const mockDataMachine = await MockDataMachine2.createScenario(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       BACKDOOR_USERNAME,
       BACKDOOR_PASSWORD,
       {
@@ -104,7 +104,7 @@ describe(API_NAME, () => {
   testWrap('', 'returns an namespaces for owner', async () => {
 
     const mockDataMachine = await MockDataMachine2.createScenario(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       BACKDOOR_USERNAME,
       BACKDOOR_PASSWORD,
       {
@@ -170,7 +170,7 @@ describe(API_NAME + ' bugs', () => {
   testWrap('', 'should not throw when there are no namespaces created', async () => {
 
     const mockDataMachine = await MockDataMachine2.createScenario(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       BACKDOOR_USERNAME,
       BACKDOOR_PASSWORD,
       {
