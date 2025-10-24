@@ -6,9 +6,8 @@ import * as path from 'path';
 import * as cors from 'cors';
 import { mainRouter } from './router';
 import { cyBackdoorRouter } from './modules/cybackdoor/cybackdoor.router';
-import { ERROR_CODE } from '@angular-monorepo/entities';
-import { AppError } from './types';
 import { requestIdMiddleware } from './middleware/request-id.middleware';
+import { errorMiddleware } from './middleware/error.middleware';
 
 const app = express();
 
@@ -20,33 +19,7 @@ app.use('/data-provider/cybackdoor', cyBackdoorRouter);
 app.use('/data-provider/app', mainRouter);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err, req, res, next) => {
-  console.error(err.message);
-  if (err.originalError) {
-    const appError = err as AppError;
-    console.error(appError.originalError.message);
-    appError.appStack.forEach(stack => {
-      console.error(' - ' + stack);
-    });
-  }
-  if (err.context) {
-    console.error(err.context);
-  }
-
-  if (!err.originalError && !err.context) {
-    console.error(`FROM: ${req.method} ${req.url}`);
-    console.error(err.stack);
-  }
-  if (Object.values(ERROR_CODE).includes(err.message)) {
-    res.status(400);
-  } else {
-    res.status(500);
-  }
-
-  return res.json({
-    error: err.message,
-  });
-});
+app.use(errorMiddleware);
 
 app.get('/data-provider/api', (req, res) => {
   res.send({ message: 'Welcome to data-provider!' });

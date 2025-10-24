@@ -1,13 +1,17 @@
+import { Logger } from '@angular-monorepo/utils';
 import { RequestHandler } from 'express';
+import { RequestWithId } from './request-id.middleware';
+import { RequestScopedLogger } from '../helpers';
 
 export async function logRequest (
+  LOGGER: Logger,
   endpoint: string,
   method: string,
   payload: unknown,
 ): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const json = JSON.stringify(payload);
-  // eslint-disable-next-line no-console
-  console.log(endpoint, method);
+  LOGGER.log(endpoint, method);
   // console.log(endpoint, method, payload);
 
   // const sql =             `
@@ -20,13 +24,16 @@ export async function logRequest (
 }
 
 export const logRequestMiddleware = (
-  method = '',
+  method: string,
 ) => {
   const mw: RequestHandler = async (
     req, res, next,
   ) => {
+    // Create request-scoped logger
+    const requestId = (req as RequestWithId).requestId || 'UNKNOWN';
+    const logger = new RequestScopedLogger(requestId);
     try {
-      await logRequest(req.url, method, req.body);
+      await logRequest(logger, req.url, method, req.body);
 
       next();
     } catch (error) {

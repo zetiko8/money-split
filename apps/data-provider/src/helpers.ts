@@ -1,6 +1,6 @@
 import { Request, RequestHandler, Router } from 'express';
 import { AppError, TypedRequestBody } from './types';
-import { logRequestMiddleware } from './request/service';
+import { logRequestMiddleware } from './middleware/logger.middleware';
 import { ERROR_CODE, Owner } from '@angular-monorepo/entities';
 import { ApiDefinition } from '@angular-monorepo/api-interface';
 import { Logger } from '@angular-monorepo/utils';
