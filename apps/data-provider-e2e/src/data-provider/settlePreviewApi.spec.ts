@@ -343,7 +343,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/preview`,
           {},
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('PAYMENT_EVENTS_REQUIRED');
     });
 
     testWrap('', 'validates payload with missing currencies field', async () => {
@@ -398,7 +398,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
     });
 
     testWrap('', 'validates payload with missing mainCurrency field', async () => {
@@ -453,7 +453,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('MAIN_CURRENCY_REQUIRED');
     });
 
     testWrap('', 'validates negative currency value', async () => {
@@ -523,7 +523,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
     });
 
     testWrap('', 'validates invalid currency code', async () => {
@@ -593,7 +593,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
     });
 
     testWrap('', 'validates invalid main currency', async () => {
@@ -663,7 +663,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('MAIN_CURRENCY_REQUIRED');
     });
 
     testWrap('', 'validates invalid separatedSettlementPerCurrency type', async () => {
@@ -733,7 +733,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('SEPARATED_SETTLEMENT_PER_CURRENCY_REQUIRED');
     });
 
     testWrap('', 'validates invalid currencies type', async () => {
@@ -803,7 +803,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
     });
 
     testWrap('', 'validates invalid currency value type', async () => {
@@ -873,7 +873,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
     });
 
     testWrap('', 'validates empty paymentEvents array', async () => {
@@ -913,7 +913,7 @@ describe(API_NAME, () => {
             paymentEvents: [],
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('PAYMENT_EVENTS_REQUIRED');
     });
 
     testWrap('', 'validates payment event from different namespace', async () => {
@@ -988,7 +988,7 @@ describe(API_NAME, () => {
             paymentEvents: otherNamespacePaymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVALID_PAYMENT_EVENTS');
     });
 
     testWrap('', 'validates invalid payment event ID', async () => {
@@ -1028,7 +1028,7 @@ describe(API_NAME, () => {
             paymentEvents: [999999],
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVALID_PAYMENT_EVENTS');
     });
 
     testWrap('', 'validates invalid paymentEvents type', async () => {
@@ -1068,7 +1068,7 @@ describe(API_NAME, () => {
             paymentEvents: 'not-an-array',
           },
           await mockDataMachine.getAuthHeaders('test@email.com')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('PAYMENT_EVENTS_REQUIRED');
     });
   });
 

@@ -1,9 +1,10 @@
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { ERROR_CODE, VALIDATE } from '@angular-monorepo/entities';
 import { Request } from 'express';
 import { appError, RequestScopedLogger } from '../../helpers';
 import { getTransactionContext, NamespaceHelpersService, UserHelpersService } from '@angular-monorepo/mysql-adapter';
 import { AUTHENTICATION } from '../authentication/authentication';
 import { RequestWithId } from '../../middleware/request-id.middleware';
+import { NUMBER } from '@angular-monorepo/data-adapter';
 
 export const AUTH_MIDDLEWARE = {
   auth: async (
@@ -41,10 +42,11 @@ export const AUTH_MIDDLEWARE = {
       async (transaction) => {
         const owner = await AUTH_MIDDLEWARE.auth(request);
         try {
+          VALIDATE.requiredNumber(NUMBER(request.params['namespaceId']));
           const ownerHasAccessToNamespace = await NamespaceHelpersService.ownerHasAccessToNamespace(
             transaction,
             owner.id,
-            Number(request.params['namespaceId']),
+            NUMBER(request.params['namespaceId']),
           );
           if (!ownerHasAccessToNamespace) throw Error(ERROR_CODE.UNAUTHORIZED);
           return owner;
@@ -52,6 +54,56 @@ export const AUTH_MIDDLEWARE = {
           throw appError(
             ERROR_CODE.UNAUTHORIZED,
             'AUTH_MIDDLEWARE.namespaceAuth',
+            error,
+          );
+        }
+      });
+  },
+  /**
+   * An action performed on a namespace by one user of the owner.
+   *
+   * Validates that the owner is authenticated.
+   * Validates that the owner has access to the namespace.
+   * Validates that the owner's user has access to the namespace.
+   */
+  namespaceByUserAuth: async (
+    request: Request,
+  ) => {
+    const requestId = (request as RequestWithId).requestId || 'UNKNOWN';
+    const logger = new RequestScopedLogger(requestId);
+    return await getTransactionContext(
+      { logger },
+      async (transaction) => {
+        logger.log('1');
+        const owner = await AUTH_MIDDLEWARE.auth(request);
+        try {
+          const namespaceId = NUMBER(request.params['namespaceId']);
+          VALIDATE.requiredNumber(namespaceId);
+          const byUser = NUMBER(request.params['byUser']);
+          VALIDATE.requiredNumber(byUser);
+
+          logger.log('2');
+          const ownerNamespacesWithOwnerUsers
+            = await NamespaceHelpersService.getOwnerNamespacesWithOwnerUsers(
+              transaction,
+              owner.id,
+            );
+
+          logger.log('3');
+          const namespace = ownerNamespacesWithOwnerUsers
+            .find(namespace => namespace.id === namespaceId);
+          if (!namespace) throw Error(ERROR_CODE.UNAUTHORIZED);
+          const ownerHasAccessToNamespaceUser
+            = namespace.ownerUsers.some(ownerUser => ownerUser.id === byUser);
+
+          logger.log('4');
+          if (!ownerHasAccessToNamespaceUser)
+            throw Error(ERROR_CODE.UNAUTHORIZED);
+          return owner;
+        } catch (error) {
+          throw appError(
+            ERROR_CODE.UNAUTHORIZED,
+            'AUTH_MIDDLEWARE.namespaceByUserAuth',
             error,
           );
         }

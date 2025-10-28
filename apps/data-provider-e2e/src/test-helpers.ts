@@ -177,6 +177,11 @@ const handleTestWrapError = (error: unknown) => {
   if (err.message) {
     let msg = err.message;
     if (err.config) msg += ' URL: ' + err.config.url;
+    if (err.response?.data?.error) {
+      msg = err.response.data.error + ' URL: ' + err.config.url;
+    } else {
+      if (err.code) msg = ' CODE: ' + err.code + ' - ' + msg;
+    };
     throw new Error(msg);
   } else if (err.code) {
     throw new Error(err.code);

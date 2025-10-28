@@ -4,10 +4,13 @@ export interface MNamespace {
     avatarId: number,
 }
 
-export interface NamespaceView extends MNamespace {
+export interface MNamespaceWithOwnerUsers extends MNamespace {
+    ownerUsers: User[],
+}
+
+export interface NamespaceView extends MNamespaceWithOwnerUsers {
     invitations: Invitation[],
     users: User[],
-    ownerUsers: User[],
     paymentEvents: PaymentEventView[]
     hasRecordsToSettle: boolean,
     settlements: SettlementListView[],

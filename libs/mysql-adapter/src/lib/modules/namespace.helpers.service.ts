@@ -1,5 +1,6 @@
 import {
   MNamespace,
+  MNamespaceWithOwnerUsers,
   NamespaceView,
   PaymentEventView,
   RecordData,
@@ -139,12 +140,34 @@ export class NamespaceHelpersService {
     return namespaces.some(namespace => namespace.id === namespaceId);
   }
 
+  static async ownersUserHasAccessToNamespace (
+    transaction: Transaction,
+    ownerId: number,
+    namespaceId: number,
+  ): Promise<boolean> {
+    const namespaces = await NamespaceHelpersService
+      .getNamespacesForOwner(transaction, ownerId);
+
+    return namespaces.some(namespace => namespace.id === namespaceId);
+  }
+
   static async getNamespacesForOwner(
     transaction: Transaction,
     ownerId: number,
   ): Promise<MNamespace[]> {
     const result = await transaction.jsonProcedure<MNamespace[]>(
       'call getOwnerNamespaces(?);',
+      [ownerId],
+    );
+    return result;
+  }
+
+  static async getOwnerNamespacesWithOwnerUsers(
+    transaction: Transaction,
+    ownerId: number,
+  ): Promise<MNamespaceWithOwnerUsers[]> {
+    const result = await transaction.jsonProcedure<MNamespaceWithOwnerUsers[]>(
+      'call getOwnerNamespacesWithOwnerUsers(?);',
       [ownerId],
     );
     return result;
