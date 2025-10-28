@@ -5,6 +5,7 @@
   "scripts": {
     "build": "npx nx run-many -t build",
     "generate-env": "node tools/generate-env.js",
+    "generate-frontend-config": "node tools/generate-frontend-config.js",
     "create-test-admin": "node tools/create-test-admin.js",
     "docker:start": "bash tools/start-db.sh",
     "docker:stop": "bash tools/stop-db.sh",
@@ -27,6 +28,7 @@
     "start:dev-servers": "node tools/start-dev-servers.js",
     "start:data-provider": "node tools/start-data-provider.js",
     "start:data-mocker": "node tools/start-data-mocker.js",
+    "start:money-split": "node tools/start-money-split.js",
     "dev:data-provider": "nx run data-provider:serve:development",
     "dev:data-mocker": "nx run data-mocker:serve:development",
     "dev:migration-manager": "nx run migration-manager:serve:development",
