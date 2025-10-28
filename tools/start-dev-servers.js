@@ -3,6 +3,7 @@
 const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 
 const rootDir = path.resolve(__dirname, '..');
 const envPath = path.join(rootDir, '.env');
@@ -84,17 +85,31 @@ async function main() {
     runCommand('npm run db:procedures', 'Database procedures');
   }
 
+  // Generate frontend config
+  console.log('\n🔄 Generating frontend config...');
+  runCommand('npm run generate-frontend-config', 'Frontend config generation');
+
   console.log('\n🚀 Starting development servers...\n');
 
-  // Start both servers
+  // Start all servers
   const dataProvider = startServer('dev:data-provider', 'data-provider');
   const dataMocker = startServer('dev:data-mocker', 'data-mocker');
+  
+  // Start frontend with port from .env
+  const frontendPort = process.env.FRONTEND_PORT || '4200';
+  console.log(`\n🚀 Starting money-split frontend on port ${frontendPort}...`);
+  const frontend = spawn('npx', ['nx', 'run', 'money-split:serve:development', `--port=${frontendPort}`], {
+    stdio: 'inherit',
+    shell: true,
+    cwd: rootDir
+  });
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
     console.log('\n\n🛑 Shutting down servers...');
     dataProvider.kill();
     dataMocker.kill();
+    frontend.kill();
     process.exit(0);
   });
 
@@ -102,6 +117,7 @@ async function main() {
     console.log('\n\n🛑 Shutting down servers...');
     dataProvider.kill();
     dataMocker.kill();
+    frontend.kill();
     process.exit(0);
   });
 }

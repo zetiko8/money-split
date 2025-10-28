@@ -220,7 +220,7 @@ describe(API_NAME, () => {
           `${DATA_PROVIDER_URL}/app/${creatorOwner.key}/namespace/${namespaceId}/settle/confirm/${creatorUserId}`,
           {},
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('PAYMENT_EVENTS_REQUIRED');
 
       // Missing mainCurrency
       await fnCall(API_NAME,
@@ -232,7 +232,7 @@ describe(API_NAME, () => {
             paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('MAIN_CURRENCY_REQUIRED');
     });
 
     testWrap('', 'validates currency values', async () => {
@@ -290,7 +290,7 @@ describe(API_NAME, () => {
             paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -302,7 +302,7 @@ describe(API_NAME, () => {
             paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('CURRENCIES_INVALID');
     });
 
     testWrap('', 'validates separatedSettlementPerCurrency type', async () => {
@@ -361,7 +361,7 @@ describe(API_NAME, () => {
             paymentEvents: paymentEventIds,
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('SEPARATED_SETTLEMENT_PER_CURRENCY_REQUIRED');
     });
 
     testWrap('', 'validates empty payment events array', async () => {
@@ -419,7 +419,7 @@ describe(API_NAME, () => {
             paymentEvents: [],
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('PAYMENT_EVENTS_REQUIRED');
     });
 
     testWrap('', 'validates invalid payment event IDs', async () => {
@@ -477,7 +477,7 @@ describe(API_NAME, () => {
             paymentEvents: [999999],
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVALID_PAYMENT_EVENTS');
     });
 
     testWrap('', 'validates payment events from different namespace', async () => {
@@ -556,12 +556,11 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: [mockDataMachine.getNamespacePaymentEventIds('namespace2')],
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace2'),
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVALID_PAYMENT_EVENTS');
     });
-
 
     testWrap('', 'throws 401 with user that does not belong to owner', async () => {
 
@@ -615,10 +614,10 @@ describe(API_NAME, () => {
             separatedSettlementPerCurrency: true,
             currencies: { 'EUR': 1 },
             mainCurrency: 'EUR',
-            paymentEvents: [mockDataMachine.getNamespacePaymentEventIds('namespace1')],
+            paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError(ERROR_CODE.UNAUTHORIZED);
     });
 
     testWrap('', 'throws 404 when record does not exist', async () => {
@@ -676,7 +675,7 @@ describe(API_NAME, () => {
             paymentEvents: [999999],
           },
           await mockDataMachine.getAuthHeaders('creator-owner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('INVALID_PAYMENT_EVENTS');
     });
 
     testWrap('', 'throws 404 when namespace does not exist', async () => {
@@ -780,14 +779,14 @@ describe(API_NAME, () => {
       );
 
       const response = await axios.post(
-        `${DATA_PROVIDER_URL}/app/${mockDataMachine.getOwner('creator-owner').key}/namespace/${mockDataMachine.getNamespace('namespace1').id}/settle/confirm/${mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id}`,
+        `${DATA_PROVIDER_URL}/app/${mockDataMachine.getOwner('namespace-owner1').key}/namespace/${mockDataMachine.getNamespace('namespace1').id}/settle/confirm/${mockDataMachine.getNamespaceUser('namespace1', 'namespace-owner1').id}`,
         {
           separatedSettlementPerCurrency: true,
           currencies: { 'EUR': 1 },
           mainCurrency: 'EUR',
           paymentEvents: mockDataMachine.getNamespacePaymentEventIds('namespace1'),
         },
-        await mockDataMachine.getAuthHeaders('creator-owner'));
+        await mockDataMachine.getAuthHeaders('namespace-owner1'));
 
       expect(response.data).toEqual({
         id: expect.any(Number),

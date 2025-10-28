@@ -51,33 +51,90 @@ Requirements:
 - Node.js
 - Docker
 
-1. Create Database
+### Quick Start (Automated Setup)
+
+Run everything with one command:
 
 ```terminal
-cd tools
-docker-compose up -d
+npm run setup
+npm run start:dev-servers
 ```
 
-2. Run migrations with Admin Dashboard
+This will:
+1. Generate `.env` file with random credentials and ports
+2. Start Docker database container
+3. Run database migrations and procedures
+4. Generate frontend config from environment variables
+5. Start all development servers (data-provider, data-mocker, money-split frontend)
 
-In the apps/migration-manager directory create a .development.env file.
-See .env.example for an example.
+The frontend will be available at the URL shown in the console (typically `http://localhost:4200`).
 
-In the apps/admin-dashboard/src/assets/config directory create a .config.json file.
-See .config.tpl.json for an example.
+### Manual Setup
+
+If you prefer to set up step by step:
+
+1. **Generate environment variables**
+
+```terminal
+npm run generate-env
+```
+
+This creates a `.env` file with random credentials and ports.
+
+2. **Start database and run migrations**
+
+```terminal
+npm run docker:start
+npm run db:migrate
+npm run db:procedures
+npm run create-test-admin
+```
+
+3. **Generate frontend config**
+
+```terminal
+npm run generate-frontend-config
+```
+
+This creates `apps/money-split/src/assets/config/config.json` from `.env` variables.
+
+4. **Start individual servers**
+
+```terminal
+# Backend servers
+npm run start:data-provider
+npm run start:data-mocker
+
+# Frontend
+npm run start:money-split
+```
+
+Or start all at once:
+
+```terminal
+npm run start:dev-servers
+```
+
+### Admin Dashboard (Optional)
+
+To use the admin dashboard for manual database management:
 
 ```terminal
 npm run dev:migration-manager
-```
-```terminal
 npm run dev:admin-dashboard
 ```
 
-Open http://localhost:4201/admin-dashboard/db-management in browser
+Open http://localhost:4201/admin-dashboard/db-management in browser.
 
-In Password input enter the ADMIN_MIGRATION_PASSWORD from the .development.env file.
-Under Migrations click "All".
-Under Procedures click "All".
+### Environment Variables
 
-3. Run apps
+All configuration is stored in the `.env` file:
+- `MIDDLEWARE_URL` - Backend API URL
+- `DATA_MOCKER_URL` - Data mocker API URL
+- `FRONTEND_URL` - Frontend application URL
+- `FRONTEND_PORT` - Frontend port
+- Database credentials and ports
+- JWT secrets and admin credentials
+
+See `.env.example` for all available variables.
 

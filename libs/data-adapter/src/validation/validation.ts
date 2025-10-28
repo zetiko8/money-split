@@ -1,5 +1,5 @@
 import { ERROR_CODE, VALIDATE, validatePaymentEvent as validatePaymentEventEntity } from '@angular-monorepo/entities';
-import { AcceptInvitationDataValidationFn, ValidationErrors } from './validation.service.interface';
+import { AcceptInvitationDataValidationFn, SettlementPayloadValidationFn, ValidationErrors } from './validation.service.interface';
 import { escape } from 'validator';
 
 const catchToValidationError = (
@@ -122,6 +122,35 @@ export const VALIDATE_DOMAIN_OBJECT_STATELESS = {
         fn: () => VALIDATE.string(avatarUrl),
         propertyName: 'avatarUrl',
         errorName: 'AVATAR_URL_INVALID',
+      },
+    ]);
+  },
+  validateSettlementPayload (
+    paymentEvents: unknown,
+    mainCurrency: unknown,
+    currencies: unknown,
+    separatedSettlementPerCurrency: unknown,
+  ) {
+    return validationChain([
+      {
+        fn: () => VALIDATE.requiredIdArray(paymentEvents),
+        propertyName: 'paymentEvents',
+        errorName: 'PAYMENT_EVENTS_REQUIRED',
+      },
+      {
+        fn: () => VALIDATE.requiredCurrency(mainCurrency),
+        propertyName: 'mainCurrency',
+        errorName: 'MAIN_CURRENCY_REQUIRED',
+      },
+      {
+        fn: () => VALIDATE.currencyObject(currencies as Record<string, unknown>),
+        propertyName: 'currencies',
+        errorName: 'CURRENCIES_INVALID',
+      },
+      {
+        fn: () => VALIDATE.requiredBoolean(separatedSettlementPerCurrency),
+        propertyName: 'separatedSettlementPerCurrency',
+        errorName: 'SEPARATED_SETTLEMENT_PER_CURRENCY_REQUIRED',
       },
     ]);
   },
@@ -251,5 +280,34 @@ export const VALIDATE_DOMAIN_OBJECT = {
         paymentEvent: err.message || 'INVALID_REQUEST',
       };
     }
+  },
+  async validateSettlement (
+    settlementPayloadValidationFn: SettlementPayloadValidationFn,
+    payload: {
+      paymentEvents: unknown;
+      mainCurrency: unknown;
+      currencies: unknown;
+      separatedSettlementPerCurrency: unknown;
+    },
+  ) {
+    // First run stateless validation
+    const statelessValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateSettlementPayload(
+          payload.paymentEvents,
+          payload.mainCurrency,
+          payload.currencies,
+          payload.separatedSettlementPerCurrency,
+        );
+    if (statelessValidationErrors)
+      return statelessValidationErrors;
+
+    // Then run database validation for payment events
+    const databaseValidationErrors
+      = await settlementPayloadValidationFn(payload.paymentEvents as number[]);
+    if (databaseValidationErrors)
+      return databaseValidationErrors;
+
+    return null;
   },
 };

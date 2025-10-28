@@ -9,3 +9,9 @@ export interface AcceptInvitationDataValidationFn {
     name: string,
   ): Promise<ValidationErrors | null>
 }
+
+export interface SettlementPayloadValidationFn {
+  (
+    paymentEvents: number[],
+  ): Promise<ValidationErrors | null>
+}
