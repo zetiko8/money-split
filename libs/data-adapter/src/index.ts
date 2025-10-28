@@ -5,5 +5,6 @@ export * from './data/avatar-service.interface';
 export * from './data/owner-service.interface';
 export * from './data/profile-service.interface';
 export * from './data/payment-event-service.interface';
+export * from './data/settle-service.interface';
 export * from './validation/validation.service.interface';
 export * from './validation/validation';

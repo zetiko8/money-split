@@ -1,10 +1,11 @@
 import { Settlement, SettlementPayload, SettlementPreview, SettlementRecord, SettlementSettings, RecordData } from '@angular-monorepo/entities';
+import { ISettleService } from '@angular-monorepo/data-adapter';
 import { getTransactionContext } from '../mysql-adapter';
 import { Logger, asyncMap } from '@angular-monorepo/utils';
 import { NamespaceHelpersService } from './namespace.helpers.service';
 import { SettleHelpersService } from './settle.helpers.service';
 
-export class SettleService {
+export class SettleService implements ISettleService {
   constructor(
     private readonly logger: Logger,
   ) {}
