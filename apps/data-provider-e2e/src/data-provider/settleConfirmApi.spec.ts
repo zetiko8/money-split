@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { settleConfirmApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
@@ -14,7 +14,7 @@ describe(API_NAME, () => {
   testWrap('','smoke', async () => {
 
     const mockDataMachine = await MockDataMachine2.createScenario(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       BACKDOOR_USERNAME,
       BACKDOOR_PASSWORD,
       {
@@ -45,7 +45,7 @@ describe(API_NAME, () => {
     testWrap('','throws 401 with invalid token', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -118,7 +118,7 @@ describe(API_NAME, () => {
     testWrap('','throws 401 with invalid ownerKey', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -172,7 +172,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates required fields in payload', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -238,7 +238,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates currency values', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -308,7 +308,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates separatedSettlementPerCurrency type', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -367,7 +367,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates empty payment events array', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -425,7 +425,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid payment event IDs', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -483,7 +483,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates payment events from different namespace', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -566,7 +566,7 @@ describe(API_NAME, () => {
     testWrap('', 'throws 401 with user that does not belong to owner', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -624,7 +624,7 @@ describe(API_NAME, () => {
     testWrap('', 'throws 404 when record does not exist', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -682,7 +682,7 @@ describe(API_NAME, () => {
     testWrap('', 'throws 404 when namespace does not exist', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -741,7 +741,7 @@ describe(API_NAME, () => {
     testWrap('', 'returns settlement object', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -805,7 +805,7 @@ describe(API_NAME, () => {
     testWrap('', 'saves SettlementDebts into db', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -897,7 +897,7 @@ describe(API_NAME, () => {
     testWrap('', 'two currencies, two events, separatedSettlementPerCurrency = true', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -990,7 +990,7 @@ describe(API_NAME, () => {
     testWrap('', 'two currencies, one event, separatedSettlementPerCurrency = true', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1073,7 +1073,7 @@ describe(API_NAME, () => {
     testWrap('', 'two currencies, two events, separatedSettlementPerCurrency = false', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1160,7 +1160,7 @@ describe(API_NAME, () => {
     testWrap('', 'two currencies, one event, separatedSettlementPerCurrency = false', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {

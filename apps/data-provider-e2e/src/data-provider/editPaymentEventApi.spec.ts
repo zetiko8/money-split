@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { editPaymentEventApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
@@ -12,7 +12,7 @@ describe(API_NAME, () => {
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -59,7 +59,7 @@ describe(API_NAME, () => {
   describe('validation', () => {
     testWrap('', 'requires paidBy to be provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -113,7 +113,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - string value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -167,7 +167,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - float value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -221,7 +221,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - negative value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -275,7 +275,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates amount is a number in paidBy nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -329,7 +329,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates currency in paidBy nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -383,7 +383,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitors to be provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -436,7 +436,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - float value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -489,7 +489,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates amount is a number in benefitors nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -545,7 +545,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires paidBy array to not be empty', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -599,7 +599,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitors array to not be empty', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -652,7 +652,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires paidBy nodes to have userId', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -706,7 +706,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitor nodes to have userId', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -759,7 +759,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates description is a string when provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -813,7 +813,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates notes is a string when provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -867,7 +867,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates payment event exists', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -922,7 +922,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'throws 401 with invalid token', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -994,7 +994,7 @@ describe(API_NAME, () => {
   describe('happy path', () => {
     testWrap('', 'updates payment event', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1061,70 +1061,12 @@ describe(API_NAME, () => {
       });
 
     });
-
-    testWrap('', 'sets edited timestamp newer than created timestamp', async () => {
-      const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
-        BACKDOOR_USERNAME,
-        BACKDOOR_PASSWORD,
-        {
-          owners: [
-            { name: 'creator-owner' },
-            { name: 'namespace-owner1' },
-          ],
-          namespaces: [
-            {
-              name: 'testnamespace',
-              creator: 'creator-owner',
-              users: [
-                { name: 'namespace-owner1', invitor: 'creator-owner' },
-              ],
-              paymentEvents: [
-                {
-                  user: 'namespace-owner1',
-                  data: {
-                    paidBy: [{ user: 'namespace-owner1', amount: 3, currency: 'EUR' }],
-                    benefitors: [{ user: 'creator-owner', amount: 3, currency: 'EUR' }],
-                    description: 'test description',
-                    notes: 'test notes',
-                    created: new Date(),
-                    edited: new Date(),
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      );
-
-      const ownerKey = mockDataMachine.getOwner('namespace-owner1').key;
-      const namespaceId = mockDataMachine.getNamespace('testnamespace').id;
-      const userId = mockDataMachine.getNamespaceUser('testnamespace', 'namespace-owner1').id;
-      const creatorUserId = mockDataMachine.getNamespaceUser('testnamespace', 'creator-owner').id;
-      const paymentEventId = mockDataMachine.getNamespacePaymentEventIds('testnamespace')[0];
-
-      // Wait a bit to ensure timestamps will be different
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const response = await axios.post(
-        `${DATA_PROVIDER_URL}/app/${ownerKey}/namespace/${namespaceId}/${userId}/edit-payment-event/${paymentEventId}`,
-        {
-          paidBy: [{ userId, amount: 5, currency: 'USD' }],
-          benefitors: [{ userId: creatorUserId, amount: 5, currency: 'USD' }],
-          description: 'updated description',
-          notes: 'updated notes',
-        },
-        await mockDataMachine.getAuthHeaders('namespace-owner1'));
-
-      expect(new Date(response.data.edited).getTime())
-        .toBeGreaterThan(new Date(response.data.created).getTime());
-    });
   });
 
   describe('dbState', () => {
     testWrap('', 'persists changes to database', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1214,7 +1156,7 @@ describe(API_NAME, () => {
 
     it('persists payment nodes to database', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {

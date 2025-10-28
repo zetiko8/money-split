@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_USERNAME, BACKDOOR_PASSWORD, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_USERNAME, BACKDOOR_PASSWORD, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { registerApi } from '@angular-monorepo/api-interface';
 import { TestOwner } from '@angular-monorepo/backdoor';
@@ -11,7 +11,7 @@ const API_NAME = api.ajax.method
 describe(API_NAME, () => {
   beforeEach(async () => {
     try {
-      await TestOwner.dispose(DATA_PROVIDER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testusername');
+      await TestOwner.dispose(DATA_MOCKER_URL, BACKDOOR_USERNAME, BACKDOOR_PASSWORD, 'testusername');
     } catch (error) {
       throw Error('beforeAll error: ' + error.message);
     }

@@ -480,7 +480,7 @@ describe(API_NAME, () => {
       testWrap('', 'trims the namespace name', async () => {
 
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {

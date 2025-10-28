@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { settlePreviewApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ERROR_CODE } from '@angular-monorepo/entities';
@@ -13,7 +13,7 @@ describe(API_NAME, () => {
     testWrap('', 'smoke', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -84,7 +84,7 @@ describe(API_NAME, () => {
     testWrap('', 'throws 401 with invalid token', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -171,7 +171,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates namespace exists', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -205,7 +205,7 @@ describe(API_NAME, () => {
 
       // Create scenario with two namespaces - test user only has access to first one
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -245,7 +245,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates owner key exists', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -314,7 +314,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates payload with missing fields', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -349,7 +349,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates payload with missing currencies field', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -404,7 +404,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates payload with missing mainCurrency field', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -459,7 +459,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates negative currency value', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -529,7 +529,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid currency code', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -599,7 +599,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid main currency', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -669,7 +669,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid separatedSettlementPerCurrency type', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -739,7 +739,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid currencies type', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -809,7 +809,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid currency value type', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -879,7 +879,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates empty paymentEvents array', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -920,7 +920,7 @@ describe(API_NAME, () => {
 
       // Create scenario with two namespaces, each with payment events
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -994,7 +994,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid payment event ID', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1034,7 +1034,7 @@ describe(API_NAME, () => {
     testWrap('', 'validates invalid paymentEvents type', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1076,7 +1076,7 @@ describe(API_NAME, () => {
     testWrap('', 'returns correct settlement preview structure', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {

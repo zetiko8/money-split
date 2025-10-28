@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, smoke, testWrap } from '../test-helpers';
 import { getPaymentEventApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
@@ -12,7 +12,7 @@ describe(API_NAME, () => {
 
   testWrap('', 'smoke', async () => {
     const mockDataMachine = await MockDataMachine2.createScenario(
-      DATA_PROVIDER_URL,
+      DATA_MOCKER_URL,
       BACKDOOR_USERNAME,
       BACKDOOR_PASSWORD,
       {
@@ -57,7 +57,7 @@ describe(API_NAME, () => {
   describe('validation', () => {
     testWrap('', 'returns 404 when payment event does not exist', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -103,7 +103,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'returns 404 when namespace does not exist', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -149,7 +149,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'returns 401 with missing token', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -195,7 +195,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'returns 401 with invalid token', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -248,7 +248,7 @@ describe(API_NAME, () => {
   describe('happy path', () => {
     testWrap('', 'returns payment event', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {

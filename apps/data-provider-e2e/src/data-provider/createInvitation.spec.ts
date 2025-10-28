@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { ERROR_CODE } from '@angular-monorepo/entities';
 import { createInvitationApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
@@ -13,7 +13,7 @@ describe(API_NAME, () => {
   describe('smoke', () => {
     testWrap('','should handle basic invitation request', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -43,7 +43,7 @@ describe(API_NAME, () => {
   describe('validation', () => {
     testWrap('', 'requires email to be provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -74,7 +74,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires email to be a string', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -107,7 +107,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires email to be a valid email', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -140,7 +140,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires email to not be longer than 65 (limit of express validator) characters', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -173,7 +173,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'throws when owner key is not found', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -206,7 +206,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'throws when owner key is not from the owner', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -241,7 +241,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'throws when namespace is not from the owner', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -282,7 +282,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'throws 401 with invalid token', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -328,7 +328,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'can not invite same email twice', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -372,7 +372,7 @@ describe(API_NAME, () => {
   describe('happy path', () => {
     testWrap('', 'returns an invitation', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -420,7 +420,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'email can be 64 + 9 characters long', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -459,7 +459,7 @@ describe(API_NAME, () => {
       let invitationId!: number;
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -520,7 +520,7 @@ describe(API_NAME, () => {
       let invitationId!: number;
 
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -581,7 +581,7 @@ describe(API_NAME, () => {
   describe('fixed bugs', () => {
     testWrap('', 'invitation key is not an empty string', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {

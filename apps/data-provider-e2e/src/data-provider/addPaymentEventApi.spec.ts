@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
+import { BACKDOOR_PASSWORD, BACKDOOR_USERNAME, DATA_MOCKER_URL, DATA_PROVIDER_URL, fnCall, queryDb, smoke, testWrap } from '../test-helpers';
 import { addPaymentEventApi } from '@angular-monorepo/api-interface';
 import { MockDataMachine2 } from '@angular-monorepo/backdoor';
 import { ERROR_CODE, PaymentEvent } from '@angular-monorepo/entities';
@@ -13,7 +13,7 @@ describe(API_NAME, () => {
   describe('smoke', () => {
     testWrap('', 'smoke', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -50,7 +50,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires paidBy to be provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -93,7 +93,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - string value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -136,7 +136,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - float value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -179,7 +179,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in paidBy nodes - negative value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -222,7 +222,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates amount is a number in paidBy nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -265,7 +265,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates currency in paidBy nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -308,7 +308,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitors to be provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -350,7 +350,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - string value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -392,7 +392,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - float value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -434,7 +434,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates userId is a non-negative bigint in benefitors nodes - negative value', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -476,7 +476,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates amount is a number in benefitors nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -519,7 +519,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates currency in benefitors nodes', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -565,7 +565,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires paidBy array to not be empty', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -608,7 +608,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitors array to not be empty', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -650,7 +650,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires paidBy nodes to have userId', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -693,7 +693,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires paidBy nodes to have amount', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -736,7 +736,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitor nodes to have userId', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -778,7 +778,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'requires benefitor nodes to have amount', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -821,7 +821,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates description is a string when provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -864,7 +864,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'validates notes is a string when provided', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -907,7 +907,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'invalid namespaceId', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -949,7 +949,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'invalid userId', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -995,7 +995,7 @@ describe(API_NAME, () => {
 
     testWrap('', 'throws 401 with invalid token', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1057,7 +1057,7 @@ describe(API_NAME, () => {
     describe('amount owed must be same as amount paid', () => {
       testWrap('', 'multiple payers must equal benefitors - 2EUR + 3EUR != 4EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1104,7 +1104,7 @@ describe(API_NAME, () => {
 
       testWrap('', 'multiple benefitors must equal payers - 5EUR != 2EUR + 2EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1151,7 +1151,7 @@ describe(API_NAME, () => {
 
       testWrap('', 'amounts must be positive - negative payer amount', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1194,7 +1194,7 @@ describe(API_NAME, () => {
 
       testWrap('', 'amounts must be positive - negative benefitor amount', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1236,7 +1236,7 @@ describe(API_NAME, () => {
       });
       testWrap('', '3 EUR != 4 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1278,7 +1278,7 @@ describe(API_NAME, () => {
       });
       testWrap('', '3 EUR == 3 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1321,7 +1321,7 @@ describe(API_NAME, () => {
 
       testWrap('', '3 EUR != 4 USD', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1364,7 +1364,7 @@ describe(API_NAME, () => {
 
       testWrap('', '4 USD == 4 USD', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1407,7 +1407,7 @@ describe(API_NAME, () => {
 
       testWrap('', '3 EUR + 3 EUR != 4 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1450,7 +1450,7 @@ describe(API_NAME, () => {
 
       testWrap('', '3 EUR + 3 EUR == 6 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1493,7 +1493,7 @@ describe(API_NAME, () => {
 
       testWrap('', 'allows multiple currencies if sums match - EUR and USD', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1543,7 +1543,7 @@ describe(API_NAME, () => {
 
       testWrap('', 'fails if any currency sum does not match - EUR matches but USD does not', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
-          DATA_PROVIDER_URL,
+          DATA_MOCKER_URL,
           BACKDOOR_USERNAME,
           BACKDOOR_PASSWORD,
           {
@@ -1596,7 +1596,7 @@ describe(API_NAME, () => {
   describe('happy path', () => {
     testWrap('', 'returns a payment event', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1655,7 +1655,7 @@ describe(API_NAME, () => {
   describe('dbState', () => {
     testWrap('', 'saves payment event in the db', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
@@ -1740,7 +1740,7 @@ describe(API_NAME, () => {
 
     it('saves payment nodes in the db', async () => {
       const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_PROVIDER_URL,
+        DATA_MOCKER_URL,
         BACKDOOR_USERNAME,
         BACKDOOR_PASSWORD,
         {
