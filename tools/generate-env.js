@@ -58,6 +58,7 @@ function generateEnvFile() {
   // Generate random values
   const apiPort = generatePort(3000, 9000);
   const dataMockerPort = apiPort + 1; // Data mocker port is always API port + 1
+  const frontendPort = generatePort(4200, 4299); // Frontend port in 4200 range
   const mysqlPort = generatePort(10000, 19999);
   
   const randomValues = {
@@ -68,6 +69,7 @@ function generateEnvFile() {
     ADMIN_MIGRATION_PASSWORD: generatePassword(16),
     PORT: apiPort.toString(),
     DATA_MOCKER_PORT: dataMockerPort.toString(),
+    FRONTEND_PORT: frontendPort.toString(),
     MYSQL_PORT: mysqlPort.toString(),
     MYSQL_HOST: 'localhost',
     MYSQL_USER: 'root',
@@ -75,6 +77,7 @@ function generateEnvFile() {
     MIDDLEWARE_URL: `http://localhost:${apiPort}/data-provider`,
     MIDDLEWARE_URL_INTERNAL: `http://localhost:${apiPort}/data-provider`,
     DATA_MOCKER_URL: `http://localhost:${dataMockerPort}/data-mocker`,
+    FRONTEND_URL: `http://localhost:${frontendPort}`,
     NODE_ENV: 'development',
     TZ: 'Europe/Amsterdam',
     DOCKER_CONTAINER_NAME: `money-split-db-${generateRandomString(4)}`,
@@ -105,8 +108,10 @@ function generateEnvFile() {
   console.log('📋 Generated ports:');
   console.log(`   API PORT: ${randomValues.PORT}`);
   console.log(`   DATA_MOCKER_PORT: ${randomValues.DATA_MOCKER_PORT}`);
+  console.log(`   FRONTEND_PORT: ${randomValues.FRONTEND_PORT}`);
   console.log(`   MYSQL_PORT: ${randomValues.MYSQL_PORT}`);
   console.log(`   MIDDLEWARE_URL: ${randomValues.MIDDLEWARE_URL}`);
+  console.log(`   FRONTEND_URL: ${randomValues.FRONTEND_URL}`);
   console.log('');
   console.log('🐳 Docker:');
   console.log(`   DOCKER_CONTAINER_NAME: ${randomValues.DOCKER_CONTAINER_NAME}`);

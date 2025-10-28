@@ -1,78 +1,13 @@
-import { ERROR_CODE, paymentEventsToRecordsWithIds, RecordData, Settlement, SettlementPayload, SettlementPreview, SettlementRecord, SettlementSettings } from '@angular-monorepo/entities';
-import { settle, deptToRecordData } from '@angular-monorepo/debt-simplification';
+import { Settlement, SettlementPayload, SettlementPreview, SettlementRecord, SettlementSettings, RecordData } from '@angular-monorepo/entities';
 import { getTransactionContext } from '../mysql-adapter';
 import { Logger, asyncMap } from '@angular-monorepo/utils';
 import { NamespaceHelpersService } from './namespace.helpers.service';
-import { PaymentEventHelpersService } from './payment-event.helpers.service';
 import { SettleHelpersService } from './settle.helpers.service';
 
 export class SettleService {
   constructor(
     private readonly logger: Logger,
   ) {}
-
-  private async getSettleRecords(
-    namespaceId: number,
-    payload: SettlementPayload,
-    ownerId: number,
-  ): Promise<{
-    recordsToSettle: {
-      paymentEventId: number;
-      record: RecordData;
-    }[],
-    settleRecords: RecordData[]
-  }> {
-    const paymentEvents = await getTransactionContext(
-      { logger: this.logger },
-      (transaction) => {
-        return PaymentEventHelpersService
-          .getNamespacePaymentEvents(transaction, namespaceId, ownerId);
-      },
-    );
-
-    const paymentEventsToSettle = paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id));
-
-    if (paymentEventsToSettle.find(record => record.settlementId !== null))
-      throw Error(ERROR_CODE.USER_ACTION_CONFLICT);
-
-    const recordsToSettle = paymentEventsToRecordsWithIds(paymentEventsToSettle);
-
-    const recordsToSettleByCurrency: Record<string, RecordData[]> = {};
-    recordsToSettle.forEach(record => {
-      if (!recordsToSettleByCurrency[record.record.currency])
-        recordsToSettleByCurrency[record.record.currency] = [];
-      recordsToSettleByCurrency[record.record.currency].push(record.record);
-    });
-
-    const settleRecords: RecordData[] = [];
-
-    if (payload.separatedSettlementPerCurrency) {
-      Object.entries(recordsToSettleByCurrency).forEach(([currency, records]) => {
-        settleRecords.push(...settle(records).map(debt => deptToRecordData(debt, currency)));
-      });
-    } else {
-      const currenyConvertedRecords: RecordData[] = [];
-
-      Object.entries(recordsToSettleByCurrency)
-        .forEach(([currency, records]) => {
-          currenyConvertedRecords.push(...records.map(r => {
-            return {
-              benefitors: r.benefitors,
-              cost: r.cost * (payload.currencies[currency]),
-              paidBy: r.paidBy,
-              currency: payload.mainCurrency,
-            };
-          }));
-        });
-
-      settleRecords.push(...settle(currenyConvertedRecords).map(debt => deptToRecordData(debt, payload.mainCurrency)));
-    }
-
-    return {
-      settleRecords,
-      recordsToSettle,
-    };
-  }
 
   async getSettleSettings(
     namespaceId: number,
@@ -81,13 +16,10 @@ export class SettleService {
     return await getTransactionContext(
       { logger: this.logger },
       async (transaction) => {
-        const paymentEvents = await PaymentEventHelpersService
-          .getNamespacePaymentEventsView(transaction, namespaceId, ownerId);
-        return {
-          paymentEventsToSettle: paymentEvents.filter(pe => !pe.settlementId),
-          namespace: await NamespaceHelpersService
-            .getNamespaceViewForOwner(transaction, namespaceId, ownerId),
-        };
+        return await transaction.jsonProcedure<SettlementSettings>(
+          'call getSettlementSettings(?, ?);',
+          [namespaceId, ownerId],
+        );
       },
     );
   }
@@ -97,11 +29,22 @@ export class SettleService {
     payload: SettlementPayload,
     ownerId: number,
   ): Promise<SettlementPreview> {
+    // Calculate settlement records in TypeScript (debt simplification algorithm)
     return await getTransactionContext(
       { logger: this.logger },
       async (transaction) => {
-        const { settleRecords } = await this.getSettleRecords(namespaceId, payload, ownerId);
+        const { settleRecords } = await SettleHelpersService.getSettleRecords(
+          transaction,
+          namespaceId,
+          payload,
+          ownerId,
+        );
+        const settings = await transaction.jsonProcedure<SettlementSettings>(
+          'call getSettlementSettings(?, ?);',
+          [namespaceId, ownerId],
+        );
 
+        // Convert RecordData to RecordDataView by mapping user IDs to User objects
         const settleRecordsData = await asyncMap<RecordData, SettlementRecord>(
           settleRecords,
           async (record) => {
@@ -117,10 +60,8 @@ export class SettleService {
 
         return {
           settleRecords: settleRecordsData,
-          paymentEvents: await PaymentEventHelpersService
-            .getNamespacePaymentEventsView(transaction, namespaceId, ownerId),
-          namespace: await NamespaceHelpersService
-            .getNamespaceViewForOwner(transaction, namespaceId, ownerId),
+          paymentEvents: settings.paymentEventsToSettle,
+          namespace: settings.namespace,
         };
       },
     );
@@ -132,44 +73,29 @@ export class SettleService {
     payload: SettlementPayload,
     ownerId: number,
   ): Promise<Settlement> {
+    // Calculate settlement records in TypeScript (debt simplification algorithm)
+    // Pass calculated records to procedure for persistence
     return getTransactionContext(
       { logger: this.logger },
       async (transaction) => {
-        const { settleRecords, recordsToSettle } = await this.getSettleRecords(namespaceId, payload, ownerId);
-
-        const settlement = await SettleHelpersService.createSettlement(
+        const { settleRecords, recordsToSettle } = await SettleHelpersService.getSettleRecords(
           transaction,
-          byUser,
           namespaceId,
+          payload,
+          ownerId,
         );
+        const paymentEventIds = recordsToSettle.map(r => r.paymentEventId);
 
-        await asyncMap(
-          settleRecords,
-          async (record) => await SettleHelpersService.createSettlementDebt(
-            transaction,
+        const result = await transaction.jsonProcedure<Settlement>(
+          'call createSettlementFromRecords(?, ?, ?, ?);',
+          [
             byUser,
             namespaceId,
-            settlement.id,
-            record,
-            false,
-            null,
-            null,
-          ),
+            JSON.stringify(paymentEventIds),
+            JSON.stringify(settleRecords),
+          ],
         );
-
-        await asyncMap(
-          recordsToSettle,
-          async (record) => await PaymentEventHelpersService.addPaymentEventToSettlement(
-            transaction,
-            record.paymentEventId,
-            settlement.id,
-            byUser,
-            ownerId,
-            namespaceId,
-          ),
-        );
-
-        return settlement;
+        return result;
       },
     );
   }
@@ -182,11 +108,9 @@ export class SettleService {
     return getTransactionContext(
       { logger: this.logger },
       async (transaction) => {
-        await SettleHelpersService.setDebtIsSettled(
-          transaction,
-          byUser,
-          debtId,
-          isSettled,
+        await transaction.jsonProcedure<{ success: boolean }>(
+          'call setDebtIsSettled(?, ?, ?);',
+          [byUser, debtId, isSettled],
         );
       },
     );

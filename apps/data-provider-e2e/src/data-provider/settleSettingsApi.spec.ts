@@ -314,136 +314,6 @@ describe(API_NAME, () => {
   });
 
   describe('happy path', () => {
-    testWrap('', 'returns payment events to settle', async () => {
-
-      const mockDataMachine = await MockDataMachine2.createScenario(
-        DATA_MOCKER_URL,
-        BACKDOOR_USERNAME,
-        BACKDOOR_PASSWORD,
-        {
-          owners: [
-            { name: 'creator' },
-            { name: 'test@email.com' },
-          ],
-          namespaces: [
-            {
-              name: 'testnamespace',
-              creator: 'creator',
-              users: [
-                { name: 'test@email.com', invitor: 'creator' },
-              ],
-              paymentEvents: [
-                {
-                  user: 'test@email.com',
-                  data: {
-                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
-                    benefitors: [
-                      { user: 'creator', amount: 50, currency: 'EUR' },
-                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
-                    ],
-                    description: 'test payment 1',
-                    notes: null,
-                    created: new Date(),
-                    edited: new Date(),
-                  },
-                },
-                {
-                  user: 'creator',
-                  data: {
-                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
-                    benefitors: [
-                      { user: 'creator', amount: 30, currency: 'EUR' },
-                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
-                    ],
-                    description: 'test payment 2',
-                    notes: null,
-                    created: new Date(),
-                    edited: new Date(),
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      );
-
-      const testOwner = mockDataMachine.getOwner('test@email.com');
-      const namespace = mockDataMachine.getNamespace('testnamespace');
-
-      const response = await axios.get(
-        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
-        await mockDataMachine.getAuthHeaders('test@email.com'),
-      );
-
-      expect(response.data.paymentEventsToSettle).toHaveLength(2);
-      expect(response.data.paymentEventsToSettle[0]).toEqual({
-        id: expect.any(Number),
-        benefitors: [
-          {
-            amount: expect.closeTo(50),
-            currency: 'EUR',
-            user: {
-              id: expect.any(Number),
-              name: 'creator',
-              ownerId: expect.any(Number),
-              avatarId: expect.any(Number),
-              namespaceId: namespace.id,
-            },
-          },
-          {
-            amount: expect.closeTo(50),
-            currency: 'EUR',
-            user: {
-              id: expect.any(Number),
-              name: 'test@email.com',
-              ownerId: expect.any(Number),
-              avatarId: expect.any(Number),
-              namespaceId: namespace.id,
-            },
-          },
-        ],
-        created: expect.any(String),
-        edited: expect.any(String),
-        createdBy: {
-          id: expect.any(Number),
-          name: 'test@email.com',
-          ownerId: expect.any(Number),
-          avatarId: expect.any(Number),
-          namespaceId: namespace.id,
-        },
-        editedBy: {
-          id: expect.any(Number),
-          name: 'test@email.com',
-          ownerId: expect.any(Number),
-          avatarId: expect.any(Number),
-          namespaceId: namespace.id,
-        },
-        description: 'test payment 1',
-        notes: null,
-        namespace: {
-          id: namespace.id,
-          avatarId: expect.any(Number),
-          name: 'testnamespace',
-        },
-        namespaceId: namespace.id,
-        paidBy: [
-          {
-            amount: 100,
-            currency: 'EUR',
-            user: {
-              id: expect.any(Number),
-              name: 'test@email.com',
-              ownerId: expect.any(Number),
-              avatarId: expect.any(Number),
-              namespaceId: namespace.id,
-            },
-          },
-        ],
-        settlementId: null,
-        settledOn: null,
-      });
-    });
-
     testWrap('', 'returns payment events to settle - number of payment events', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
@@ -508,6 +378,175 @@ describe(API_NAME, () => {
       expect(response.data.paymentEventsToSettle).toHaveLength(2);
     });
 
+    testWrap('', 'returns payment events to settle', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_MOCKER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
+      const response = await axios.get(
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
+        await mockDataMachine.getAuthHeaders('test@email.com'),
+      );
+
+      expect(response.data.paymentEventsToSettle[0]).toEqual({
+        id: expect.any(Number),
+        benefitors: expect.any(Array),
+        created: expect.any(String),
+        edited: expect.any(String),
+        createdBy: {
+          id: expect.any(Number),
+          name: 'test@email.com',
+          ownerId: expect.any(Number),
+          avatarId: expect.any(Number),
+          namespaceId: namespace.id,
+        },
+        editedBy: {
+          id: expect.any(Number),
+          name: 'test@email.com',
+          ownerId: expect.any(Number),
+          avatarId: expect.any(Number),
+          namespaceId: namespace.id,
+        },
+        description: 'test payment 1',
+        notes: null,
+        namespace: {
+          id: namespace.id,
+          avatarId: expect.any(Number),
+          name: 'testnamespace',
+        },
+        namespaceId: namespace.id,
+        paidBy: expect.any(Array),
+        settlementId: null,
+        settledOn: null,
+      });
+    });
+    testWrap('', 'returns payment events to settle - paidBy structure', async () => {
+
+      const mockDataMachine = await MockDataMachine2.createScenario(
+        DATA_MOCKER_URL,
+        BACKDOOR_USERNAME,
+        BACKDOOR_PASSWORD,
+        {
+          owners: [
+            { name: 'creator' },
+            { name: 'test@email.com' },
+          ],
+          namespaces: [
+            {
+              name: 'testnamespace',
+              creator: 'creator',
+              users: [
+                { name: 'test@email.com', invitor: 'creator' },
+              ],
+              paymentEvents: [
+                {
+                  user: 'test@email.com',
+                  data: {
+                    paidBy: [{ user: 'test@email.com', amount: 100, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 50, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 50, currency: 'EUR' },
+                    ],
+                    description: 'test payment 1',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+                {
+                  user: 'creator',
+                  data: {
+                    paidBy: [{ user: 'creator', amount: 60, currency: 'EUR' }],
+                    benefitors: [
+                      { user: 'creator', amount: 30, currency: 'EUR' },
+                      { user: 'test@email.com', amount: 30, currency: 'EUR' },
+                    ],
+                    description: 'test payment 2',
+                    notes: null,
+                    created: new Date(),
+                    edited: new Date(),
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      );
+
+      const testOwner = mockDataMachine.getOwner('test@email.com');
+      const namespace = mockDataMachine.getNamespace('testnamespace');
+
+      const response = await axios.get(
+        `${DATA_PROVIDER_URL}/app/${testOwner.key}/namespace/${namespace.id}/settle/settings`,
+        await mockDataMachine.getAuthHeaders('test@email.com'),
+      );
+
+      expect(response.data.paymentEventsToSettle[0].paidBy).toEqual([
+        {
+          amount: 100,
+          currency: 'EUR',
+          user: {
+            id: expect.any(Number),
+            name: 'test@email.com',
+            ownerId: expect.any(Number),
+            avatarId: expect.any(Number),
+            namespaceId: namespace.id,
+          },
+        },
+      ]);
+    });
+
     testWrap('', 'returns payment events to settle - benefitors structure', async () => {
 
       const mockDataMachine = await MockDataMachine2.createScenario(
@@ -569,7 +608,6 @@ describe(API_NAME, () => {
         await mockDataMachine.getAuthHeaders('test@email.com'),
       );
 
-      expect(response.data.paymentEventsToSettle[0].benefitors).toHaveLength(2);
       expect(response.data.paymentEventsToSettle[0].benefitors).toEqual([
         {
           amount: expect.closeTo(50),
