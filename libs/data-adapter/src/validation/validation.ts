@@ -1,4 +1,4 @@
-import { VALIDATE } from '@angular-monorepo/entities';
+import { ERROR_CODE, VALIDATE, validatePaymentEvent as validatePaymentEventEntity } from '@angular-monorepo/entities';
 import { AcceptInvitationDataValidationFn, ValidationErrors } from './validation.service.interface';
 import { escape } from 'validator';
 
@@ -230,5 +230,26 @@ export const VALIDATE_DOMAIN_OBJECT = {
     if (avatarValidationErrors)
       return avatarValidationErrors;
     return null;
+  },
+  async validatePaymentEvent (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload: any,
+  ) {
+    try {
+      validatePaymentEventEntity(payload);
+      return null;
+    } catch (error) {
+      const err = error as Error;
+      // Convert entity validation errors to ValidationErrors format
+      if (err.message === ERROR_CODE.INVALID_PAYMENT_EVENT_AMOUNTS) {
+        return {
+          paymentEvent: 'INVALID_PAYMENT_EVENT_AMOUNTS',
+        };
+      }
+      // For other validation errors, extract the error code
+      return {
+        paymentEvent: err.message || 'INVALID_REQUEST',
+      };
+    }
   },
 };
