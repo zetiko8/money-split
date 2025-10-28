@@ -1,6 +1,6 @@
 -- Database Schema Export
 -- Database: main
--- Generated: 2025-10-22T08:16:10.597Z
+-- Generated: 2025-10-28T20:04:02.197Z
 -- ================================================
 
 -- Table: Avatar
@@ -10,7 +10,7 @@ CREATE TABLE `Avatar` (
   `dataUrl` blob,
   `url` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2186 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2264 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: Invitation
 CREATE TABLE `Invitation` (
@@ -25,7 +25,7 @@ CREATE TABLE `Invitation` (
   `editedBy` bigint NOT NULL,
   `invitationKey` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1220 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1245 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: Migration
 CREATE TABLE `Migration` (
@@ -38,7 +38,7 @@ CREATE TABLE `Namespace` (
   `name` varchar(100) NOT NULL,
   `avatarId` bigint DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=552 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=580 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: NamespaceOwner
 CREATE TABLE `NamespaceOwner` (
@@ -55,7 +55,7 @@ CREATE TABLE `Owner` (
   `hash` varchar(100) NOT NULL,
   `avatarId` bigint NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1858 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1908 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: OwnerRole
 CREATE TABLE `OwnerRole` (
@@ -77,7 +77,7 @@ CREATE TABLE `PaymentEvent` (
   `description` varchar(100) DEFAULT NULL,
   `notes` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1008 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1052 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: PaymentNode
 CREATE TABLE `PaymentNode` (
@@ -90,7 +90,7 @@ CREATE TABLE `PaymentNode` (
   PRIMARY KEY (`id`),
   KEY `idx_payment_event` (`paymentEventId`),
   CONSTRAINT `fk_payment_node_payment_event` FOREIGN KEY (`paymentEventId`) REFERENCES `PaymentEvent` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1009 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Table: Record
 CREATE TABLE `Record` (
@@ -145,5 +145,5 @@ CREATE TABLE `User` (
   `avatarId` bigint NOT NULL,
   PRIMARY KEY (`id`),
   KEY `Users_FK` (`namespaceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1597 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1650 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

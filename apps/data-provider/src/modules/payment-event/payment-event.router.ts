@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { registerRoute } from '../../helpers';
+import { registerRoute, throwValidationError } from '../../helpers';
 import {
   addPaymentEventApi,
   editPaymentEventApi,
@@ -8,15 +8,9 @@ import {
   getEditPaymentEventViewApi,
   addPaymentEventApiBackdoor,
 } from '@angular-monorepo/api-interface';
-import {
-  CreatePaymentEventData,
-  ERROR_CODE,
-  PaymentEvent,
-  VALIDATE,
-  validatePaymentEvent,
-} from '@angular-monorepo/entities';
-import { AppError } from '../../types';
+import { VALIDATE } from '@angular-monorepo/entities';
 import { PaymentEventService } from '@angular-monorepo/mysql-adapter';
+import { NUMBER, VALIDATE_DOMAIN_OBJECT } from '@angular-monorepo/data-adapter';
 
 export const paymentEventRouter = Router();
 
@@ -25,8 +19,8 @@ registerRoute(
   paymentEventRouter,
   async (payload, params, context) => {
     return new PaymentEventService(context.logger).getEditPaymentEventView(
-      Number(params.namespaceId),
-      Number(params.paymentEventId),
+      NUMBER(params.namespaceId),
+      NUMBER(params.paymentEventId),
       context.owner.id,
     );
   },
@@ -38,8 +32,8 @@ registerRoute(
   paymentEventRouter,
   async (payload, params, context) => {
     return await new PaymentEventService(context.logger).getPaymentEvent(
-      Number(params.namespaceId),
-      Number(params.paymentEventId),
+      NUMBER(params.namespaceId),
+      NUMBER(params.paymentEventId),
       context.owner.id,
     );
   },
@@ -51,13 +45,14 @@ registerRoute(
   paymentEventRouter,
   async (payload, params, context) => {
     VALIDATE.requiredPayload(payload);
-
-    validatePaymentEventApi(payload);
+    await throwValidationError(async () => {
+      return await VALIDATE_DOMAIN_OBJECT.validatePaymentEvent(payload);
+    });
 
     return await new PaymentEventService(context.logger).editPaymentEvent(
-      Number(params.namespaceId),
-      Number(params.userId),
-      Number(params.paymentEventId),
+      NUMBER(params.namespaceId),
+      NUMBER(params.userId),
+      NUMBER(params.paymentEventId),
       payload,
       context.owner.id,
     );
@@ -70,12 +65,14 @@ registerRoute(
   paymentEventRouter,
   async (payload, params, context) => {
     VALIDATE.requiredPayload(payload);
-    validatePaymentEventApi(payload);
+    await throwValidationError(async () => {
+      return await VALIDATE_DOMAIN_OBJECT.validatePaymentEvent(payload);
+    });
 
     context.logger.log('VALIDATION PASSED');
     return await new PaymentEventService(context.logger).addPaymentEvent(
-      Number(params.namespaceId),
-      Number(params.userId),
+      NUMBER(params.namespaceId),
+      NUMBER(params.userId),
       payload,
       context.owner.id,
     );
@@ -89,7 +86,9 @@ registerRoute(
   paymentEventRouter,
   async (payload, params, context) => {
     VALIDATE.requiredPayload(payload);
-    validatePaymentEventApi(payload);
+    await throwValidationError(async () => {
+      return await VALIDATE_DOMAIN_OBJECT.validatePaymentEvent(payload);
+    });
 
     return await new PaymentEventService(context.logger).addPaymentEventBackdoor(
       payload,
@@ -97,18 +96,3 @@ registerRoute(
   },
   AUTH_MIDDLEWARE.backdoorAuth,
 );
-
-function validatePaymentEventApi (
-  payload: CreatePaymentEventData | PaymentEvent,
-) {
-  try {
-    validatePaymentEvent(payload);
-  } catch (error) {
-    if (error.message === ERROR_CODE.INVALID_PAYMENT_EVENT_AMOUNTS) {
-      const err = new Error(ERROR_CODE.INVALID_REQUEST) as unknown as AppError;
-      err.context = error.message;
-      throw err;
-    }
-    throw error;
-  }
-}
