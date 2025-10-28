@@ -38,7 +38,7 @@ describe(API_NAME, () => {
           avatarUrl: 'http:test.com',
           avatarColor: 'color',
         }))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+      .throwsError('USERNAME_REQUIRED');
   });
   [3, null, [], {}].forEach(value => {
     testWrap('', 'requires username to be string but is ' + value, async () => {
@@ -51,7 +51,7 @@ describe(API_NAME, () => {
             avatarUrl: 'http:test.com',
             avatarColor: 'color',
           }))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('USERNAME_REQUIRED');
     });
   });
   testWrap('', 'requires password to be provided', async () => {
@@ -63,7 +63,7 @@ describe(API_NAME, () => {
           avatarUrl: 'http:test.com',
           avatarColor: 'color',
         }))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+      .throwsError('PASSWORD_REQUIRED');
   });
   [3, null, [], {}].forEach(value => {
     testWrap('', 'requires password to be string but is ' + value, async () => {
@@ -76,7 +76,7 @@ describe(API_NAME, () => {
             avatarUrl: 'http:test.com',
             avatarColor: 'color',
           }))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('PASSWORD_REQUIRED');
     });
   });
   [3, [], {}].forEach(value => {
@@ -90,7 +90,7 @@ describe(API_NAME, () => {
             avatarUrl: value,
             avatarColor: 'color',
           }))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('AVATAR_URL_INVALID');
     });
   });
   [3, [], {}].forEach(value => {
@@ -104,7 +104,7 @@ describe(API_NAME, () => {
             avatarUrl: 'http:test.com',
             avatarColor: value,
           }))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('AVATAR_COLOR_INVALID');
     });
   });
   testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
@@ -115,7 +115,7 @@ describe(API_NAME, () => {
           username: 'testusername',
           password: 'testpassword',
         }))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+      .throwsError('AVATAR_REQUIRED');
   });
   it.todo('requires password to be a valid password');
   testWrap('', 'returns an owner', async () => {
@@ -197,7 +197,7 @@ describe(API_NAME, () => {
           avatarUrl: 'http:test.com',
           avatarColor: 'color',
         }))
-      .throwsError(ERROR_CODE.INVALID_REQUEST);
+      .throwsError('USERNAME_REQUIRED');
   });
 
   describe('dbState', () => {

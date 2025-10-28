@@ -88,6 +88,43 @@ export const VALIDATE_DOMAIN_OBJECT_STATELESS = {
       },
     ]);
   },
+  validateOwnerUsername (username: string) {
+    return validationChain([
+      {
+        fn: () => VALIDATE.requiredString(username),
+        propertyName: 'username',
+        errorName: 'USERNAME_REQUIRED',
+      },
+    ]);
+  },
+  validateOwnerPassword (password: string) {
+    return validationChain([
+      {
+        fn: () => VALIDATE.requiredString(password),
+        propertyName: 'password',
+        errorName: 'PASSWORD_REQUIRED',
+      },
+    ]);
+  },
+  validateOwnerAvatar (avatarColor: string | undefined, avatarUrl: string | undefined) {
+    return validationChain([
+      {
+        fn: () => VALIDATE.anyOf(avatarColor, avatarUrl),
+        propertyName: 'avatar',
+        errorName: 'AVATAR_REQUIRED',
+      },
+      {
+        fn: () => VALIDATE.string(avatarColor),
+        propertyName: 'avatarColor',
+        errorName: 'AVATAR_COLOR_INVALID',
+      },
+      {
+        fn: () => VALIDATE.string(avatarUrl),
+        propertyName: 'avatarUrl',
+        errorName: 'AVATAR_URL_INVALID',
+      },
+    ]);
+  },
 };
 
 export const VALIDATE_DOMAIN_OBJECT = {
@@ -159,6 +196,37 @@ export const VALIDATE_DOMAIN_OBJECT = {
     const avatarValidationErrors
       = VALIDATE_DOMAIN_OBJECT_STATELESS
         .validateNamespaceAvatar(avatarColor, avatarUrl);
+    if (avatarValidationErrors)
+      return avatarValidationErrors;
+    return null;
+  },
+  async validateRegisterOwner (
+    payload: {
+      username: string;
+      password: string;
+      avatarColor?: string;
+      avatarUrl?: string;
+    },
+  ) {
+    // Check if all fields are missing (empty payload)
+    if (!payload.username && !payload.password && !payload.avatarColor && !payload.avatarUrl) {
+      return {
+        payload: 'INVALID_REQUEST',
+      };
+    }
+    const usernameValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateOwnerUsername(payload.username);
+    if (usernameValidationErrors)
+      return usernameValidationErrors;
+    const passwordValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateOwnerPassword(payload.password);
+    if (passwordValidationErrors)
+      return passwordValidationErrors;
+    const avatarValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateOwnerAvatar(payload.avatarColor, payload.avatarUrl);
     if (avatarValidationErrors)
       return avatarValidationErrors;
     return null;
