@@ -66,6 +66,28 @@ export const VALIDATE_DOMAIN_OBJECT_STATELESS = {
       },
     ]);
   },
+  validateNamespaceName (namespaceName: string) {
+    return validationChain([
+      {
+        fn: () => VALIDATE.requiredString(namespaceName),
+        propertyName: 'namespaceName',
+        errorName: 'NAMESPACE_NAME_REQUIRED',
+      },
+    ]);
+  },
+  validateNamespaceAvatar (avatarColor: string | undefined, avatarUrl: string | undefined) {
+    return validationChain([
+      {
+        fn: () => {
+          if (!avatarColor && !avatarUrl) {
+            throw new Error('Avatar color or URL required');
+          }
+        },
+        propertyName: 'avatar',
+        errorName: 'AVATAR_REQUIRED',
+      },
+    ]);
+  },
 };
 
 export const VALIDATE_DOMAIN_OBJECT = {
@@ -106,5 +128,39 @@ export const VALIDATE_DOMAIN_OBJECT = {
         errorName: 'EMAIL',
       },
     ]);
+  },
+  async validateCreateNamespace (
+    namespaceName: string,
+    avatarColor: string | undefined,
+    avatarUrl: string | undefined,
+  ) {
+    const namespaceNameValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateNamespaceName(namespaceName);
+    if (namespaceNameValidationErrors)
+      return namespaceNameValidationErrors;
+    const avatarValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateNamespaceAvatar(avatarColor, avatarUrl);
+    if (avatarValidationErrors)
+      return avatarValidationErrors;
+    return null;
+  },
+  async validateEditNamespace (
+    namespaceName: string,
+    avatarColor: string | undefined,
+    avatarUrl: string | undefined,
+  ) {
+    const namespaceNameValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateNamespaceName(namespaceName);
+    if (namespaceNameValidationErrors)
+      return namespaceNameValidationErrors;
+    const avatarValidationErrors
+      = VALIDATE_DOMAIN_OBJECT_STATELESS
+        .validateNamespaceAvatar(avatarColor, avatarUrl);
+    if (avatarValidationErrors)
+      return avatarValidationErrors;
+    return null;
   },
 };

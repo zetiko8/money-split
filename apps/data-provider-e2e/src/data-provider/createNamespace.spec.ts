@@ -62,7 +62,7 @@ describe(API_NAME, () => {
             avatarUrl: 'http://url.com',
           },
           await mockDataMachine.getAuthHeaders('testowner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('NAMESPACE_NAME_REQUIRED');
 
       await fnCall(API_NAME,
         async () => await axios.post(
@@ -72,7 +72,7 @@ describe(API_NAME, () => {
             namespaceName: '  ',
           },
           await mockDataMachine.getAuthHeaders('testowner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('NAMESPACE_NAME_REQUIRED');
     });
 
     testWrap('', 'requires either avatarUrl or avatarColor to be provided', async () => {
@@ -98,7 +98,7 @@ describe(API_NAME, () => {
             namespaceName: 'testnamespace',
           },
           await mockDataMachine.getAuthHeaders('testowner')))
-        .throwsError(ERROR_CODE.INVALID_REQUEST);
+        .throwsError('AVATAR_REQUIRED');
     });
 
     testWrap('', 'throws 401 with invalid token', async () => {

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { AUTH_MIDDLEWARE} from '../../modules/auth/auth-middleware';
-import { registerRoute } from '../../helpers';
-import { ERROR_CODE } from '@angular-monorepo/entities';
+import { registerRoute, throwValidationError } from '../../helpers';
+import { VALIDATE } from '@angular-monorepo/entities';
+import { ESCAPE, NUMBER, TRIM, VALIDATE_DOMAIN_OBJECT } from '@angular-monorepo/data-adapter';
 
 import {
   createNamespaceApi,
@@ -18,15 +19,16 @@ registerRoute(
   createNamespaceApi(),
   namespaceRouter,
   async (payload, params, context) => {
-    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (typeof payload.namespaceName !== 'string') throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (!payload.namespaceName.trim()) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (
-      !payload.avatarColor && !payload.avatarUrl
-    ) throw Error(ERROR_CODE.INVALID_REQUEST);
+    VALIDATE.requiredPayload(payload);
+    payload.namespaceName = TRIM(ESCAPE(payload.namespaceName)) as string;
+    await throwValidationError(async () => {
+      return await VALIDATE_DOMAIN_OBJECT.validateCreateNamespace(
+        payload.namespaceName,
+        payload.avatarColor,
+        payload.avatarUrl,
+      );
+    });
 
-    payload.namespaceName = payload.namespaceName.trim();
     return await new NamespaceService(context.logger).createNamespace(
       payload, context.owner);
   },
@@ -38,7 +40,7 @@ registerRoute(
   namespaceRouter,
   async (payload, params, context) => {
     return await new NamespaceService(context.logger).getNamespaceViewForOwner(
-      Number(params.namespaceId),
+      NUMBER(params.namespaceId),
       context.owner.id,
     );
   },
@@ -61,7 +63,7 @@ registerRoute(
   namespaceRouter,
   async (_, params, context) => {
     return await new NamespaceService(context.logger).getNamespaceSettings(
-      Number(params.namespaceId),
+      NUMBER(params.namespaceId),
     );
   },
   AUTH_MIDDLEWARE.auth,
@@ -71,20 +73,20 @@ registerRoute(
   editNamespaceSettingApi(),
   namespaceRouter,
   async (payload, params, context) => {
-    if (!payload) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (!payload.namespaceName) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (typeof payload.namespaceName !== 'string') throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (!payload.namespaceName.trim()) throw Error(ERROR_CODE.INVALID_REQUEST);
-    if (
-      !payload.avatarColor && !payload.avatarUrl
-    ) throw Error(ERROR_CODE.INVALID_REQUEST);
-
-    payload.namespaceName = payload.namespaceName.trim();
+    VALIDATE.requiredPayload(payload);
+    payload.namespaceName = TRIM(ESCAPE(payload.namespaceName)) as string;
+    await throwValidationError(async () => {
+      return await VALIDATE_DOMAIN_OBJECT.validateEditNamespace(
+        payload.namespaceName,
+        payload.avatarColor,
+        payload.avatarUrl,
+      );
+    });
 
     return await new NamespaceService(context.logger)
       .editNamespaceSettings(
         context.owner.id,
-        Number(params.namespaceId),
+        NUMBER(params.namespaceId),
         payload,
       );
   },
