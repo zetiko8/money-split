@@ -1,166 +1,66 @@
-import { Settlement, SettlementDebt, SettlementDebtView, RecordDataView, RecordData } from '@angular-monorepo/entities';
+import { RecordData, ERROR_CODE, paymentEventsToRecordsWithIds, SettlementPayload } from '@angular-monorepo/entities';
+import { settle, deptToRecordData } from '@angular-monorepo/debt-simplification';
 import { Transaction } from '../mysql-adapter';
-import { asyncMap } from '@angular-monorepo/utils';
-import { UserHelpersService } from './user.helpers.service';
-import { NamespaceHelpersService } from './namespace.helpers.service';
+import { PaymentEventHelpersService } from './payment-event.helpers.service';
 
 export class SettleHelpersService {
-  static async getSettlementById(
-    transaction: Transaction,
-    settlementId: number,
-  ): Promise<Settlement> {
-    const sql = 'SELECT * FROM `Settlement` WHERE id = ?';
-    const result = await transaction.query<Settlement[]>(sql, [settlementId]);
-    if (!result || result.length === 0) {
-      throw new Error('Settlement not found');
-    }
-    return result[0];
-  }
 
-  static async getSettlementMaybeById(
+  static async getSettleRecords(
     transaction: Transaction,
-    settlementId: number,
-  ): Promise<Settlement | null> {
-    try {
-      return await SettleHelpersService.getSettlementById(transaction, settlementId);
-    } catch {
-      return null;
-    }
-  }
-
-  static async getSettlementDebtById(
-    transaction: Transaction,
-    settlementDebtId: number,
-  ): Promise<SettlementDebt> {
-    const sql = 'SELECT * FROM `SettlementDebt` WHERE id = ?';
-    const result = await transaction.query<SettlementDebt[]>(sql, [settlementDebtId]);
-    if (!result || result.length === 0) {
-      throw new Error('SettlementDebt not found');
-    }
-    return result[0];
-  }
-
-  static async createSettlement(
-    transaction: Transaction,
-    byUser: number,
     namespaceId: number,
-  ): Promise<Settlement> {
-    const now = new Date();
-    const insertSql = `
-      INSERT INTO \`Settlement\` (created, edited, createdBy, editedBy, namespaceId)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-    await transaction.query(insertSql, [now, now, byUser, byUser, namespaceId]);
+    payload: SettlementPayload,
+    ownerId: number,
+  ): Promise<{
+    recordsToSettle: {
+      paymentEventId: number;
+      record: RecordData;
+    }[],
+    settleRecords: RecordData[]
+  }> {
+    const paymentEvents = await PaymentEventHelpersService
+      .getNamespacePaymentEvents(transaction, namespaceId, ownerId);
 
-    const idResult = await transaction.query<Array<{ 'LAST_INSERT_ID()': number }>>('SELECT LAST_INSERT_ID()');
-    const settlementId = idResult[0]['LAST_INSERT_ID()'];
+    const paymentEventsToSettle = paymentEvents.filter(pe => payload.paymentEvents.includes(pe.id));
 
-    return SettleHelpersService.getSettlementById(transaction, settlementId);
-  }
+    if (paymentEventsToSettle.find(record => record.settlementId !== null))
+      throw Error(ERROR_CODE.USER_ACTION_CONFLICT);
 
-  static async createSettlementDebt(
-    transaction: Transaction,
-    byUser: number,
-    namespaceId: number,
-    settlementId: number,
-    data: RecordData,
-    settled: boolean,
-    settledOn: Date | null,
-    settledBy: number | null,
-  ): Promise<SettlementDebt> {
-    const now = new Date();
-    const insertSql = `
-      INSERT INTO \`SettlementDebt\` 
-      (created, edited, createdBy, editedBy, namespaceId, settlementId, settled, data, settledOn, settledBy)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    await transaction.query(insertSql, [
-      now,
-      now,
-      byUser,
-      byUser,
-      namespaceId,
-      settlementId,
-      settled,
-      JSON.stringify(data),
-      settledOn,
-      settledBy,
-    ]);
+    const recordsToSettle = paymentEventsToRecordsWithIds(paymentEventsToSettle);
 
-    const idResult = await transaction.query<Array<{ 'LAST_INSERT_ID()': number }>>('SELECT LAST_INSERT_ID()');
-    const settlementDebtId = idResult[0]['LAST_INSERT_ID()'];
+    const recordsToSettleByCurrency: Record<string, RecordData[]> = {};
+    recordsToSettle.forEach(record => {
+      if (!recordsToSettleByCurrency[record.record.currency])
+        recordsToSettleByCurrency[record.record.currency] = [];
+      recordsToSettleByCurrency[record.record.currency].push(record.record);
+    });
 
-    return SettleHelpersService.getSettlementDebtById(transaction, settlementDebtId);
-  }
+    const settleRecords: RecordData[] = [];
 
-  static async getSettlementRecordViews(
-    transaction: Transaction,
-    settlementId: number,
-  ): Promise<SettlementDebtView[]> {
-    const sql = 'SELECT * FROM `SettlementDebt` WHERE settlementId = ?';
-    const settlementDebts = await transaction.query<SettlementDebt[]>(sql, [settlementId]);
+    if (payload.separatedSettlementPerCurrency) {
+      Object.entries(recordsToSettleByCurrency).forEach(([currency, records]) => {
+        settleRecords.push(...settle(records).map(debt => deptToRecordData(debt, currency)));
+      });
+    } else {
+      const currenyConvertedRecords: RecordData[] = [];
 
-    const settlementDebtViews = await asyncMap<SettlementDebt, SettlementDebtView>(
-      settlementDebts,
-      async (settlementDebt) => {
-        const data: RecordDataView = await NamespaceHelpersService.mapToRecordDataView(
-          transaction,
-          settlementDebt.data,
-        );
+      Object.entries(recordsToSettleByCurrency)
+        .forEach(([currency, records]) => {
+          currenyConvertedRecords.push(...records.map(r => {
+            return {
+              benefitors: r.benefitors,
+              cost: r.cost * (payload.currencies[currency]),
+              paidBy: r.paidBy,
+              currency: payload.mainCurrency,
+            };
+          }));
+        });
 
-        const createdBy = await UserHelpersService.getUserById(
-          transaction,
-          settlementDebt.createdBy,
-        );
-        const editedBy = await UserHelpersService.getUserById(
-          transaction,
-          settlementDebt.editedBy,
-        );
-        const settledBy = settlementDebt.settledBy
-          ? await UserHelpersService.getUserById(transaction, settlementDebt.settledBy)
-          : null;
+      settleRecords.push(...settle(currenyConvertedRecords).map(debt => deptToRecordData(debt, payload.mainCurrency)));
+    }
 
-        return {
-          created: settlementDebt.created,
-          edited: settlementDebt.edited,
-          createdBy,
-          editedBy,
-          id: settlementDebt.id,
-          settled: settlementDebt.settled,
-          settlementId: settlementDebt.settlementId,
-          data,
-          settledOn: settlementDebt.settledOn,
-          settledBy,
-        };
-      },
-    );
-
-    return settlementDebtViews;
-  }
-
-  static async setDebtIsSettled(
-    transaction: Transaction,
-    byUser: number,
-    debtId: number,
-    isSettled: boolean,
-  ): Promise<void> {
-    const now = new Date();
-    const updateSql = `
-      UPDATE \`SettlementDebt\`
-      SET settled = ?,
-          settledOn = ?,
-          settledBy = ?,
-          edited = ?,
-          editedBy = ?
-      WHERE id = ?
-    `;
-    await transaction.query(updateSql, [
-      isSettled,
-      isSettled ? now : null,
-      isSettled ? byUser : null,
-      now,
-      byUser,
-      debtId,
-    ]);
+    return {
+      settleRecords,
+      recordsToSettle,
+    };
   }
 }
