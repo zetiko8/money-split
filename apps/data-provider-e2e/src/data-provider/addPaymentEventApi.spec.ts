@@ -1099,7 +1099,7 @@ describe(API_NAME, () => {
               notes: 'test notes',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
 
       testWrap('', 'multiple benefitors must equal payers - 5EUR != 2EUR + 2EUR', async () => {
@@ -1146,7 +1146,7 @@ describe(API_NAME, () => {
               notes: 'test notes',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
 
       testWrap('', 'amounts must be positive - negative payer amount', async () => {
@@ -1189,7 +1189,7 @@ describe(API_NAME, () => {
               notes: 'test notes',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
 
       testWrap('', 'amounts must be positive - negative benefitor amount', async () => {
@@ -1232,7 +1232,7 @@ describe(API_NAME, () => {
               notes: 'test notes',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
       testWrap('', '3 EUR != 4 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
@@ -1274,7 +1274,7 @@ describe(API_NAME, () => {
               notes: 'a',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
       testWrap('', '3 EUR == 3 EUR', async () => {
         const mockDataMachine = await MockDataMachine2.createScenario(
@@ -1359,7 +1359,7 @@ describe(API_NAME, () => {
               notes: 'a',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
 
       testWrap('', '4 USD == 4 USD', async () => {
@@ -1445,7 +1445,7 @@ describe(API_NAME, () => {
               notes: 'a',
             },
             await mockDataMachine.getAuthHeaders('namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
 
       testWrap('', '3 EUR + 3 EUR == 6 EUR', async () => {
@@ -1588,7 +1588,7 @@ describe(API_NAME, () => {
               notes: 'a',
             },
             await mockDataMachine.getAuthHeaders('ab-namespace-owner1')))
-          .throwsError(ERROR_CODE.INVALID_REQUEST);
+          .throwsError('INVALID_PAYMENT_EVENT_AMOUNTS');
       });
     });
   });
